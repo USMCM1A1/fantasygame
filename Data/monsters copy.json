@@ -1,0 +1,30 @@
+{
+    "monsters": [
+        {
+            "name": "Skeleton",
+            "type": "undead",
+            "hit_points": 2,
+            "to_hit": 1,
+            "dam": "1d1",
+            "ac": 0,
+            "move": 3,
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/Skeletons/skel_01.png",
+                "dead": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/Skeletons/skel_01_dead.png"
+            }
+        },
+        {
+            "name": "Goblin",
+            "type": "goblinoid",
+            "hit_points": 2,
+            "to_hit": 3,
+            "dam": "1d1",
+            "ac": 0,
+            "move": 4,
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/goblinoids/goblin.png",
+                "dead": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/goblinoids/goblin_dead.png"
+            }
+        }
+    ]
+}

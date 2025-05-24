@@ -1,0 +1,29 @@
+{
+  "High Elf": {
+    "bonus": {"intelligence": 1},
+    "display": "+1 Intelligence"
+  },
+  "Wood Elf": {
+    "bonus": {"dexterity": 1},
+    "display": "+1 Dexterity"
+  },
+  "Halfling": {
+    "bonus": {"dexterity": 1},
+    "display": "+1 Dexterity"
+  },
+  "Dwarf": {
+    "bonus": {"constitution": 1},
+    "display": "+1 Constitution"
+  },
+  "Human": {
+    "bonus_by_class": {
+      "Warrior": {"strength": 1},
+      "Priest": {"wisdom": 1},
+      "Spellblade": {"strength": 1},
+      "Thief": {"strength": 1},
+      "Wizard": {"intelligence": 1},
+      "Archer": {"strength": 1}
+    },
+    "display": "+1 Strength or +1 Wisdom by class"
+  }
+}

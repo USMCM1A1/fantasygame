@@ -1,0 +1,1050 @@
+{
+    "monsters": [
+        {
+            "name": "Giant Rat",
+            "level": 1,
+            "cr": 1,
+            "type": "beast",
+            "hit_points": 6,
+            "to_hit": 1,
+            "ac": 6,
+            "move": 6,
+            "dam": "1d4",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Large Bat",
+            "level": 1,
+            "cr": 1,
+            "type": "beast",
+            "hit_points": 5,
+            "to_hit": 2,
+            "ac": 7,
+            "move": 8,
+            "dam": "1d3",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_bat.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Large Spider",
+            "level": 2,
+            "cr": 1,
+            "type": "beast",
+            "hit_points": 8,
+            "to_hit": 2,
+            "ac": 7,
+            "move": 6,
+            "dam": "1d4",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [
+                {
+                    "name": "poison",
+                    "chance": 0.2,
+                    "damage": 1,
+                    "duration": 2,
+                    "description": "The spider's bite contains a mild venom"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_spider.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Giant Spider",
+            "level": 3,
+            "cr": 1,
+            "type": "beast",
+            "hit_points": 12,
+            "to_hit": 3,
+            "ac": 8,
+            "move": 6,
+            "dam": "1d6",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [
+                {
+                    "name": "poison",
+                    "chance": 0.3,
+                    "damage": 2,
+                    "duration": 3,
+                    "description": "The giant spider's bite injects venom"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_spider.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Giant Bat",
+            "level": 3,
+            "cr": 1,
+            "type": "beast",
+            "hit_points": 10,
+            "to_hit": 3,
+            "ac": 8,
+            "move": 10,
+            "dam": "1d4",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_bat.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Giant Snake",
+            "level": 4,
+            "cr": 1,
+            "type": "beast",
+            "hit_points": 15,
+            "to_hit": 4,
+            "ac": 9,
+            "move": 7,
+            "dam": "1d6",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [
+                {
+                    "name": "poison",
+                    "chance": 0.4,
+                    "damage": 3,
+                    "duration": 3,
+                    "description": "The snake's fangs deliver a potent venom"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_snake.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Goblin",
+            "level": 1,
+            "cr": 1,
+            "type": "humanoid",
+            "hit_points": 8,
+            "to_hit": 2,
+            "ac": 6,
+            "move": 5,
+            "dam": "1d6",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/goblin.png",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Orc",
+            "level": 5,
+            "cr": 2,
+            "type": "humanoid",
+            "hit_points": 22,
+            "to_hit": 4,
+            "ac": 9,
+            "move": 5,
+            "dam": "1d8+1",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/orc.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Troll",
+            "level": 7,
+            "cr": 2,
+            "type": "humanoid",
+            "hit_points": 35,
+            "to_hit": 5,
+            "ac": 10,
+            "move": 6,
+            "dam": "2d6",
+            "vulnerabilities": ["fire"],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [
+                {
+                    "name": "regeneration",
+                    "heal_amount": 2,
+                    "description": "The troll regenerates 2 HP each turn unless damaged by fire"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/troll.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Minotaur",
+            "level": 8,
+            "cr": 2,
+            "type": "humanoid",
+            "hit_points": 45,
+            "to_hit": 6,
+            "ac": 12,
+            "move": 6,
+            "dam": "2d6+2",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [
+                {
+                    "name": "charge",
+                    "description": "The minotaur deals double damage if it moved at least 2 tiles"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/minotaur.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Hag",
+            "level": 8,
+            "cr": 2,
+            "type": "humanoid",
+            "hit_points": 40,
+            "to_hit": 5,
+            "ac": 11,
+            "move": 5,
+            "dam": "1d8",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [
+                {
+                    "name": "spellcasting",
+                    "spells": ["magic_missile", "mage_armor"],
+                    "description": "The hag can cast spells"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/hag.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Green Slime",
+            "level": 5,
+            "cr": 2,
+            "type": "monstrosity",
+            "hit_points": 18,
+            "to_hit": 3,
+            "ac": 7,
+            "move": 2,
+            "dam": "1d6",
+            "vulnerabilities": ["fire"],
+            "resistances": ["physical"],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "acid",
+                    "damage": 3,
+                    "damage_type": "acid",
+                    "description": "The slime secretes a corrosive acid"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/green_slime.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Yellow Mold",
+            "level": 7,
+            "cr": 2,
+            "type": "monstrosity",
+            "hit_points": 22,
+            "to_hit": 3,
+            "ac": 8,
+            "move": 0,
+            "dam": "1d4",
+            "vulnerabilities": ["fire"],
+            "resistances": ["physical"],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "poison",
+                    "chance": 0.5,
+                    "damage": 2,
+                    "duration": 4,
+                    "description": "The mold releases poisonous spores"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/yellow_mold.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Gelatinous Cube",
+            "level": 9,
+            "cr": 3,
+            "type": "monstrosity",
+            "hit_points": 50,
+            "to_hit": 4,
+            "ac": 9,
+            "move": 3,
+            "dam": "2d6",
+            "vulnerabilities": [],
+            "resistances": ["physical"],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "paralysis",
+                    "chance": 0.4,
+                    "duration": 3,
+                    "description": "The cube's touch paralyzes its victims"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/gelatinous_cube.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Strange Beast",
+            "level": 10,
+            "cr": 3,
+            "type": "monstrosity",
+            "hit_points": 45,
+            "to_hit": 5,
+            "ac": 11,
+            "move": 5,
+            "dam": "1d8",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [
+                {
+                    "name": "rust",
+                    "chance": 0.3,
+                    "description": "The monster can destroy metal equipment on contact"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/strange_beast.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Intellect Devourer",
+            "level": 12,
+            "cr": 3,
+            "type": "monstrosity",
+            "hit_points": 55,
+            "to_hit": 6,
+            "ac": 13,
+            "move": 5,
+            "dam": "2d6",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": [],
+            "special_abilities": [
+                {
+                    "name": "mind_blast",
+                    "chance": 0.4,
+                    "effect": "paralysis",
+                    "duration": 2,
+                    "description": "The creature's psychic attack freezes the mind"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/intellect_devourer.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Zombie",
+            "level": 5,
+            "cr": 2,
+            "type": "undead",
+            "hit_points": 20,
+            "to_hit": 3,
+            "ac": 8,
+            "move": 3,
+            "dam": "1d8",
+            "vulnerabilities": ["holy"],
+            "resistances": [],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "disease",
+                    "chance": 0.3,
+                    "effect": "max_hp_reduction",
+                    "value": 1,
+                    "duration": 10,
+                    "description": "The zombie's touch causes a wasting disease"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/zombie.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Wraith",
+            "level": 9,
+            "cr": 3,
+            "type": "undead",
+            "hit_points": 35,
+            "to_hit": 5,
+            "ac": 12,
+            "move": 6,
+            "dam": "2d6",
+            "vulnerabilities": ["holy"],
+            "resistances": ["physical"],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "drain",
+                    "chance": 0.4,
+                    "effect": "stat_reduction",
+                    "value": 2,
+                    "duration": 5,
+                    "description": "The wraith's touch drains life energy"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/wraith.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Ghost",
+            "level": 11,
+            "cr": 3,
+            "type": "undead",
+            "hit_points": 40,
+            "to_hit": 6,
+            "ac": 13,
+            "move": 8,
+            "dam": "2d6",
+            "vulnerabilities": ["holy"],
+            "resistances": [],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "incorporeal",
+                    "chance": 0.5,
+                    "description": "The ghost has a 50% chance to ignore physical damage"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/ghost.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Mummy",
+            "level": 14,
+            "cr": 4,
+            "type": "undead",
+            "hit_points": 60,
+            "to_hit": 7,
+            "ac": 14,
+            "move": 4,
+            "dam": "2d8",
+            "vulnerabilities": ["holy", "fire"],
+            "resistances": ["physical"],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "cursed",
+                    "chance": 0.3,
+                    "effect": "curse",
+                    "duration": -1,
+                    "description": "The mummy's touch applies a curse that lowers all dice rolls"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/mummy.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Lich",
+            "level": 16,
+            "cr": 4,
+            "type": "undead",
+            "hit_points": 70,
+            "to_hit": 8,
+            "ac": 16,
+            "move": 5,
+            "dam": "2d8+2",
+            "vulnerabilities": ["holy"],
+            "resistances": ["physical", "elemental"],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "spellcasting",
+                    "spells": ["fireball", "lightning_chain", "death_touch"],
+                    "description": "The lich is a powerful spellcaster"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/lich.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Small Fire Elemental",
+            "level": 9,
+            "cr": 3,
+            "type": "elemental",
+            "hit_points": 32,
+            "to_hit": 5,
+            "ac": 12,
+            "move": 6,
+            "dam": "2d6",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": ["fire", "poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 3,
+                    "damage_type": "fire",
+                    "description": "The elemental's body burns those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Small Earth Elemental",
+            "level": 9,
+            "cr": 3,
+            "type": "elemental",
+            "hit_points": 40,
+            "to_hit": 5,
+            "ac": 14,
+            "move": 4,
+            "dam": "2d6+2",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": ["poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 2,
+                    "damage_type": "physical",
+                    "description": "The elemental's rocky body damages those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/earth_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Small Water Elemental",
+            "level": 10,
+            "cr": 3,
+            "type": "elemental",
+            "hit_points": 35,
+            "to_hit": 5,
+            "ac": 13,
+            "move": 5,
+            "dam": "2d6",
+            "vulnerabilities": [],
+            "resistances": ["fire"],
+            "immunities": ["cold", "poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 2,
+                    "damage_type": "cold",
+                    "description": "The elemental's watery body chills those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/water_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Small Air Elemental",
+            "level": 10,
+            "cr": 3,
+            "type": "elemental",
+            "hit_points": 30,
+            "to_hit": 6,
+            "ac": 15,
+            "move": 8,
+            "dam": "2d4",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": ["lightning", "poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 2,
+                    "damage_type": "lightning",
+                    "description": "The elemental's stormy body shocks those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/air_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Medium Fire Elemental",
+            "level": 13,
+            "cr": 4,
+            "type": "elemental",
+            "hit_points": 55,
+            "to_hit": 7,
+            "ac": 14,
+            "move": 6,
+            "dam": "2d8+2",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": ["fire", "poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 4,
+                    "damage_type": "fire",
+                    "description": "The elemental's body burns those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Medium Earth Elemental",
+            "level": 13,
+            "cr": 4,
+            "type": "elemental",
+            "hit_points": 65,
+            "to_hit": 7,
+            "ac": 16,
+            "move": 4,
+            "dam": "3d6",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": ["poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 3,
+                    "damage_type": "physical",
+                    "description": "The elemental's rocky body damages those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/earth_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Medium Water Elemental",
+            "level": 14,
+            "cr": 4,
+            "type": "elemental",
+            "hit_points": 60,
+            "to_hit": 7,
+            "ac": 15,
+            "move": 5,
+            "dam": "2d8",
+            "vulnerabilities": [],
+            "resistances": ["fire"],
+            "immunities": ["cold", "poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 3,
+                    "damage_type": "cold",
+                    "description": "The elemental's watery body chills those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/water_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Medium Air Elemental",
+            "level": 14,
+            "cr": 4,
+            "type": "elemental",
+            "hit_points": 50,
+            "to_hit": 8,
+            "ac": 17,
+            "move": 8,
+            "dam": "2d6+1",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": ["lightning", "poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 3,
+                    "damage_type": "lightning",
+                    "description": "The elemental's stormy body shocks those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/air_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Large Fire Elemental",
+            "level": 17,
+            "cr": 5,
+            "type": "elemental",
+            "hit_points": 80,
+            "to_hit": 9,
+            "ac": 16,
+            "move": 6,
+            "dam": "3d8",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": ["fire", "poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 6,
+                    "damage_type": "fire",
+                    "description": "The elemental's body burns those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Large Earth Elemental",
+            "level": 17,
+            "cr": 5,
+            "type": "elemental",
+            "hit_points": 90,
+            "to_hit": 9,
+            "ac": 18,
+            "move": 4,
+            "dam": "4d6",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": ["poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 5,
+                    "damage_type": "physical",
+                    "description": "The elemental's rocky body damages those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/earth_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Large Water Elemental",
+            "level": 18,
+            "cr": 5,
+            "type": "elemental",
+            "hit_points": 85,
+            "to_hit": 9,
+            "ac": 17,
+            "move": 5,
+            "dam": "3d8+2",
+            "vulnerabilities": [],
+            "resistances": ["fire"],
+            "immunities": ["cold", "poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 5,
+                    "damage_type": "cold",
+                    "description": "The elemental's watery body chills those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/water_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Large Air Elemental",
+            "level": 18,
+            "cr": 5,
+            "type": "elemental",
+            "hit_points": 75,
+            "to_hit": 10,
+            "ac": 19,
+            "move": 8,
+            "dam": "3d6+2",
+            "vulnerabilities": [],
+            "resistances": [],
+            "immunities": ["lightning", "poison", "physical"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 5,
+                    "damage_type": "lightning",
+                    "description": "The elemental's stormy body shocks those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/air_elemental.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Imp",
+            "level": 6,
+            "cr": 2,
+            "type": "extraplanar",
+            "hit_points": 25,
+            "to_hit": 4,
+            "ac": 10,
+            "move": 6,
+            "dam": "1d6",
+            "vulnerabilities": ["holy"],
+            "resistances": ["fire", "cold", "lightning"],
+            "immunities": ["poison"],
+            "special_abilities": [],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/imp.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Hell Hound",
+            "level": 8,
+            "cr": 2,
+            "type": "extraplanar",
+            "hit_points": 35,
+            "to_hit": 5,
+            "ac": 11,
+            "move": 7,
+            "dam": "1d8+1",
+            "vulnerabilities": ["holy"],
+            "resistances": ["fire", "cold", "lightning"],
+            "immunities": ["fire"],
+            "special_abilities": [
+                {
+                    "name": "fire_breath",
+                    "damage": "3d6",
+                    "damage_type": "fire",
+                    "description": "The hell hound breathes a cone of fire"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/hell_hound.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Demonic Bat",
+            "level": 10,
+            "cr": 3,
+            "type": "extraplanar",
+            "hit_points": 40,
+            "to_hit": 6,
+            "ac": 13,
+            "move": 8,
+            "dam": "2d6",
+            "vulnerabilities": ["holy"],
+            "resistances": ["fire", "cold", "lightning"],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "life_drain",
+                    "damage": 3,
+                    "heal": 3,
+                    "description": "The bat drains life and heals itself"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/demonic_bat.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Gnoll Fang",
+            "level": 11,
+            "cr": 3,
+            "type": "extraplanar",
+            "hit_points": 45,
+            "to_hit": 6,
+            "ac": 13,
+            "move": 6,
+            "dam": "2d6+1",
+            "vulnerabilities": ["holy"],
+            "resistances": ["fire", "cold", "lightning"],
+            "immunities": ["poison"],
+            "special_abilities": [],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/demon_gnoll.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Bone Devil",
+            "level": 13,
+            "cr": 4,
+            "type": "extraplanar",
+            "hit_points": 65,
+            "to_hit": 7,
+            "ac": 15,
+            "move": 6,
+            "dam": "2d8+2",
+            "vulnerabilities": ["holy"],
+            "resistances": ["fire", "cold", "lightning"],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "fear",
+                    "chance": 0.3,
+                    "effect": "paralysis",
+                    "duration": 2,
+                    "description": "The devil's terrifying presence freezes its victims"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/bone_devil.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Ice Devil",
+            "level": 15,
+            "cr": 4,
+            "type": "extraplanar",
+            "hit_points": 70,
+            "to_hit": 8,
+            "ac": 16,
+            "move": 6,
+            "dam": "2d8+2",
+            "vulnerabilities": ["holy"],
+            "resistances": ["fire", "cold", "lightning"],
+            "immunities": ["cold", "poison"],
+            "special_abilities": [
+                {
+                    "name": "elemental_aura",
+                    "damage": 4,
+                    "damage_type": "cold",
+                    "description": "The devil's icy body damages those nearby"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/ice_devil.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Vrock",
+            "level": 16,
+            "cr": 4,
+            "type": "extraplanar",
+            "hit_points": 75,
+            "to_hit": 8,
+            "ac": 16,
+            "move": 7,
+            "dam": "2d8+3",
+            "vulnerabilities": ["holy"],
+            "resistances": ["fire", "cold", "lightning"],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "poison",
+                    "chance": 0.5,
+                    "damage": 4,
+                    "duration": 5,
+                    "description": "The vrock releases toxic spores"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/vrock.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Marilith",
+            "level": 18,
+            "cr": 5,
+            "type": "extraplanar",
+            "hit_points": 85,
+            "to_hit": 9,
+            "ac": 18,
+            "move": 6,
+            "dam": "2d8+4",
+            "vulnerabilities": ["holy"],
+            "resistances": ["fire", "cold", "lightning"],
+            "immunities": ["poison"],
+            "special_abilities": [
+                {
+                    "name": "multiple_attacks",
+                    "attacks": 6,
+                    "description": "The marilith can make up to 6 attacks with its arms"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/marilith.jpg",
+                "dead": ""
+            }
+        },
+        {
+            "name": "Pit Fiend",
+            "level": 20,
+            "cr": 5,
+            "type": "extraplanar",
+            "hit_points": 100,
+            "to_hit": 10,
+            "ac": 20,
+            "move": 6,
+            "dam": "3d8+5",
+            "vulnerabilities": ["holy"],
+            "resistances": ["fire", "cold", "lightning"],
+            "immunities": ["fire", "poison"],
+            "special_abilities": [
+                {
+                    "name": "spellcasting",
+                    "spells": ["fireball", "darkness", "summon_lesser_devil"],
+                    "description": "The pit fiend is a powerful spellcaster"
+                }
+            ],
+            "sprites": {
+                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/pit_fiend.jpg",
+                "dead": ""
+            }
+        }
+    ]
+}

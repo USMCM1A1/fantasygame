@@ -1,0 +1,90 @@
+{
+  "classes": [
+    {
+      "name": "Warrior",
+      "allowed_races": [
+        "Human",
+        "Dwarf"
+      ],
+      "hit_die": 10,
+      "spell_points": {
+        "base": 0,
+        "per_level": 0
+      },
+      "abilities": {
+        "strength": {
+          "bonus_per_level": [3, 6, 9, 12, 15, 18, 19, 20]
+        },
+        "dexterity": {},
+        "constitution": {},
+        "intelligence": {},
+        "wisdom": {}
+      },
+      "specializations": [
+        {
+          "name": "Barbarian",
+          "level": 15
+        },
+        {
+          "name": "Knight",
+          "level": 15
+        }
+      ]
+    },
+    {
+      "name": "Wizard",
+      "allowed_races": [
+        "High Elf",
+        "Wood Elf",
+        "Halfling",
+        "Dwarf",
+        "Human"
+      ],
+      "hit_die": 4,
+      "spell_points": {
+        "base": 4,
+        "per_level": 1
+      },
+      "abilities": {
+        "strength": {},
+        "dexterity": {},
+        "constitution": {},
+        "intelligence": {
+          "bonus_per_level": [3, 6, 9, 12, 15, 18, 19, 20]
+        },
+        "wisdom": {}
+      },
+      "specializations": [
+        {
+          "name": "Conjurer",
+          "level": 15
+        },
+        {
+          "name": "Demonologist",
+          "level": 15
+        }
+      ]
+    }
+  ],
+  "races": [
+    {
+      "name": "High Elf",
+      "bonuses": {
+        "intelligence": 1
+      },
+      "allowed_classes": [
+        "Wizard",
+        "Spell Blade"
+      ]
+    },
+    {
+      "name": "Wood Elf",
+      "bonuses": {
+        "dexterity": 1
+      },
+      "allowed_classes": [
+        "Archer"
+      ]
+    }
+  ]
+}

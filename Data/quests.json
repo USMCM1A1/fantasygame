@@ -1,0 +1,23 @@
+{
+    "quests": [
+        {
+            "id": "quest_1",
+            "name": "The Lost Relic",
+            "description": "Retrieve the ancient relic from the depths of the Caverns of Chaos.",
+            "objectives": [
+                "Enter the dungeon",
+                "Defeat the Skeleton in room_1",
+                "Locate the hidden chamber",
+                "Retrieve the relic"
+            ],
+            "rewards": {
+                "experience": 100,
+                "items": ["Ancient Relic"]
+            },
+            "dialogue": {
+                "start": "A mysterious stranger approaches you with a quest.",
+                "complete": "You have done well, hero. The relic is now safe."
+            }
+        }
+    ]
+}

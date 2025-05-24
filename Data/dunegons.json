@@ -1,0 +1,31 @@
+{
+    "dungeons": [
+        {
+            "id": "dungeon_1",
+            "name": "Caverns of Chaos",
+            "rooms": [
+                {
+                    "id": "room_1",
+                    "description": "A dark entrance hall with flickering torches.",
+                    "connections": ["room_2", "room_3"],
+                    "monsters": ["Skeleton"],
+                    "items": []
+                },
+                {
+                    "id": "room_2",
+                    "description": "A narrow corridor filled with eerie sounds.",
+                    "connections": ["room_1", "room_4"],
+                    "monsters": [],
+                    "items": ["Health Potion"]
+                },
+                {
+                    "id": "room_3",
+                    "description": "A small chamber littered with bones and remnants of past battles.",
+                    "connections": ["room_1"],
+                    "monsters": ["Goblin"],
+                    "items": []
+                }
+            ]
+        }
+    ]
+}

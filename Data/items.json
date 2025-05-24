@@ -1,0 +1,310 @@
+{
+    "item_categories": {
+        "weapon": {
+            "equipment_slot": "weapon",
+            "subtypes": {
+                "weapon_light_blade": {
+                    "display_name": "Light Blade",
+                    "description": "Light bladed weapons like daggers and short swords",
+                    "damage_type": "slashing",
+                    "typical_damage": "1d4 to 1d6"
+                },
+                "weapon_med_blade": {
+                    "display_name": "Medium Blade",
+                    "description": "Medium bladed weapons like long swords and scimitars",
+                    "damage_type": "slashing",
+                    "typical_damage": "1d6 to 1d8"
+                },
+                "weapon_heavy_blade": {
+                    "display_name": "Heavy Blade",
+                    "description": "Heavy bladed weapons like greatswords and claymores",
+                    "damage_type": "slashing",
+                    "typical_damage": "1d10 to 2d6"
+                },
+                "weapon_light_blunt": {
+                    "display_name": "Light Blunt",
+                    "description": "Light blunt weapons like clubs and hammers",
+                    "damage_type": "bludgeoning",
+                    "typical_damage": "1d4 to 1d6"
+                },
+                "weapon_med_blunt": {
+                    "display_name": "Medium Blunt",
+                    "description": "Medium blunt weapons like maces and flails",
+                    "damage_type": "bludgeoning",
+                    "typical_damage": "1d6 to 1d8" 
+                },
+                "weapon_heavy_blunt": {
+                    "display_name": "Heavy Blunt",
+                    "description": "Heavy blunt weapons like warhammers and mauls",
+                    "damage_type": "bludgeoning",
+                    "typical_damage": "1d10 to 2d6"
+                },
+                "weapon_bow": {
+                    "display_name": "Bow",
+                    "description": "Ranged weapons like short bows and long bows",
+                    "damage_type": "piercing",
+                    "typical_damage": "1d6 to 1d8",
+                    "requires_ammo": true
+                }
+            }
+        },
+        "armor": {
+            "equipment_slot": "armor",
+            "subtypes": {
+                "armor_light": {
+                    "display_name": "Light Armor",
+                    "description": "Light armor like leather and padded",
+                    "typical_ac": "1 to 2",
+                    "movement_penalty": false
+                },
+                "armor_med": {
+                    "display_name": "Medium Armor",
+                    "description": "Medium armor like ring mail and chain mail",
+                    "typical_ac": "2 to 3",
+                    "movement_penalty": false
+                },
+                "armor_heavy": {
+                    "display_name": "Heavy Armor",
+                    "description": "Heavy armor like plate mail",
+                    "typical_ac": "3 to 5",
+                    "movement_penalty": true
+                }
+            }
+        },
+        "shield": {
+            "equipment_slot": "shield",
+            "subtypes": {
+                "shield_wooden": {
+                    "display_name": "Wooden Shield",
+                    "description": "Basic wooden shields that provide minimal protection",
+                    "typical_ac": "1"
+                },
+                "shield_metal": {
+                    "display_name": "Metal Shield",
+                    "description": "Metal shields that provide better protection",
+                    "typical_ac": "2"
+                },
+                "shield_tower": {
+                    "display_name": "Tower Shield",
+                    "description": "Large shields that provide significant protection at the cost of mobility",
+                    "typical_ac": "3",
+                    "movement_penalty": true
+                }
+            }
+        },
+        "jewelry": {
+            "equipment_slot": "jewelry",
+            "subtypes": {
+                "jewelry_ring": {
+                    "display_name": "Ring",
+                    "description": "Magical rings that provide various benefits",
+                    "stackable": true,
+                    "max_equipped": 2
+                },
+                "jewelry_amulet": {
+                    "display_name": "Amulet",
+                    "description": "Magical amulets and necklaces",
+                    "stackable": false,
+                    "max_equipped": 1
+                }
+            }
+        },
+        "consumable": {
+            "equipment_slot": "inventory",
+            "subtypes": {
+                "consumable_potion": {
+                    "display_name": "Potion",
+                    "description": "Magical liquids with immediate effects when consumed",
+                    "stackable": true
+                },
+                "consumable_scroll": {
+                    "display_name": "Scroll",
+                    "description": "Magical scrolls with one-time spell effects",
+                    "stackable": false
+                }
+            }
+        },
+        "tool": {
+            "equipment_slot": "inventory",
+            "subtypes": {
+                "tool_lockpick": {
+                    "display_name": "Lockpicks",
+                    "description": "Tools for opening locks",
+                    "stackable": false
+                },
+                "tool_crafting": {
+                    "display_name": "Crafting Tools",
+                    "description": "Tools for crafting items",
+                    "stackable": false
+                }
+            }
+        }
+    },
+    "items": [
+        {
+            "name": "Iron Sword (1d6-1)",
+            "type": "weapon_med_blade",
+            "damage": "1d6-1",
+            "value": 50,
+            "description": "A reliable sword that deals moderate damage.",
+            "weight": 3,
+            "durability": 100
+        },
+        {
+            "name": "Iron Dagger (1d4-1)",
+            "type": "weapon_light_blade",
+            "damage": "1d4-1",
+            "value": 50,
+            "description": "A small but deadly dagger that strikes quickly.",
+            "weight": 1,
+            "durability": 50
+        },
+        {
+            "name": "Iron Mace (1d6-1)",
+            "type": "weapon_med_blunt",
+            "damage": "1d6-1",
+            "value": 50,
+            "description": "A reliable mace that deals moderate damage.",
+            "weight": 4,
+            "durability": 120
+        },
+        {
+            "name": "Basic Shortbow (1d6)",
+            "type": "weapon_bow",
+            "damage": "1d6",
+            "range": 4,
+            "value": 50,
+            "description": "A simple shortbow with a range of 4 tiles.",
+            "weight": 2,
+            "durability": 80,
+            "requires_ammo": true,
+            "ammo_type": "arrow"
+        },
+        {
+            "name": "Basic Longbow (1d8)",
+            "type": "weapon_bow",
+            "damage": "1d8",
+            "range": 6,
+            "value": 100,
+            "description": "A sturdy longbow with a range of 6 tiles.",
+            "weight": 3,
+            "durability": 90,
+            "requires_ammo": true,
+            "ammo_type": "arrow",
+            "requirements": {
+                "min_level": 1,
+                "min_abilities": {
+                    "dexterity": 12
+                },
+                "allowed_classes": ["Archer"],
+                "proficiency_required": true
+            }
+        },
+        {
+            "name": "Wooden Shield AC (+1)",
+            "type": "shield_wooden",
+            "ac": 1,
+            "value": 40,
+            "description": "A basic shield offering minimal protection.",
+            "weight": 4,
+            "durability": 50
+        },
+        {
+            "name": "Leather Armor (AC +1)",
+            "type": "armor_light",
+            "ac": 1,
+            "value": 40,
+            "description": "Basic light armor.",
+            "weight": 5,
+            "durability": 60
+        },
+        {
+            "name": "Ring Mail (AC +2)",
+            "type": "armor_med",
+            "ac": 2,
+            "value": 100,
+            "description": "Basic medium armor.",
+            "weight": 15,
+            "durability": 80
+        },
+        {
+            "name": "Chain Mail (AC +3)",
+            "type": "armor_heavy",
+            "ac": 3,
+            "value": 100,
+            "description": "Basic heavy armor.",
+            "weight": 30,
+            "durability": 100,
+            "movement_penalty": 1,
+            "requirements": {
+                "min_level": 3,
+                "min_abilities": {
+                    "strength": 14
+                },
+                "allowed_classes": ["Warrior", "Priest"]
+            }
+        },
+        {
+            "name": "Spell Ring (+1)",
+            "type": "jewelry_ring",
+            "sp": 1,
+            "value": 40,
+            "description": "A magical ring that gives extra spell points.",
+            "weight": 0.1,
+            "durability": 100,
+            "magical": true,
+            "effect": {
+                "type": "stat_bonus",
+                "stat": "spell_points",
+                "value": 1
+            }
+        },
+        {
+            "name": "Necklace of Intellect (+1)",
+            "type": "jewelry_amulet",
+            "intelligence": 1,
+            "value": 100,
+            "description": "A magical necklace that makes you smarter.",
+            "weight": 0.2,
+            "durability": 100,
+            "magical": true,
+            "effect": {
+                "type": "stat_bonus",
+                "stat": "intelligence",
+                "value": 1
+            },
+            "requirements": {
+                "min_level": 2,
+                "min_abilities": {
+                    "intelligence": 10
+                },
+                "allowed_classes": ["Wizard", "Mage", "Priest", "Spellblade"]
+            }
+        },
+        {
+            "name": "Health Potion",
+            "type": "consumable_potion",
+            "effect": {
+                "type": "healing",
+                "dice": "1d8"
+            },
+            "value": 20,
+            "description": "A straw colored potion that restores a small amount of health.",
+            "weight": 0.5,
+            "stackable": true,
+            "max_stack": 5
+        },
+        {
+            "name": "Thieve's Tools",
+            "type": "tool_lockpick",
+            "value": 15,
+            "description": "A set of fine picks and tension wrenches necessary for lockpicking.",
+            "weight": 1,
+            "durability": 30,
+            "bonus": {
+                "skill": "lockpicking",
+                "value": 2
+            }
+        }
+    ]
+}
