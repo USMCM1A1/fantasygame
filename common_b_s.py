@@ -14,6 +14,7 @@ import import_ipynb
 import random
 import re
 from copy import deepcopy
+from Data.condition_system import condition_manager
 
 # === Pygame Initialization Constants ===
 pygame.init()
@@ -1959,6 +1960,7 @@ def save_game(player, dungeon, game_state="dungeon"):
             "player": player_data,
             "dungeon": dungeon_data,
             "game_state": game_state,
+            "condition_manager_turn": condition_manager.current_turn,
             "timestamp": datetime.datetime.now().isoformat(),
             "version": "1.0"
         }
@@ -1995,6 +1997,8 @@ def load_game():
         # Read the save file
         with open(save_file, 'r') as f:
             save_data = json.load(f)
+            
+        saved_condition_manager_turn = save_data.get("condition_manager_turn", 0)
             
         # Extract data components
         player_data = save_data.get("player", {})
@@ -2127,7 +2131,7 @@ def load_game():
         }
                 
         print(f"Game loaded successfully from {save_file}")
-        return (player, dungeon, game_state)
+        return (player, dungeon, game_state, saved_condition_manager_turn)
         
     except Exception as e:
         print(f"Error loading game: {e}")

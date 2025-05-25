@@ -1937,8 +1937,17 @@ if title_choice == "load_game":
     
     if loaded_data:
         print("Found saved game - loading it")
-        player, dungeon_data, game_state = loaded_data
+        player, dungeon_data, game_state, saved_cm_turn = loaded_data # Unpack the four values
         common_b_s.in_dungeon = (game_state == "dungeon")
+        
+        # Player object is created/returned by load_game.
+        # Dungeon object is reconstructed from dungeon_data dictionary after this.
+        # (Code for dungeon reconstruction follows...)
+
+        # >>> Add these lines <<<
+        from Data.condition_system import condition_manager
+        condition_manager.current_turn = saved_cm_turn
+        # >>> End of added lines <<<
         
         # Check if dungeon_data is a dictionary (new format) or a Dungeon instance (old format)
         if isinstance(dungeon_data, dict):
@@ -2062,7 +2071,7 @@ if title_choice == "load_game":
         
         # Use the saved player
         player_initialized = True
-        add_message(f"Welcome back, {player.name}! Your game has been loaded.")
+        add_message(f"Welcome back, {player.name}! Your game has been loaded. CM Turn: {condition_manager.current_turn}", category=MessageCategory.SYSTEM)
     else:
         # Fallback if load fails
         print("Failed to load saved game - creating new character")
