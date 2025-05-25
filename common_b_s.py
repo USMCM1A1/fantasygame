@@ -2985,6 +2985,13 @@ def handle_monster_turn(monster, player, dungeon):
     if monster.hit_points <= 0:
         return  # Dead monsters do nothing
 
+    # Check if the monster can take actions (e.g., not paralyzed or stunned)
+    if hasattr(monster, 'can_take_actions') and not monster.can_take_actions():
+        # Optionally, get a more specific message if the condition itself provides one
+        # For now, a generic message is fine.
+        add_message(f"{monster.name} is unable to act!", ORANGE) # ORANGE color is (255, 165, 0)
+        return 
+
     # Handle frost slow effect if present
     if hasattr(monster, 'slow_turns_remaining') and monster.slow_turns_remaining > 0:
         # Decrease remaining turns of the slow effect

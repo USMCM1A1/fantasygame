@@ -521,11 +521,24 @@ class ConditionManager:
         Returns:
             str: Message describing the effect
         """
+        # --- Add this log line ---
+        logger.debug(f"ConditionManager (id: {id(self)}) apply_condition: current_turn before assignment is {self.current_turn} for condition {condition.name} on {target.name if hasattr(target, 'name') else 'Unknown Target'}")
+        # --- End of added log line ---
+        
         # Set the application turn
         condition.applied_at_turn = self.current_turn
         
-        # Apply the condition
-        return condition.apply(target)
+        result_message = condition.apply(target) # Store result of apply
+
+        # --- Add this log line ---
+        if hasattr(target, 'conditions'):
+            target_conditions_info = [(c.name, id(c), c.duration, c.applied_at_turn) for c in target.conditions]
+            logger.debug(f"ConditionManager (id: {id(self)}) apply_condition: Conditions on {target.name if hasattr(target, 'name') else 'Unknown Target'} after applying {condition.name} (id: {id(condition)}): {target_conditions_info}")
+        else:
+            logger.debug(f"ConditionManager (id: {id(self)}) apply_condition: Target {target.name if hasattr(target, 'name') else 'Unknown Target'} has no conditions list after applying {condition.name} (id: {id(condition)}).")
+        # --- End of added log line ---
+            
+        return result_message
     
     def process_turn(self, targets=None):
         """
@@ -564,11 +577,16 @@ class ConditionManager:
         # Process each target's conditions
         for target in targets:
             if not hasattr(target, 'conditions'):
+                # logger.debug(f"Target {target.name if hasattr(target, 'name') else 'Unknown Target'} has no conditions list to process.")
                 continue
                 
-            # Process each condition
+            # --- Add this log line ---
+            target_conditions_info = [(c.name, id(c), c.duration, c.applied_at_turn) for c in target.conditions]
+            logger.debug(f"ConditionManager (id: {id(self)}) process_turn (turn {self.current_turn}): Processing conditions for {target.name if hasattr(target, 'name') else 'Unknown Target'}. Current conditions: {target_conditions_info}")
+            # --- End of added log line ---
+
             updated_conditions = []
-            for condition in target.conditions:
+            for condition in target.conditions: # Iterate on a copy if modifying
                 # Process turn effects
                 message = condition.process_turn(target, self.current_turn)
                 if message:
