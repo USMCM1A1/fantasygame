@@ -18,18 +18,16 @@ import sys
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(DATA_DIR)
 
-if DATA_DIR not in sys.path:
-    sys.path.insert(0, DATA_DIR)
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 # --- End Path Setup ---
 
 # Module-level imports using the adjusted path
-import spell_helpers # Should resolve to Data.spell_helpers
-from condition_system import condition_manager, Condition, ConditionType # Should resolve to Data.condition_system
+from . import spell_helpers
+from .condition_system import condition_manager, Condition, ConditionType
 import common_b_s # Should resolve to common_b_s in root
-import targeting_system # Should resolve to Data.targeting_system
-import condition_bridge # Should resolve to Data.condition_bridge
+from . import targeting_system
+from . import condition_bridge
 
 
 # Set up logging
