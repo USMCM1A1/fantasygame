@@ -12,10 +12,9 @@ import os
 import sys
 
 # Add relative path for imports
-sys.path.append(os.path.dirname(__file__))
-from spell_helpers import *
-from spell_system import cast_spell as new_cast_spell
-from effect_manager import effect_manager
+from .spell_helpers import *
+from .spell_system import cast_spell as new_cast_spell
+from .effect_manager import effect_manager
 
 # Set up logging
 logger = logging.getLogger(__name__)
