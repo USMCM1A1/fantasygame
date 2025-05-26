@@ -8,7 +8,7 @@ allowing spells to apply and remove status conditions.
 """
 
 import logging
-from condition_system import (
+from .condition_system import (
     ConditionType, Condition, condition_manager,
     apply_poison, apply_paralysis, apply_curse, apply_protection,
     apply_stun, apply_poison_immunity
