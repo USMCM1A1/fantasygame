@@ -127,6 +127,7 @@ logging.basicConfig(
     filename="game_debug.log",
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
+logger = logging.getLogger(__name__) # Module-level logger
 # Create a logger specifically for our test arena functionality
 test_arena_logger = logging.getLogger("test_arena")
 test_arena_logger.setLevel(logging.DEBUG)
@@ -1422,6 +1423,7 @@ def process_game_turn(player, dungeon):
     Returns:
         None (messages are added directly to the message queue)
     """
+    logger.info(f"blade_sigil_v5_5.process_game_turn: Using condition_manager (id: {id(condition_manager)}) with current_turn: {condition_manager.current_turn}")
     # Process all active conditions on player and monsters
     condition_messages = condition_manager.process_turn([player] + dungeon.monsters)
     

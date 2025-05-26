@@ -10,7 +10,6 @@ import json
 import os
 import sys
 import logging
-import import_ipynb
 import random
 import re
 from copy import deepcopy
