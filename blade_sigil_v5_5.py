@@ -40,7 +40,7 @@ pygame.mixer.init()
 # Import from common_b_s
 import common_b_s
 # Import condition system
-from Data.condition_system import condition_manager
+from Data.condition_system import condition_manager, ConditionType
 
 # Reset condition manager's turn counter at the start of the game
 condition_manager.current_turn = 0
@@ -2931,7 +2931,19 @@ while running:
                     # Process monster turns
                     for monster in game_dungeon.monsters:
                         if monster.hit_points > 0:
-                            print(f"Processing {monster.name}'s turn.")
+                            # Check if monster is poisoned before calling handle_monster_turn
+                            is_poisoned = False
+                            if hasattr(monster, 'conditions') and monster.conditions:
+                                for cond in monster.conditions:
+                                    if cond.condition_type == ConditionType.POISONED:
+                                        is_poisoned = True
+                                        break
+                            if is_poisoned:
+                                logging.debug(f"Monster {monster.name} is POISONED. Starting its turn. Calling handle_monster_turn.")
+                            
+                            # Original print statement, can be kept or removed based on preference
+                            # print(f"Processing {monster.name}'s turn.") 
+                            logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}). Calling handle_monster_turn.")
                             handle_monster_turn(monster, player, game_dungeon)
 
             # === PLAYER SHOOTS AN ARROW (ARCHER) ===
@@ -2952,7 +2964,17 @@ while running:
                 # Process monster turns
                 for monster in game_dungeon.monsters:
                     if monster.hit_points > 0:
-                        logging.debug(f"Processing {monster.name}'s turn.")
+                        # Check if monster is poisoned before calling handle_monster_turn
+                        is_poisoned = False
+                        if hasattr(monster, 'conditions') and monster.conditions:
+                            for cond in monster.conditions:
+                                if cond.condition_type == ConditionType.POISONED:
+                                    is_poisoned = True
+                                    break
+                        if is_poisoned:
+                            logging.debug(f"Monster {monster.name} is POISONED. Starting its turn (after player action). Calling handle_monster_turn.")
+                        
+                        logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}) after player action. Calling handle_monster_turn.")
                         handle_monster_turn(monster, player, game_dungeon)
 
     # === DRAW GAME STATE ===
