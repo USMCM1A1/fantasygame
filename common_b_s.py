@@ -2990,7 +2990,8 @@ def handle_monster_turn(monster, player, dungeon):
         else:
             # Fallback logging if add_message is somehow not available
             logging.warning(f"add_message not found. Monster {monster.name} incapacitated message not shown to player.")
-        monster._was_incapacitated_this_turn = False # Reset the flag for the next turn
+        # The flag _was_incapacitated_this_turn will now be reset by ConditionManager.process_turn
+        # at the start of the next full game turn cycle for this monster.
         return # Monster skips its turn
 
     logging.debug(f"--- Handling turn for monster: {monster.name} ---")
