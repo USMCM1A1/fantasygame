@@ -377,13 +377,12 @@ class ConditionManager:
             # This flag should persist for the whole turn's logic even if the condition itself expires mid-processing.
             for c_obj_check in target.conditions: 
                 if c_obj_check.condition_type == ConditionType.PARALYZED or c_obj_check.condition_type == ConditionType.STUNNED:
-                    # We also need to ensure the condition isn't already expired at the very start of this turn processing.
-                    # The process_turn for the condition itself will handle its removal if it expires.
-                    # Here, we just check if it *was* active at the moment condition processing began for this target.
-                    if not c_obj_check.is_expired(self.current_turn): # Check if it's actually active now
-                        target._was_incapacitated_this_turn = True
-                        logger.debug(f"Target {target_name_for_log} was initially incapacitated by {c_obj_check.name} in turn {self.current_turn}. Setting _was_incapacitated_this_turn = True")
-                        break # Found one, no need to check further for this initial scan
+                    # If a PARALYZED or STUNNED condition is present in the list at this point,
+                    # it means it was active at the end of the last turn or applied this turn.
+                    # It should therefore incapacitate for the current turn's actions, even if it expires now.
+                    target._was_incapacitated_this_turn = True
+                    logger.debug(f"Target {target_name_for_log} was initially incapacitated by {c_obj_check.name} in turn {self.current_turn} because the condition is present at the start of processing. Setting _was_incapacitated_this_turn = True")
+                    break # Found one, no need to check further for this initial scan
             
             # Log conditions on target *before* processing them for this turn
             target_conditions_info = [(c.name, id(c), c.duration, c.applied_at_turn) for c in target.conditions]
