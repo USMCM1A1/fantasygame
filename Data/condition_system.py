@@ -359,12 +359,35 @@ class ConditionManager:
         
         for target in targets:
             target_name_for_log = target.name if hasattr(target, 'name') else 'Unknown Target'
+            
+            # Initialize the flag
+            if not hasattr(target, '_was_incapacitated_this_turn'):
+                target._was_incapacitated_this_turn = False
+            else:
+                # Reset if it's a new turn for this target's processing
+                target._was_incapacitated_this_turn = False 
+
             if not hasattr(target, 'conditions') or not target.conditions:
+                # If no conditions, ensure flag is False and continue
+                target._was_incapacitated_this_turn = False
                 continue
+
+            # Check for incapacitating conditions at the START of processing this target's conditions
+            # Iterate once to check initial state. We only care if they *start* the turn incapacitated.
+            # This flag should persist for the whole turn's logic even if the condition itself expires mid-processing.
+            for c_obj_check in target.conditions: 
+                if c_obj_check.condition_type == ConditionType.PARALYZED or c_obj_check.condition_type == ConditionType.STUNNED:
+                    # We also need to ensure the condition isn't already expired at the very start of this turn processing.
+                    # The process_turn for the condition itself will handle its removal if it expires.
+                    # Here, we just check if it *was* active at the moment condition processing began for this target.
+                    if not c_obj_check.is_expired(self.current_turn): # Check if it's actually active now
+                        target._was_incapacitated_this_turn = True
+                        logger.debug(f"Target {target_name_for_log} was initially incapacitated by {c_obj_check.name} in turn {self.current_turn}. Setting _was_incapacitated_this_turn = True")
+                        break # Found one, no need to check further for this initial scan
             
             # Log conditions on target *before* processing them for this turn
             target_conditions_info = [(c.name, id(c), c.duration, c.applied_at_turn) for c in target.conditions]
-            logger.debug(f"ConditionManager (id: {id(self)}) process_turn (turn {self.current_turn}): Processing conditions for {target_name_for_log}. Current conditions: {target_conditions_info}")
+            logger.debug(f"ConditionManager (id: {id(self)}) process_turn (turn {self.current_turn}): Processing conditions for {target_name_for_log}. Current conditions: {target_conditions_info}, Was Incapacitated Flag: {getattr(target, '_was_incapacitated_this_turn', 'Not set')}")
             
             updated_conditions = []
             for c_obj in list(target.conditions): 

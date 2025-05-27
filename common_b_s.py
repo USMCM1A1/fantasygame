@@ -2981,6 +2981,18 @@ def get_monster_info(monster_name, monsters_data):
     return None
 
 def handle_monster_turn(monster, player, dungeon):
+    # Check if the monster was incapacitated at the start of its turn processing
+    if getattr(monster, '_was_incapacitated_this_turn', False):
+        logging.debug(f"Monster {monster.name} was incapacitated at the start of this turn. Skipping action.")
+        # ORANGE is globally defined, add_message should also be globally available
+        if 'add_message' in globals() and callable(globals()['add_message']):
+            add_message(f"{monster.name} is still recovering and cannot act this turn.", ORANGE)
+        else:
+            # Fallback logging if add_message is somehow not available
+            logging.warning(f"add_message not found. Monster {monster.name} incapacitated message not shown to player.")
+        monster._was_incapacitated_this_turn = False # Reset the flag for the next turn
+        return # Monster skips its turn
+
     logging.debug(f"--- Handling turn for monster: {monster.name} ---")
     can_act = True
     if monster.hit_points <= 0:
