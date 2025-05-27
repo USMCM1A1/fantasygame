@@ -2930,7 +2930,7 @@ while running:
                         
                     # Process monster turns
                     for monster in game_dungeon.monsters:
-                        if monster.hit_points > 0:
+                        if monster.hit_points > 0 or getattr(monster, 'pending_death_from_dot', False):
                             # Check if monster is poisoned before calling handle_monster_turn
                             is_poisoned = False
                             if hasattr(monster, 'conditions') and monster.conditions:
@@ -2941,10 +2941,20 @@ while running:
                             if is_poisoned:
                                 logging.debug(f"Monster {monster.name} is POISONED. Starting its turn. Calling handle_monster_turn.")
                             
-                            # Original print statement, can be kept or removed based on preference
-                            # print(f"Processing {monster.name}'s turn.") 
-                            logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}). Calling handle_monster_turn.")
+                            logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}, Pending DoT Death: {getattr(monster, 'pending_death_from_dot', False)}). Calling handle_monster_turn.")
+                            # REMOVED NESTED IF: Monster gets its turn if outer condition is met.
+                            # handle_monster_turn itself should check if the monster can act (e.g. if HP > 0, not stunned, etc.)
                             handle_monster_turn(monster, player, game_dungeon)
+
+                            if getattr(monster, 'pending_death_from_dot', False) and monster.hit_points <= 0:
+                                death_messages = process_monster_death(monster, player, game_dungeon)
+                                if death_messages: 
+                                    for msg in death_messages:
+                                        add_message(msg)
+                                
+                                if hasattr(monster, 'pending_death_from_dot'):
+                                    delattr(monster, 'pending_death_from_dot')
+                                # Monster is now fully processed for death, might be removed from game_dungeon.monsters
 
             # === PLAYER SHOOTS AN ARROW (ARCHER) ===
             elif event.key == pygame.K_a and player.char_class == "Archer":
@@ -2962,8 +2972,8 @@ while running:
                 # So we don't need to process them again here
                     
                 # Process monster turns
-                for monster in game_dungeon.monsters:
-                    if monster.hit_points > 0:
+                for monster in game_dungeon.monsters: # Iterate over a copy if process_monster_death modifies the list
+                    if monster.hit_points > 0 or getattr(monster, 'pending_death_from_dot', False):
                         # Check if monster is poisoned before calling handle_monster_turn
                         is_poisoned = False
                         if hasattr(monster, 'conditions') and monster.conditions:
@@ -2974,8 +2984,20 @@ while running:
                         if is_poisoned:
                             logging.debug(f"Monster {monster.name} is POISONED. Starting its turn (after player action). Calling handle_monster_turn.")
                         
-                        logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}) after player action. Calling handle_monster_turn.")
+                        logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}, Pending DoT Death: {getattr(monster, 'pending_death_from_dot', False)}) after player action. Calling handle_monster_turn.")
+                        # REMOVED NESTED IF: Monster gets its turn if outer condition is met.
+                        # handle_monster_turn itself should check if the monster can act (e.g. if HP > 0, not stunned, etc.)
                         handle_monster_turn(monster, player, game_dungeon)
+                        
+                        if getattr(monster, 'pending_death_from_dot', False) and monster.hit_points <= 0:
+                            death_messages = process_monster_death(monster, player, game_dungeon)
+                            if death_messages:
+                                for msg in death_messages:
+                                    add_message(msg)
+                            
+                            if hasattr(monster, 'pending_death_from_dot'):
+                                delattr(monster, 'pending_death_from_dot')
+                            # Monster is now fully processed for death
 
     # === DRAW GAME STATE ===
     screen.fill(BLACK)

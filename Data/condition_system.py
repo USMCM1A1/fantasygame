@@ -265,7 +265,8 @@ class Condition:
             logger.debug(f"Poison DoT: Generating message: '{log_message_content}' for {target_name_for_log}")
             if target.hit_points <= 0:
                 target.hit_points = 0
-                if hasattr(target, 'is_dead'): target.is_dead = True
+                # if hasattr(target, 'is_dead'): target.is_dead = True # Deferred to main game loop
+                target.pending_death_from_dot = True
                 death_message_content = f"{target_name_for_log} takes {damage} poison damage and dies!"
                 logger.debug(f"Poison DoT: Generating message: '{death_message_content}' for {target_name_for_log} (death)")
                 return death_message_content
@@ -279,7 +280,8 @@ class Condition:
             target.hit_points -= damage
             if target.hit_points <= 0:
                 target.hit_points = 0
-                if hasattr(target, 'is_dead'): target.is_dead = True
+                # if hasattr(target, 'is_dead'): target.is_dead = True # Deferred to main game loop
+                target.pending_death_from_dot = True
                 return f"{target_name_for_log} takes {damage} fire damage and dies!"
             return f"{target_name_for_log} takes {damage} fire damage from burning!"
         return None
