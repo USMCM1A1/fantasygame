@@ -647,6 +647,8 @@ class Monster:
         self.special_abilities = kwargs.get('special_abilities', [])
         self.is_dead = False
         self.active_effects = []  # For status effects
+        self.can_move = True
+        self.can_act = True
         
         # Load and scale the live sprite for the monster
         try:
@@ -679,6 +681,10 @@ class Monster:
     def move_towards(self, target, dungeon, is_player=False):
         if self.position is None or target.position is None:
             print(f"{self.name} or target position is None. Cannot move.")
+            return
+
+        if not self.can_move:
+            print(f"Monster {self.name} cannot move because self.can_move is False.")
             return
     
         old_position = self.position.copy()
