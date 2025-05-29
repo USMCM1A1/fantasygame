@@ -147,7 +147,7 @@ class Condition:
         remaining = self.get_remaining_duration(current_turn)
         source_name = self.source.name if self.source and hasattr(self.source, 'name') else 'Unknown Source' # Added check for self.source
         logger.debug(f"Condition {self.name} on target (source: {source_name}) has {remaining} turns remaining (applied at {self.applied_at_turn}, current turn {current_turn}, duration {self.duration})")
-        return remaining <= 0
+        return remaining < 0
 
     def _apply_poisoned(self, target): return f"{target.name if hasattr(target, 'name') else 'Unknown Target'} is poisoned and will take damage over time!"
     
