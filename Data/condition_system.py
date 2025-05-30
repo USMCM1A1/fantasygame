@@ -140,7 +140,7 @@ class Condition:
 
     def get_remaining_duration(self, current_turn):
         turns_elapsed = current_turn - self.applied_at_turn
-        return max(0, self.duration - turns_elapsed)
+        return self.duration - turns_elapsed
 
     def is_expired(self, current_turn):
         remaining = self.get_remaining_duration(current_turn)
