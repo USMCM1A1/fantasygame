@@ -178,38 +178,58 @@ def character_creation_screen(screen, clock):
                             name_input_active = False 
                         elif not help_text_area_rect.collidepoint(mouse_pos): 
                             show_help_text = False
-                    else:
-                        if name_input_rect.collidepoint(mouse_pos):
-                            name_input_active = True
-                        else:
-                            name_input_active = False 
+                    else: # This is when show_help_text is False
+                        # Determine what was clicked and manage name_input_active state
                         
-                        if roll_button_rect.collidepoint(mouse_pos):
+                        # Default to deactivating name input unless the name input field itself is clicked
+                        # This handles clicks on non-interactive areas.
+                        # If a button is clicked, it will explicitly set name_input_active = False.
+                        
+                        clicked_on_name_input = name_input_rect.collidepoint(mouse_pos)
+                        
+                        if clicked_on_name_input:
+                            name_input_active = True
+                        # Roll Button
+                        elif roll_button_rect.collidepoint(mouse_pos):
                             current_stats = {name: roll_ability_helper() for name in ability_names}
                             stats_rolled = True
                             stats_accepted = False 
                             print("Rerolled stats:", current_stats) 
-                        
+                            name_input_active = False
+                        # Accept Stats Button
                         elif accept_button_rect.collidepoint(mouse_pos) and stats_rolled:
                             stats_accepted = not stats_accepted 
                             if stats_accepted: print("Stats accepted:", current_stats)
                             else: print("Stats un-accepted.")
-                        
-                        for race_name, rect in race_buttons.items():
-                            if rect.collidepoint(mouse_pos):
-                                selected_race = race_name
-                                print(f"Race selected: {selected_race}")
-                                break 
-                        
-                        for class_name, rect in class_buttons.items():
-                            if rect.collidepoint(mouse_pos):
-                                selected_class = class_name
-                                print(f"Class selected: {selected_class}")
-                                break
-
+                            name_input_active = False
+                        # Help Button (main help)
                         elif help_button_rect.collidepoint(mouse_pos):
-                            show_help_text = not show_help_text
+                            show_help_text = not show_help_text # Toggle help
                             name_input_active = False 
+                        # If none of the main action buttons were clicked, check selection buttons (Race/Class)
+                        else:
+                            race_button_clicked = False
+                            for race_name, rect in race_buttons.items():
+                                if rect.collidepoint(mouse_pos):
+                                    selected_race = race_name
+                                    print(f"Race selected: {selected_race}")
+                                    name_input_active = False
+                                    race_button_clicked = True
+                                    break 
+                            
+                            if not race_button_clicked: # Only check class if a race wasn't clicked
+                                class_button_clicked = False
+                                for class_name, rect in class_buttons.items():
+                                    if rect.collidepoint(mouse_pos):
+                                        selected_class = class_name
+                                        print(f"Class selected: {selected_class}")
+                                        name_input_active = False
+                                        class_button_clicked = True
+                                        break
+                                # If no button was clicked at all (neither main action nor selection)
+                                # and it wasn't a click on the name input field itself, then deactivate name input.
+                                if not race_button_clicked and not class_button_clicked and not clicked_on_name_input:
+                                    name_input_active = False
 
         screen.fill(BLACK)
         if background_image:
