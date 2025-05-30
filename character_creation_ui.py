@@ -67,6 +67,7 @@ def character_creation_screen(screen, clock):
     font_height = font.get_height()
     padding = 20
     input_field_height = font_height + 10
+    input_field_width = 280  # DEFINED HERE
     button_width = 180 # Made buttons slightly wider
     button_height = font_height + 20
 
@@ -76,7 +77,7 @@ def character_creation_screen(screen, clock):
 
     # Column X positions (relative to actual_screen_width for responsiveness)
     column_1_x = int(actual_screen_width * 0.05) # Name, Stats
-    column_2_x = int(actual_screen_width * 0.40) # Dice, Race
+    column_2_x = int(actual_screen_width * 0.40) # Dice, Race # Adjusted from 0.45
     column_3_x = column_2_x + button_width + padding * 3 # Class (to the right of Race)
 
     # Name Input (shifted)
@@ -88,7 +89,7 @@ def character_creation_screen(screen, clock):
     ability_rects = {}
     current_y_offset_for_stats = stats_title_y + font_height + padding // 2
     for i, name in enumerate(ability_names):
-        label_rect = pygame.Rect(column_1_x, current_y_offset_for_stats + i * (input_field_height + padding // 2), input_field_width // 2, input_field_height)
+        label_rect = pygame.Rect(column_1_x, current_y_offset_for_stats + i * (input_field_height + padding // 2), input_field_width // 2, input_field_height) # input_field_width used here
         value_rect = pygame.Rect(column_1_x + input_field_width // 2 + padding // 2, current_y_offset_for_stats + i * (input_field_height + padding // 2), input_field_width // 2 - padding // 2, input_field_height)
         ability_rects[name] = {"label": label_rect, "value": value_rect}
 
@@ -239,9 +240,9 @@ def character_creation_screen(screen, clock):
 
         # Draw Title (respects ui_top_banner_height, uses aliased SCREEN_WIDTH from HUB for centering within that banner area)
         title_text_surface = font.render("Character Creation", True, WHITE)
-        title_x = (SCREEN_WIDTH - title_text_surface.get_width()) // 2 # Centering based on HUB_SCREEN_WIDTH for banner
+        # Centering title based on aliased SCREEN_WIDTH (HUB width) for banner consistency
+        title_x = (SCREEN_WIDTH - title_text_surface.get_width()) // 2
         draw_text(screen, "Character Creation", WHITE, title_x, padding)
-
 
         # Name Input - uses name_label_y and name_input_rect which are now correctly shifted
         draw_text(screen, "Character Name:", WHITE, name_input_rect.x, name_label_y)
@@ -252,16 +253,16 @@ def character_creation_screen(screen, clock):
         # Stats Section - uses stats_title_y and ability_rects which are now correctly shifted
         draw_text(screen, "Ability Scores:", WHITE, column_1_x, stats_title_y)
         if stats_rolled:
-            for name in ability_names:
-                label_r, value_r = ability_rects[name]["label"], ability_rects[name]["value"]
-                draw_text(screen, f"{name}:", WHITE, label_r.x, label_r.y + 5)
+            for name_val in ability_names: # renamed name to name_val to avoid conflict
+                label_r, value_r = ability_rects[name_val]["label"], ability_rects[name_val]["value"]
+                draw_text(screen, f"{name_val}:", WHITE, label_r.x, label_r.y + 5)
                 pygame.draw.rect(screen, DARK_GRAY, value_r)
                 pygame.draw.rect(screen, WHITE, value_r, 1)
-                draw_text(screen, str(current_stats[name]), WHITE, value_r.x + 5, value_r.y + 5)
+                draw_text(screen, str(current_stats[name_val]), WHITE, value_r.x + 5, value_r.y + 5)
         else:
-            for name in ability_names:
-                label_r, value_r = ability_rects[name]["label"], ability_rects[name]["value"]
-                draw_text(screen, f"{name}:", WHITE, label_r.x, label_r.y + 5)
+            for name_val in ability_names: # renamed name to name_val
+                label_r, value_r = ability_rects[name_val]["label"], ability_rects[name_val]["value"]
+                draw_text(screen, f"{name_val}:", WHITE, label_r.x, label_r.y + 5)
                 pygame.draw.rect(screen, DARK_GRAY, value_r)
                 pygame.draw.rect(screen, WHITE, value_r, 1)
                 draw_text(screen, "0", LIGHT_GRAY, value_r.x + 5, value_r.y + 5)
@@ -286,39 +287,37 @@ def character_creation_screen(screen, clock):
             pygame.draw.rect(screen, LIGHT_GRAY, dice_display_actual_rect)
             draw_text(screen, "Dice", BLACK, dice_display_actual_rect.centerx - font.size("Dice")[0]//2, dice_display_actual_rect.centery - font_height//2)
 
-        # Race Selection (uses race_section_y_start, current_race_y_for_buttons, column_2_x)
+        # Race Selection (uses race_section_y_start, column_2_x and dynamically calculated button Ys)
         draw_text(screen, "Select Race:", WHITE, column_2_x, race_section_y_start)
-        # current_race_y_for_buttons was initialized before loop, use it directly for button rects
-        for name_idx, race_name_val in enumerate(race_names): # Use a different name to avoid conflict
-            button_rect = race_buttons[race_name_val] # Get the rect that was defined with Y positions in the init phase
+        # current_race_y_for_buttons was used for init, now use the stored rects from race_buttons
+        for race_name_val in race_names:
+            button_rect = race_buttons[race_name_val]
             highlight = (selected_race == race_name_val)
             btn_color = GREEN if highlight else BLUE
             pygame.draw.rect(screen, btn_color, button_rect)
             pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2)
-            draw_text(screen, race_name_val, BLACK, button_rect.centerx - font.size(race_name_val)[0]//2, button_rect.centery - font_height//2.5) # Centered text
+            draw_text(screen, race_name_val, BLACK, button_rect.centerx - font.size(race_name_val)[0]//2, button_rect.centery - font_height//2 + (button_rect.height - font_height)//2 ) # Better centering for variable height buttons
 
         # Race Help Text Display
-        # actual_race_help_text_y_start needs to be calculated based on the last race button's bottom
-        if race_buttons: # Ensure race_buttons is not empty
+        if race_buttons:
             last_race_button_bottom = race_buttons[race_names[-1]].bottom
             actual_race_help_text_y_start = last_race_button_bottom + padding
             if selected_race and selected_race in racial_bonuses_text:
                 lines = racial_bonuses_text[selected_race].split('. ')
                 for i, line in enumerate(lines):
-                    draw_text(screen, line + ('.' if not line.endswith('.') and i < len(lines)-1 else ''), WHITE, column_2_x, actual_race_help_text_y_start + i * int(font_height*0.9)) # Slightly smaller line height
+                    draw_text(screen, line + ('.' if not line.endswith('.') and i < len(lines)-1 else ''), WHITE, column_2_x, actual_race_help_text_y_start + i * int(font_height*0.9))
             else:
                 draw_text(screen, "Select a race to see details.", LIGHT_GRAY, column_2_x, actual_race_help_text_y_start)
 
-        # Class Selection (uses class_section_label_y, current_class_y_for_buttons, column_3_x)
+        # Class Selection (uses class_section_label_y, column_3_x and dynamically calculated button Ys)
         draw_text(screen, "Select Class:", WHITE, column_3_x, class_section_label_y)
-        # current_class_y_for_buttons was initialized before loop
-        for name_idx, class_name_val in enumerate(class_names): # Use a different name
-            button_rect = class_buttons[class_name_val] # Get the rect that was defined with Y positions in the init phase
+        for class_name_val in class_names:
+            button_rect = class_buttons[class_name_val]
             highlight = (selected_class == class_name_val)
             btn_color = GREEN if highlight else BLUE
             pygame.draw.rect(screen, btn_color, button_rect)
             pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2)
-            draw_text(screen, class_name_val, BLACK, button_rect.centerx - font.size(class_name_val)[0]//2, button_rect.centery - font_height//2.5) # Centered text
+            draw_text(screen, class_name_val, BLACK, button_rect.centerx - font.size(class_name_val)[0]//2, button_rect.centery - font_height//2 + (button_rect.height - font_height)//2 )
 
         # Ready Button (uses actual_screen_width/height for positioning)
         ready_button_active = bool(character_name.strip() and stats_accepted and selected_race and selected_class)
