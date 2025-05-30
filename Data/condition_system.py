@@ -97,8 +97,7 @@ class Condition:
         return message
 
     def process_turn(self, target, current_turn):
-        turns_active = current_turn - self.applied_at_turn
-        if turns_active >= self.duration:
+        if self.is_expired(current_turn):
             return self.remove(target)
         
         message = None
@@ -141,13 +140,13 @@ class Condition:
 
     def get_remaining_duration(self, current_turn):
         turns_elapsed = current_turn - self.applied_at_turn
-        return max(0, self.duration - turns_elapsed)
+        return self.duration - turns_elapsed
 
     def is_expired(self, current_turn):
         remaining = self.get_remaining_duration(current_turn)
         source_name = self.source.name if self.source and hasattr(self.source, 'name') else 'Unknown Source' # Added check for self.source
         logger.debug(f"Condition {self.name} on target (source: {source_name}) has {remaining} turns remaining (applied at {self.applied_at_turn}, current turn {current_turn}, duration {self.duration})")
-        return remaining <= 0
+        return remaining < 0
 
     def _apply_poisoned(self, target): return f"{target.name if hasattr(target, 'name') else 'Unknown Target'} is poisoned and will take damage over time!"
     
@@ -265,7 +264,8 @@ class Condition:
             logger.debug(f"Poison DoT: Generating message: '{log_message_content}' for {target_name_for_log}")
             if target.hit_points <= 0:
                 target.hit_points = 0
-                if hasattr(target, 'is_dead'): target.is_dead = True
+                # if hasattr(target, 'is_dead'): target.is_dead = True # Deferred to main game loop
+                target.pending_death_from_dot = True
                 death_message_content = f"{target_name_for_log} takes {damage} poison damage and dies!"
                 logger.debug(f"Poison DoT: Generating message: '{death_message_content}' for {target_name_for_log} (death)")
                 return death_message_content
@@ -279,7 +279,8 @@ class Condition:
             target.hit_points -= damage
             if target.hit_points <= 0:
                 target.hit_points = 0
-                if hasattr(target, 'is_dead'): target.is_dead = True
+                # if hasattr(target, 'is_dead'): target.is_dead = True # Deferred to main game loop
+                target.pending_death_from_dot = True
                 return f"{target_name_for_log} takes {damage} fire damage and dies!"
             return f"{target_name_for_log} takes {damage} fire damage from burning!"
         return None
@@ -357,12 +358,34 @@ class ConditionManager:
         
         for target in targets:
             target_name_for_log = target.name if hasattr(target, 'name') else 'Unknown Target'
+            
+            # Initialize the flag
+            if not hasattr(target, '_was_incapacitated_this_turn'):
+                target._was_incapacitated_this_turn = False
+            else:
+                # Reset if it's a new turn for this target's processing
+                target._was_incapacitated_this_turn = False 
+
             if not hasattr(target, 'conditions') or not target.conditions:
+                # If no conditions, ensure flag is False and continue
+                target._was_incapacitated_this_turn = False
                 continue
+
+            # Check for incapacitating conditions at the START of processing this target's conditions
+            # Iterate once to check initial state. We only care if they *start* the turn incapacitated.
+            # This flag should persist for the whole turn's logic even if the condition itself expires mid-processing.
+            for c_obj_check in target.conditions: 
+                if c_obj_check.condition_type == ConditionType.PARALYZED or c_obj_check.condition_type == ConditionType.STUNNED:
+                    # If a PARALYZED or STUNNED condition is present in the list at this point,
+                    # it means it was active at the end of the last turn or applied this turn.
+                    # It should therefore incapacitate for the current turn's actions, even if it expires now.
+                    target._was_incapacitated_this_turn = True
+                    logger.debug(f"Target {target_name_for_log} was initially incapacitated by {c_obj_check.name} in turn {self.current_turn} because the condition is present at the start of processing. Setting _was_incapacitated_this_turn = True")
+                    break # Found one, no need to check further for this initial scan
             
             # Log conditions on target *before* processing them for this turn
             target_conditions_info = [(c.name, id(c), c.duration, c.applied_at_turn) for c in target.conditions]
-            logger.debug(f"ConditionManager (id: {id(self)}) process_turn (turn {self.current_turn}): Processing conditions for {target_name_for_log}. Current conditions: {target_conditions_info}")
+            logger.debug(f"ConditionManager (id: {id(self)}) process_turn (turn {self.current_turn}): Processing conditions for {target_name_for_log}. Current conditions: {target_conditions_info}, Was Incapacitated Flag: {getattr(target, '_was_incapacitated_this_turn', 'Not set')}")
             
             updated_conditions = []
             for c_obj in list(target.conditions): 

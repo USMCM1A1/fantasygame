@@ -2981,15 +2981,53 @@ def get_monster_info(monster_name, monsters_data):
     return None
 
 def handle_monster_turn(monster, player, dungeon):
+    # Check if the monster was incapacitated at the start of its turn processing
+    if getattr(monster, '_was_incapacitated_this_turn', False):
+        logging.debug(f"Monster {monster.name} was incapacitated at the start of this turn. Skipping action.")
+        # ORANGE is globally defined, add_message should also be globally available
+        if 'add_message' in globals() and callable(globals()['add_message']):
+            add_message(f"{monster.name} is still recovering and cannot act this turn.", ORANGE)
+        else:
+            # Fallback logging if add_message is somehow not available
+            logging.warning(f"add_message not found. Monster {monster.name} incapacitated message not shown to player.")
+        # The flag _was_incapacitated_this_turn will now be reset by ConditionManager.process_turn
+        # at the start of the next full game turn cycle for this monster.
+        return # Monster skips its turn
+
+    logging.debug(f"--- Handling turn for monster: {monster.name} ---")
+    can_act = True
     if monster.hit_points <= 0:
+        logging.debug(f"Monster {monster.name} is dead (HP: {monster.hit_points}). Skipping turn.")
         return  # Dead monsters do nothing
 
     # Check if the monster can take actions (e.g., not paralyzed or stunned)
-    if hasattr(monster, 'can_take_actions') and not monster.can_take_actions():
+    # This check should ideally be comprehensive, considering various conditions.
+    # For now, we rely on a 'can_take_actions' method if it exists, or assume true.
+    if hasattr(monster, 'can_take_actions') and callable(monster.can_take_actions):
+        can_act = monster.can_take_actions()
+        logging.debug(f"Monster {monster.name} can_take_actions() returned: {can_act}")
+    elif hasattr(monster, 'conditions'): # Fallback to checking common conditions if method not present
+        from Data.condition_system import ConditionType # Import here to avoid circular dependency at top level
+        paralyzing_conditions = [ConditionType.PARALYZED, ConditionType.STUNNED]
+        for cond in monster.conditions:
+            if cond.condition_type in paralyzing_conditions:
+                can_act = False
+                logging.debug(f"Monster {monster.name} has paralyzing condition: {cond.name}. Cannot act.")
+                break
+    
+    if not can_act:
         # Optionally, get a more specific message if the condition itself provides one
         # For now, a generic message is fine.
         add_message(f"{monster.name} is unable to act!", ORANGE) # ORANGE color is (255, 165, 0)
-        return 
+        logging.debug(f"Monster {monster.name} is unable to act. Skipping rest of turn.")
+        return
+
+    # Log active conditions
+    if hasattr(monster, 'conditions') and monster.conditions:
+        condition_names = [cond.name for cond in monster.conditions]
+        logging.debug(f"Monster {monster.name} active conditions: {condition_names}")
+    else:
+        logging.debug(f"Monster {monster.name} has no active conditions.")
 
     # Handle frost slow effect if present
     if hasattr(monster, 'slow_turns_remaining') and monster.slow_turns_remaining > 0:
@@ -3025,14 +3063,21 @@ def handle_monster_turn(monster, player, dungeon):
     distance = abs(player_tile_x - monster_tile_x) + abs(player_tile_y - monster_tile_y)
 
     if distance == 1:
-        # Attack logic...
-        pass
+        # Attack logic
+        logging.debug(f"Monster {monster.name} is adjacent to player. Attempting to attack.")
+        # Placeholder for actual attack call. If combat() is called here, logging should be inside combat().
+        # For now, assume attack happens here or is called from here.
+        # Example: messages = combat(monster, player, dungeon)
+        # for msg in messages: add_message(msg)
+        pass  # Actual attack logic would be here
     else:
         # If slowed, visual indicator for debugging
         if hasattr(monster, 'slow_turns_remaining') and monster.slow_turns_remaining > 0:
             add_message(f"{monster.name} slowly trudges forward.", (150, 200, 255), MessageCategory.DEBUG)
         
+        logging.debug(f"Monster {monster.name} is not adjacent. Attempting to move towards player.")
         monster.move_towards(player, dungeon)
+    logging.debug(f"--- Finished turn for monster: {monster.name} ---")
 
         
 # ability rolls
