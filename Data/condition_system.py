@@ -97,8 +97,7 @@ class Condition:
         return message
 
     def process_turn(self, target, current_turn):
-        turns_active = current_turn - self.applied_at_turn
-        if turns_active >= self.duration:
+        if self.is_expired(current_turn):
             return self.remove(target)
         
         message = None
