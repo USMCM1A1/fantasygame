@@ -1308,12 +1308,30 @@ if title_choice == "load_game":
         # Fallback if load fails
         print("Failed to load saved game - creating new character. Transitioning to new character creation screen...")
         # Call the new character creation screen
-        player, game_dungeon = character_creation_screen(screen, clock)
-        if player is None or game_dungeon is None:
+        player_common, game_dungeon_common = character_creation_screen(screen, clock) # Renamed to avoid confusion
+        if player_common is None or game_dungeon_common is None:
             print("Character creation was cancelled during fallback. Exiting.")
             pygame.quit()
             sys.exit()
         else:
+            # Convert common_b_s.Player to blade_sigil_v5_5.Player
+            class_lower = player_common.char_class.lower()
+            sprite_path = assets_data["sprites"]["heroes"][class_lower]["live"]
+            player_sprite = load_sprite(sprite_path)
+
+            game_player = Player( # This is blade_sigil_v5_5.Player
+                name=player_common.name,
+                race=player_common.race,
+                char_class=player_common.char_class,
+                start_position=game_dungeon_common.start_position,
+                sprite=player_sprite,
+                abilities=player_common.abilities
+            )
+            if hasattr(player_common, 'gold'): # Preserve gold from character creation
+                game_player.gold = player_common.gold
+
+            player = game_player # Reassign player to the game-specific instance
+
             game_state = "hub"  # Start in the hub for new characters
             common_b_s.in_dungeon = False  # Not in dungeon at start
             add_message(f"Welcome, {player.name}! Your journey begins in the hub.")
@@ -1322,13 +1340,32 @@ if title_choice == "load_game":
 else:  # New Game
     print("Creating new character via character_creation_screen...")
     # Call the new character creation screen
-    player, game_dungeon = character_creation_screen(screen, clock)
+    player_common, game_dungeon_common = character_creation_screen(screen, clock) # Renamed
 
-    if player is None or game_dungeon is None:
+    if player_common is None or game_dungeon_common is None:
         print("Character creation was cancelled. Exiting.")
         pygame.quit()
         sys.exit()
     else:
+        # Convert common_b_s.Player to blade_sigil_v5_5.Player
+        class_lower = player_common.char_class.lower()
+        sprite_path = assets_data["sprites"]["heroes"][class_lower]["live"]
+        player_sprite = load_sprite(sprite_path)
+
+        game_player = Player( # This is blade_sigil_v5_5.Player
+            name=player_common.name,
+            race=player_common.race,
+            char_class=player_common.char_class,
+            start_position=game_dungeon_common.start_position,
+            sprite=player_sprite,
+            abilities=player_common.abilities
+        )
+        if hasattr(player_common, 'gold'): # Preserve gold from character creation
+            game_player.gold = player_common.gold
+
+        player = game_player # Reassign player to the game-specific instance
+        game_dungeon = game_dungeon_common # Use the dungeon returned
+
         # Player and dungeon were created, proceed with game setup
         game_state = "hub"  # Start in the hub for new characters
         common_b_s.in_dungeon = False
