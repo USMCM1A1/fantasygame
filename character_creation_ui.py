@@ -240,9 +240,10 @@ def character_creation_screen(screen, clock):
 
         name_label_y = ui_area_y_start + padding - font_height
         draw_text(screen, "Character Name:", WHITE, name_input_rect.x, name_label_y)
-        pygame.draw.rect(screen, LIGHT_GRAY if name_input_active else WHITE, name_input_rect, 2 if name_input_active else 1)
-        # Removed background_color=WHITE from this call
-        draw_text(screen, character_name, BLACK, name_input_rect.x + 5, name_input_rect.y + 5)
+        # Modified name_input_rect drawing for better contrast with white text
+        pygame.draw.rect(screen, DARK_GRAY, name_input_rect) # Fill with dark gray
+        pygame.draw.rect(screen, WHITE if name_input_active else LIGHT_GRAY, name_input_rect, 2 if name_input_active else 1) # Border logic
+        draw_text(screen, character_name, WHITE, name_input_rect.x + 5, name_input_rect.y + 5) # Text is WHITE
 
         stats_title_y = ability_rects[ability_names[0]]["label"].y - padding - font_height // 2
         draw_text(screen, "Ability Scores:", WHITE, column_1_x, stats_title_y)
@@ -251,17 +252,17 @@ def character_creation_screen(screen, clock):
             for name in ability_names:
                 label_r, value_r = ability_rects[name]["label"], ability_rects[name]["value"]
                 draw_text(screen, f"{name}:", WHITE, label_r.x, label_r.y + 5)
-                pygame.draw.rect(screen, WHITE, value_r, 1)
-                value_color = BLUE if stats_accepted else BLACK
-                # Removed background_color=WHITE
-                draw_text(screen, str(current_stats[name]), value_color, value_r.x + 5, value_r.y + 5)
+                # Modified value_r drawing for better contrast with white text
+                pygame.draw.rect(screen, DARK_GRAY, value_r) # Fill with dark gray
+                pygame.draw.rect(screen, WHITE, value_r, 1) # Border
+                draw_text(screen, str(current_stats[name]), WHITE, value_r.x + 5, value_r.y + 5) # Text is WHITE
         else:
             for name in ability_names:
                 label_r, value_r = ability_rects[name]["label"], ability_rects[name]["value"]
                 draw_text(screen, f"{name}:", WHITE, label_r.x, label_r.y + 5)
-                pygame.draw.rect(screen, WHITE, value_r, 1)
-                # Removed background_color=WHITE
-                draw_text(screen, "0", LIGHT_GRAY, value_r.x + 5, value_r.y + 5)
+                pygame.draw.rect(screen, DARK_GRAY, value_r) # Fill with dark gray
+                pygame.draw.rect(screen, WHITE, value_r, 1) # Border
+                draw_text(screen, "0", LIGHT_GRAY, value_r.x + 5, value_r.y + 5) # Placeholder text can be light gray
 
         roll_text_render = "Re-roll" if stats_accepted else "Roll"
         pygame.draw.rect(screen, GREEN, roll_button_rect)
