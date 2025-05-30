@@ -235,52 +235,55 @@ def character_creation_screen(screen, clock):
         if background_image:
             screen.blit(background_image, (0,0))
         
-        # Use imported draw_text and font
-        draw_text(screen, "Character Creation", WHITE, SCREEN_WIDTH // 2 - 100, padding, font=font)
+        # Use imported draw_text and font (font argument is implicit via common_b_s.font)
+        draw_text(screen, "Character Creation", WHITE, SCREEN_WIDTH // 2 - 100, padding)
 
         name_label_y = ui_area_y_start + padding - font_height 
-        draw_text(screen, "Character Name:", WHITE, name_input_rect.x, name_label_y, font=font)
+        draw_text(screen, "Character Name:", WHITE, name_input_rect.x, name_label_y)
         pygame.draw.rect(screen, LIGHT_GRAY if name_input_active else WHITE, name_input_rect, 2 if name_input_active else 1)
-        draw_text(screen, character_name, BLACK, name_input_rect.x + 5, name_input_rect.y + 5, font=font, background_color=WHITE)
+        # Removed background_color=WHITE from this call
+        draw_text(screen, character_name, BLACK, name_input_rect.x + 5, name_input_rect.y + 5)
 
         stats_title_y = ability_rects[ability_names[0]]["label"].y - padding - font_height // 2
-        draw_text(screen, "Ability Scores:", WHITE, column_1_x, stats_title_y, font=font)
+        draw_text(screen, "Ability Scores:", WHITE, column_1_x, stats_title_y)
         
         if stats_rolled: 
             for name in ability_names:
                 label_r, value_r = ability_rects[name]["label"], ability_rects[name]["value"]
-                draw_text(screen, f"{name}:", WHITE, label_r.x, label_r.y + 5, font=font)
+                draw_text(screen, f"{name}:", WHITE, label_r.x, label_r.y + 5)
                 pygame.draw.rect(screen, WHITE, value_r, 1) 
                 value_color = BLUE if stats_accepted else BLACK
-                draw_text(screen, str(current_stats[name]), value_color, value_r.x + 5, value_r.y + 5, font=font, background_color=WHITE)
+                # Removed background_color=WHITE
+                draw_text(screen, str(current_stats[name]), value_color, value_r.x + 5, value_r.y + 5)
         else: 
             for name in ability_names:
                 label_r, value_r = ability_rects[name]["label"], ability_rects[name]["value"]
-                draw_text(screen, f"{name}:", WHITE, label_r.x, label_r.y + 5, font=font)
+                draw_text(screen, f"{name}:", WHITE, label_r.x, label_r.y + 5)
                 pygame.draw.rect(screen, WHITE, value_r, 1)
-                draw_text(screen, "0", LIGHT_GRAY, value_r.x + 5, value_r.y + 5, font=font, background_color=WHITE)
+                # Removed background_color=WHITE
+                draw_text(screen, "0", LIGHT_GRAY, value_r.x + 5, value_r.y + 5)
 
         roll_text_render = "Re-roll" if stats_accepted else "Roll"
         pygame.draw.rect(screen, GREEN, roll_button_rect)
-        draw_text(screen, roll_text_render, BLACK, roll_button_rect.centerx - len(roll_text_render)*font_height//4, roll_button_rect.centery - font_height//2 +2, font=font)
+        draw_text(screen, roll_text_render, BLACK, roll_button_rect.centerx - len(roll_text_render)*font_height//4, roll_button_rect.centery - font_height//2 +2)
         
         accept_color = LIGHT_GRAY if not stats_rolled else (GREEN if stats_accepted else BLUE)
         accept_text_render = "Accepted" if stats_accepted else "Accept"
         pygame.draw.rect(screen, accept_color, accept_button_rect)
-        draw_text(screen, accept_text_render, BLACK, accept_button_rect.centerx - len(accept_text_render)*font_height//4, accept_button_rect.centery - font_height//2+2, font=font)
+        draw_text(screen, accept_text_render, BLACK, accept_button_rect.centerx - len(accept_text_render)*font_height//4, accept_button_rect.centery - font_height//2+2)
         
         pygame.draw.rect(screen, LIGHT_GRAY, help_button_rect) 
-        draw_text(screen, "Help", BLACK, help_button_rect.centerx - len("Help")*font_height//4, help_button_rect.centery - font_height//2+2, font=font)
+        draw_text(screen, "Help", BLACK, help_button_rect.centerx - len("Help")*font_height//4, help_button_rect.centery - font_height//2+2)
 
         dice_display_actual_rect = pygame.Rect(column_2_x, ui_area_y_start + padding, 80, 80)
         if dice_image:
             screen.blit(dice_image, dice_display_actual_rect.topleft)
         else: 
             pygame.draw.rect(screen, LIGHT_GRAY, dice_display_actual_rect)
-            draw_text(screen, "Dice", BLACK, dice_display_actual_rect.centerx - 20, dice_display_actual_rect.centery - 10, font=font)
+            draw_text(screen, "Dice", BLACK, dice_display_actual_rect.centerx - 20, dice_display_actual_rect.centery - 10)
         
         race_section_y_start = dice_display_actual_rect.bottom + padding * 2
-        draw_text(screen, "Select Race:", WHITE, column_2_x, race_section_y_start, font=font)
+        draw_text(screen, "Select Race:", WHITE, column_2_x, race_section_y_start)
         current_race_y = race_section_y_start + font_height + padding // 2
         for name in race_names:
             button_rect = pygame.Rect(column_2_x, current_race_y, button_width, button_height // 1.5)
@@ -289,21 +292,25 @@ def character_creation_screen(screen, clock):
             btn_color = GREEN if highlight else BLUE
             pygame.draw.rect(screen, btn_color, button_rect)
             pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2) 
-            draw_text(screen, name, BLACK, button_rect.centerx - len(name)*font_height//4.5, button_rect.centery - font_height//2.5, font=font)
+            draw_text(screen, name, BLACK, button_rect.centerx - len(name)*font_height//4.5, button_rect.centery - font_height//2.5)
             current_race_y += button_height // 1.5 + padding // 2
         
         race_help_display_y = current_race_y + padding
-        # Create a smaller font for racial bonus text if desired, or use the main font
-        small_font = pygame.font.Font(None, int(font_height * 0.9)) # Example: 90% of main font size
+        
+        # For racial bonus text, if a different font size was truly intended,
+        # it needs to be rendered manually. For now, using default font via draw_text.
+        # small_font = pygame.font.Font(None, int(font_height * 0.9)) # This was local
         if selected_race and selected_race in racial_bonuses_text:
             lines = racial_bonuses_text[selected_race].split('. ')
             for i, line in enumerate(lines):
-                draw_text(screen, line + ('.' if not line.endswith('.') and i < len(lines)-1 else ''), WHITE, column_2_x, race_help_display_y + i * int(font_height*0.8), font=small_font)
+                # Using default font here. If small_font is critical, manual render is needed.
+                draw_text(screen, line + ('.' if not line.endswith('.') and i < len(lines)-1 else ''), WHITE, column_2_x, race_help_display_y + i * int(font_height*0.8))
         else:
-            draw_text(screen, "Select a race to see details.", LIGHT_GRAY, column_2_x, race_help_display_y, font=small_font)
+            # Using default font here
+            draw_text(screen, "Select a race to see details.", LIGHT_GRAY, column_2_x, race_help_display_y)
 
         class_section_y_start = race_help_display_y + (font_height * 0.8 * 2) + padding * 2 
-        draw_text(screen, "Select Class:", WHITE, column_2_x, class_section_y_start, font=font)
+        draw_text(screen, "Select Class:", WHITE, column_2_x, class_section_y_start)
         current_class_y = class_section_y_start + font_height + padding // 2
         for name in class_names:
             button_rect = pygame.Rect(column_2_x, current_class_y, button_width, button_height // 1.5)
@@ -312,7 +319,7 @@ def character_creation_screen(screen, clock):
             btn_color = GREEN if highlight else BLUE
             pygame.draw.rect(screen, btn_color, button_rect)
             pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2) 
-            draw_text(screen, name, BLACK, button_rect.centerx - len(name)*font_height//4.5, button_rect.centery - font_height//2.5, font=font)
+            draw_text(screen, name, BLACK, button_rect.centerx - len(name)*font_height//4.5, button_rect.centery - font_height//2.5)
             current_class_y += button_height // 1.5 + padding // 2
 
         ready_button_active = bool(character_name.strip() and stats_accepted and selected_race and selected_class)
@@ -321,7 +328,7 @@ def character_creation_screen(screen, clock):
         
         pygame.draw.rect(screen, ready_button_color, ready_button_rect)
         ready_text_color = BLACK if ready_button_active else DARK_GRAY 
-        draw_text(screen, "Ready", ready_text_color, ready_button_rect.centerx - len("Ready")*font_height//4, ready_button_rect.centery - font_height//2 + 2, font=font)
+        draw_text(screen, "Ready", ready_text_color, ready_button_rect.centerx - len("Ready")*font_height//4, ready_button_rect.centery - font_height//2 + 2)
         
         if ready_button_active and ready_button_rect.collidepoint(mouse_pos) and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not show_help_text:
              character_finalized = True 
@@ -338,7 +345,7 @@ def character_creation_screen(screen, clock):
             help_lines = help_text_content.split('\n')
             line_y = help_text_area_rect.y + padding
             for line in help_lines:
-                draw_text(screen, line, BLACK, help_text_area_rect.x + padding, line_y, font=font) # Use imported font
+                draw_text(screen, line, BLACK, help_text_area_rect.x + padding, line_y) # Use imported font
                 line_y += font_height # Use imported font's height
 
         pygame.display.flip()
