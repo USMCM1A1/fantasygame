@@ -35,10 +35,12 @@ def character_creation_screen(screen, clock):
 
     background_image = None
 
+    actual_screen_width, actual_screen_height = screen.get_size() # Get actual dimensions of the passed screen
+
     if background_path_from_assets and os.path.exists(background_path_from_assets):
         try:
             background_image = pygame.image.load(background_path_from_assets).convert()
-            background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+            background_image = pygame.transform.scale(background_image, (actual_screen_width, actual_screen_height)) # Use actual dimensions
             print(f"Loaded background from assets_data: {background_path_from_assets}")
         except pygame.error as e:
             print(f"Error loading background from assets_data {background_path_from_assets}: {e}. Trying fallback.")
@@ -47,7 +49,7 @@ def character_creation_screen(screen, clock):
     if not background_image and os.path.exists(fallback_background_path): # If assets_data load failed or path was None
         try:
             background_image = pygame.image.load(fallback_background_path).convert()
-            background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+            background_image = pygame.transform.scale(background_image, (actual_screen_width, actual_screen_height)) # Use actual dimensions
             print(f"Loaded background from fallback path: {fallback_background_path}")
         except pygame.error as e:
             print(f"Error loading background from fallback {fallback_background_path}: {e}")
