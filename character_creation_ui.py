@@ -27,14 +27,14 @@ from common_b_s import (
 # Main character creation function
 def character_creation_screen(screen, clock):
     # This function will contain the main loop for the character creation UI
-    
+
     # Load background image
     # Try to load from common_b_s.assets_data, fallback to hardcoded path
     background_path_from_assets = assets_data.get("sprites", {}).get("background", {}).get("character_creation_bg") # Assuming key is "character_creation_bg"
     fallback_background_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/B&S_UI_background.png"
-    
+
     background_image = None
-    
+
     if background_path_from_assets and os.path.exists(background_path_from_assets):
         try:
             background_image = pygame.image.load(background_path_from_assets).convert()
@@ -43,7 +43,7 @@ def character_creation_screen(screen, clock):
         except pygame.error as e:
             print(f"Error loading background from assets_data {background_path_from_assets}: {e}. Trying fallback.")
             background_image = None # Ensure it's None if first try fails
-    
+
     if not background_image and os.path.exists(fallback_background_path): # If assets_data load failed or path was None
         try:
             background_image = pygame.image.load(fallback_background_path).convert()
@@ -51,8 +51,8 @@ def character_creation_screen(screen, clock):
             print(f"Loaded background from fallback path: {fallback_background_path}")
         except pygame.error as e:
             print(f"Error loading background from fallback {fallback_background_path}: {e}")
-            background_image = None 
-    
+            background_image = None
+
     if not background_image:
         print(f"Background image path not found or invalid in assets_data and fallback. Will use black background.")
 
@@ -63,23 +63,23 @@ def character_creation_screen(screen, clock):
     character_name = ""
     # Use the imported roll_ability_helper
     current_stats = {name: roll_ability_helper() for name in ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]}
-    stats_rolled = True 
+    stats_rolled = True
     stats_accepted = False
     selected_race = None
     selected_class = None
-    character_finalized = False 
+    character_finalized = False
 
     name_input_active = False
     ability_names = list(current_stats.keys())
 
     # UI layout variables
     # Use imported font's height for line spacing calculations
-    font_height = font.get_height() 
-    
-    ui_area_y_start = int(SCREEN_HEIGHT * 0.20) 
+    font_height = font.get_height()
+
+    ui_area_y_start = int(SCREEN_HEIGHT * 0.20)
     column_1_x = 50
-    column_2_x = 400 
-    input_field_width = 280 
+    column_2_x = 400
+    input_field_width = 280
     input_field_height = font_height + 10 # Adjust height based on font
     button_width = 150
     button_height = font_height + 20 # Adjust height based on font
@@ -87,19 +87,19 @@ def character_creation_screen(screen, clock):
 
     name_input_rect = pygame.Rect(column_1_x, ui_area_y_start + padding, input_field_width, input_field_height)
 
-    ability_rects = {} 
+    ability_rects = {}
     current_y_offset_for_stats = name_input_rect.bottom + padding * 2
     for i, name in enumerate(ability_names):
         label_rect = pygame.Rect(column_1_x, current_y_offset_for_stats + i * (input_field_height + padding // 2), input_field_width // 2, input_field_height)
         value_rect = pygame.Rect(column_1_x + input_field_width // 2 + padding // 2, current_y_offset_for_stats + i * (input_field_height + padding // 2), input_field_width // 2 - padding // 2, input_field_height)
         ability_rects[name] = {"label": label_rect, "value": value_rect}
-    
+
     last_stat_y_bottom = ability_rects[ability_names[-1]]["value"].bottom
-    stat_buttons_y_offset = last_stat_y_bottom + padding * 2 
-    
+    stat_buttons_y_offset = last_stat_y_bottom + padding * 2
+
     roll_button_rect = pygame.Rect(column_1_x, stat_buttons_y_offset, button_width, button_height)
     accept_button_rect = pygame.Rect(column_1_x + button_width + padding, stat_buttons_y_offset, button_width, button_height)
-    help_button_rect = pygame.Rect(column_1_x + 2 * (button_width + padding), stat_buttons_y_offset, button_width, button_height) 
+    help_button_rect = pygame.Rect(column_1_x + 2 * (button_width + padding), stat_buttons_y_offset, button_width, button_height)
 
     show_help_text = False
     help_text_content = (
@@ -144,23 +144,23 @@ def character_creation_screen(screen, clock):
     race_help_text_y_start = race_buttons[race_names[-1]].bottom + padding
 
     class_names = ['Warrior', 'Spellblade', 'Wizard', 'Priest', 'Thief', 'Archer']
-    class_button_y_start = race_help_text_y_start + font_height * 3 + padding 
+    class_button_y_start = race_help_text_y_start + font_height * 3 + padding
     class_buttons = {}
     for i, name in enumerate(class_names):
         rect = pygame.Rect(column_1_x, class_button_y_start + i * (button_height // 1.5 + padding // 2), button_width, button_height // 1.5)
         class_buttons[name] = rect
 
-    while running and not character_finalized: 
+    while running and not character_finalized:
         mouse_pos = pygame.mouse.get_pos()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False 
+                running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
-                
-                if name_input_active: 
+
+                if name_input_active:
                     if event.key == pygame.K_RETURN:
                         name_input_active = False
                         print(f"Character name set to: {character_name}")
@@ -169,43 +169,43 @@ def character_creation_screen(screen, clock):
                     else:
                         if len(character_name) < 20 and (event.unicode.isalnum() or event.unicode == ' '):
                             character_name += event.unicode
-            
+
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1: 
+                if event.button == 1:
                     if show_help_text:
                         if help_button_rect.collidepoint(mouse_pos):
                             show_help_text = not show_help_text
-                            name_input_active = False 
-                        elif not help_text_area_rect.collidepoint(mouse_pos): 
+                            name_input_active = False
+                        elif not help_text_area_rect.collidepoint(mouse_pos):
                             show_help_text = False
                     else: # This is when show_help_text is False
                         # Determine what was clicked and manage name_input_active state
-                        
+
                         # Default to deactivating name input unless the name input field itself is clicked
                         # This handles clicks on non-interactive areas.
                         # If a button is clicked, it will explicitly set name_input_active = False.
-                        
+
                         clicked_on_name_input = name_input_rect.collidepoint(mouse_pos)
-                        
+
                         if clicked_on_name_input:
                             name_input_active = True
                         # Roll Button
                         elif roll_button_rect.collidepoint(mouse_pos):
                             current_stats = {name: roll_ability_helper() for name in ability_names}
                             stats_rolled = True
-                            stats_accepted = False 
-                            print("Rerolled stats:", current_stats) 
+                            stats_accepted = False
+                            print("Rerolled stats:", current_stats)
                             name_input_active = False
                         # Accept Stats Button
                         elif accept_button_rect.collidepoint(mouse_pos) and stats_rolled:
-                            stats_accepted = not stats_accepted 
+                            stats_accepted = not stats_accepted
                             if stats_accepted: print("Stats accepted:", current_stats)
                             else: print("Stats un-accepted.")
                             name_input_active = False
                         # Help Button (main help)
                         elif help_button_rect.collidepoint(mouse_pos):
                             show_help_text = not show_help_text # Toggle help
-                            name_input_active = False 
+                            name_input_active = False
                         # If none of the main action buttons were clicked, check selection buttons (Race/Class)
                         else:
                             race_button_clicked = False
@@ -215,8 +215,8 @@ def character_creation_screen(screen, clock):
                                     print(f"Race selected: {selected_race}")
                                     name_input_active = False
                                     race_button_clicked = True
-                                    break 
-                            
+                                    break
+
                             if not race_button_clicked: # Only check class if a race wasn't clicked
                                 class_button_clicked = False
                                 for class_name, rect in class_buttons.items():
@@ -234,11 +234,11 @@ def character_creation_screen(screen, clock):
         screen.fill(BLACK)
         if background_image:
             screen.blit(background_image, (0,0))
-        
+
         # Use imported draw_text and font (font argument is implicit via common_b_s.font)
         draw_text(screen, "Character Creation", WHITE, SCREEN_WIDTH // 2 - 100, padding)
 
-        name_label_y = ui_area_y_start + padding - font_height 
+        name_label_y = ui_area_y_start + padding - font_height
         draw_text(screen, "Character Name:", WHITE, name_input_rect.x, name_label_y)
         pygame.draw.rect(screen, LIGHT_GRAY if name_input_active else WHITE, name_input_rect, 2 if name_input_active else 1)
         # Removed background_color=WHITE from this call
@@ -246,16 +246,16 @@ def character_creation_screen(screen, clock):
 
         stats_title_y = ability_rects[ability_names[0]]["label"].y - padding - font_height // 2
         draw_text(screen, "Ability Scores:", WHITE, column_1_x, stats_title_y)
-        
-        if stats_rolled: 
+
+        if stats_rolled:
             for name in ability_names:
                 label_r, value_r = ability_rects[name]["label"], ability_rects[name]["value"]
                 draw_text(screen, f"{name}:", WHITE, label_r.x, label_r.y + 5)
-                pygame.draw.rect(screen, WHITE, value_r, 1) 
+                pygame.draw.rect(screen, WHITE, value_r, 1)
                 value_color = BLUE if stats_accepted else BLACK
                 # Removed background_color=WHITE
                 draw_text(screen, str(current_stats[name]), value_color, value_r.x + 5, value_r.y + 5)
-        else: 
+        else:
             for name in ability_names:
                 label_r, value_r = ability_rects[name]["label"], ability_rects[name]["value"]
                 draw_text(screen, f"{name}:", WHITE, label_r.x, label_r.y + 5)
@@ -266,37 +266,37 @@ def character_creation_screen(screen, clock):
         roll_text_render = "Re-roll" if stats_accepted else "Roll"
         pygame.draw.rect(screen, GREEN, roll_button_rect)
         draw_text(screen, roll_text_render, BLACK, roll_button_rect.centerx - len(roll_text_render)*font_height//4, roll_button_rect.centery - font_height//2 +2)
-        
+
         accept_color = LIGHT_GRAY if not stats_rolled else (GREEN if stats_accepted else BLUE)
         accept_text_render = "Accepted" if stats_accepted else "Accept"
         pygame.draw.rect(screen, accept_color, accept_button_rect)
         draw_text(screen, accept_text_render, BLACK, accept_button_rect.centerx - len(accept_text_render)*font_height//4, accept_button_rect.centery - font_height//2+2)
-        
-        pygame.draw.rect(screen, LIGHT_GRAY, help_button_rect) 
+
+        pygame.draw.rect(screen, LIGHT_GRAY, help_button_rect)
         draw_text(screen, "Help", BLACK, help_button_rect.centerx - len("Help")*font_height//4, help_button_rect.centery - font_height//2+2)
 
         dice_display_actual_rect = pygame.Rect(column_2_x, ui_area_y_start + padding, 80, 80)
         if dice_image:
             screen.blit(dice_image, dice_display_actual_rect.topleft)
-        else: 
+        else:
             pygame.draw.rect(screen, LIGHT_GRAY, dice_display_actual_rect)
             draw_text(screen, "Dice", BLACK, dice_display_actual_rect.centerx - 20, dice_display_actual_rect.centery - 10)
-        
+
         race_section_y_start = dice_display_actual_rect.bottom + padding * 2
         draw_text(screen, "Select Race:", WHITE, column_2_x, race_section_y_start)
         current_race_y = race_section_y_start + font_height + padding // 2
         for name in race_names:
             button_rect = pygame.Rect(column_2_x, current_race_y, button_width, button_height // 1.5)
-            race_buttons[name] = button_rect 
+            race_buttons[name] = button_rect
             highlight = (selected_race == name)
             btn_color = GREEN if highlight else BLUE
             pygame.draw.rect(screen, btn_color, button_rect)
-            pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2) 
+            pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2)
             draw_text(screen, name, BLACK, button_rect.centerx - len(name)*font_height//4.5, button_rect.centery - font_height//2.5)
             current_race_y += button_height // 1.5 + padding // 2
-        
+
         race_help_display_y = current_race_y + padding
-        
+
         # For racial bonus text, if a different font size was truly intended,
         # it needs to be rendered manually. For now, using default font via draw_text.
         # small_font = pygame.font.Font(None, int(font_height * 0.9)) # This was local
@@ -309,38 +309,38 @@ def character_creation_screen(screen, clock):
             # Using default font here
             draw_text(screen, "Select a race to see details.", LIGHT_GRAY, column_2_x, race_help_display_y)
 
-        class_section_y_start = race_help_display_y + (font_height * 0.8 * 2) + padding * 2 
+        class_section_y_start = race_help_display_y + (font_height * 0.8 * 2) + padding * 2
         draw_text(screen, "Select Class:", WHITE, column_2_x, class_section_y_start)
         current_class_y = class_section_y_start + font_height + padding // 2
         for name in class_names:
             button_rect = pygame.Rect(column_2_x, current_class_y, button_width, button_height // 1.5)
-            class_buttons[name] = button_rect 
+            class_buttons[name] = button_rect
             highlight = (selected_class == name)
             btn_color = GREEN if highlight else BLUE
             pygame.draw.rect(screen, btn_color, button_rect)
-            pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2) 
+            pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2)
             draw_text(screen, name, BLACK, button_rect.centerx - len(name)*font_height//4.5, button_rect.centery - font_height//2.5)
             current_class_y += button_height // 1.5 + padding // 2
 
         ready_button_active = bool(character_name.strip() and stats_accepted and selected_race and selected_class)
         ready_button_color = GREEN if ready_button_active else LIGHT_GRAY
         ready_button_rect = pygame.Rect((SCREEN_WIDTH - button_width) // 2, SCREEN_HEIGHT - button_height - padding, button_width, button_height)
-        
+
         pygame.draw.rect(screen, ready_button_color, ready_button_rect)
-        ready_text_color = BLACK if ready_button_active else DARK_GRAY 
+        ready_text_color = BLACK if ready_button_active else DARK_GRAY
         draw_text(screen, "Ready", ready_text_color, ready_button_rect.centerx - len("Ready")*font_height//4, ready_button_rect.centery - font_height//2 + 2)
-        
+
         if ready_button_active and ready_button_rect.collidepoint(mouse_pos) and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not show_help_text:
-             character_finalized = True 
+             character_finalized = True
              print("Character creation complete! Finalizing...")
 
         if show_help_text:
             overlay_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-            overlay_surface.fill((0, 0, 0, 180)) 
+            overlay_surface.fill((0, 0, 0, 180))
             screen.blit(overlay_surface, (0,0))
-            
+
             pygame.draw.rect(screen, LIGHT_GRAY, help_text_area_rect)
-            pygame.draw.rect(screen, WHITE, help_text_area_rect, 2) 
+            pygame.draw.rect(screen, WHITE, help_text_area_rect, 2)
 
             help_lines = help_text_content.split('\n')
             line_y = help_text_area_rect.y + padding
@@ -351,46 +351,49 @@ def character_creation_screen(screen, clock):
         pygame.display.flip()
         clock.tick(60)
 
-    if character_finalized: 
-        # Use imported Player and Dungeon classes
-        created_player = Player(name=character_name.strip(), race=selected_race, char_class=selected_class, abilities=current_stats, start_position=[0,0], sprite=None) # start_pos and sprite are placeholders for common_b_s.Player
-        
-        created_player.apply_race_bonus() 
-        created_player.level = 1
-        created_player.hit_points = created_player.roll_hit_points() 
-        created_player.max_hit_points = created_player.hit_points
-        created_player.spell_points = created_player.calculate_spell_points() 
-        created_player.ac = created_player.calculate_ac() 
-        created_player.gold = random.randint(20, 50) 
+    if character_finalized:
+        # Convert keys in current_stats to lowercase for the Player class
+        lowercase_abilities = {key.lower(): value for key, value in current_stats.items()}
 
-        initial_dungeon = Dungeon(width=20, height=15, level=1) 
+        # Use imported Player and Dungeon classes
+        created_player = Player(name=character_name.strip(), race=selected_race, char_class=selected_class, abilities=lowercase_abilities, start_position=[0,0], sprite=None) # start_pos and sprite are placeholders for common_b_s.Player
+
+        created_player.apply_race_bonus()
+        created_player.level = 1
+        created_player.hit_points = created_player.roll_hit_points()
+        created_player.max_hit_points = created_player.hit_points
+        created_player.spell_points = created_player.calculate_spell_points()
+        created_player.ac = created_player.calculate_ac()
+        created_player.gold = random.randint(20, 50)
+
+        initial_dungeon = Dungeon(width=20, height=15, level=1)
         print(f"Player '{created_player.name}' (Level {created_player.level} {created_player.race} {created_player.char_class}) created successfully.")
         print(f"HP: {created_player.hit_points}, SP: {created_player.spell_points}, AC: {created_player.ac}, Gold: {created_player.gold}")
         print(f"Initial Dungeon (Level {initial_dungeon.level}) created.")
         return created_player, initial_dungeon
-    
+
     print("Exiting character creation screen without finalizing.")
-    return None, None 
+    return None, None
 
 if __name__ == '__main__':
     pygame.init()
     if not pygame.font.get_init(): pygame.font.init()
-    
+
     # Font is now imported from common_b_s, so direct initialization here is not needed unless fallback
     if font is None: # Should not happen if common_b_s.font is valid
         print(f"CRITICAL: Font from common_b_s is None. Exiting.")
         pygame.quit()
         sys.exit()
-    
+
     # DARK_GRAY is also imported from common_b_s
 
     try:
         screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Character Creation Test")
         clock = pygame.time.Clock()
-        
+
         created_player, initial_dungeon = character_creation_screen(screen, clock)
-        
+
         if created_player and initial_dungeon:
             print(f"\n--- Character Creation Successful ---")
             print(f"Name: {created_player.name}, Race: {created_player.race}, Class: {created_player.char_class}")

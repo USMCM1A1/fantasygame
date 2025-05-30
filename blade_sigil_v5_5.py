@@ -1323,7 +1323,7 @@ else:  # New Game
     print("Creating new character via character_creation_screen...")
     # Call the new character creation screen
     player, game_dungeon = character_creation_screen(screen, clock)
-    
+
     if player is None or game_dungeon is None:
         print("Character creation was cancelled. Exiting.")
         pygame.quit()
@@ -1331,7 +1331,7 @@ else:  # New Game
     else:
         # Player and dungeon were created, proceed with game setup
         game_state = "hub"  # Start in the hub for new characters
-        common_b_s.in_dungeon = False 
+        common_b_s.in_dungeon = False
         add_message(f"Welcome, {player.name}! Your journey begins in the hub.")
         add_message("Press 'h' for Help to see all available commands.")
         player_initialized = True # Ensure this flag is set
