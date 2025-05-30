@@ -1306,19 +1306,19 @@ if title_choice == "load_game":
         add_message(f"Welcome back, {player.name}! Your game has been loaded. CM Turn: {condition_manager.current_turn}", category=MessageCategory.SYSTEM)
     else:
         # Fallback if load fails
-    print("Failed to load saved game - creating new character. Transitioning to new character creation screen...")
-    # Call the new character creation screen
-    player, game_dungeon = character_creation_screen(screen, clock)
-    if player is None or game_dungeon is None:
-        print("Character creation was cancelled during fallback. Exiting.")
-        pygame.quit()
-        sys.exit()
-    else:
-        game_state = "hub"  # Start in the hub for new characters
-        common_b_s.in_dungeon = False  # Not in dungeon at start
-        add_message(f"Welcome, {player.name}! Your journey begins in the hub.")
-        add_message("Press 'h' for Help to see all available commands.")
-        player_initialized = True
+        print("Failed to load saved game - creating new character. Transitioning to new character creation screen...")
+        # Call the new character creation screen
+        player, game_dungeon = character_creation_screen(screen, clock)
+        if player is None or game_dungeon is None:
+            print("Character creation was cancelled during fallback. Exiting.")
+            pygame.quit()
+            sys.exit()
+        else:
+            game_state = "hub"  # Start in the hub for new characters
+            common_b_s.in_dungeon = False  # Not in dungeon at start
+            add_message(f"Welcome, {player.name}! Your journey begins in the hub.")
+            add_message("Press 'h' for Help to see all available commands.")
+            player_initialized = True
 else:  # New Game
     print("Creating new character via character_creation_screen...")
     # Call the new character creation screen

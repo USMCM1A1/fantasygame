@@ -1,0 +1,48 @@
+{
+  "sprites": {
+    "misc": {
+      "dice": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/3d6.png",
+      "loot_drop": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/loot_drop.jpg"
+    },
+    "heroes": {
+      "archer": {
+        "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/archer.png",
+        "dead": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/archer_dead.png",
+        "portrait": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/portraits/archer_portrait.png"
+      },
+      "priest": {
+        "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/priest.png",
+        "dead": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/priest_dead.png",
+        "portrait": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/portraits/priest_portrait.png"
+      },
+      "sorcerer": {
+        "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/sorcerer.png",
+        "dead": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/sorcerer_dead.png",
+        "portrait": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/portraits/sorcerer_portrait.png"
+      },
+      "spellblade": {
+        "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/spellblade.png",
+        "dead": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/spellblade_dead.png",
+        "portrait": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/portraits/spellblade_portrait.png"
+      },
+      "thief": {
+        "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/thief.png",
+        "dead": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/thief_dead.png",
+        "portrait": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/portraits/thief_portrait.png"
+      },
+      "warrior": {
+        "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/warrior.png",
+        "dead": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/warrior_dead.png",
+        "portrait": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/portraits/warrior_portrait.png"
+      },
+      "wizard": {
+        "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/wizard.png",
+        "dead": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/wizard_dead.png",
+        "portrait": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Heroes/portraits/wizard_portrait.png"
+      }
+    },
+    "tiles": {
+      "floor": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/dungeon_tiles_01.jpg"
+    }
+  }
+}
