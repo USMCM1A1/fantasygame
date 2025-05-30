@@ -71,6 +71,7 @@ TILE_SIZE = HUB_TILE_SIZE  # or TILE_SIZE = DUNGEON_TILE_SIZE
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 LIGHT_GRAY = (200, 200, 200)
+DARK_GRAY = (100, 100, 100)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
@@ -2758,6 +2759,794 @@ class MessageManager:
 
 # Create a global message manager instance
 message_manager = MessageManager()
+
+
+# === Game Entity Classes ===
+
+class Monster:
+    def __init__(self, name, hit_points, to_hit, ac, move, dam, sprites, **kwargs):
+        self.name = name
+        self.hit_points = hit_points
+        self.max_hit_points = hit_points  # Store max HP for reference
+        self.to_hit = to_hit
+        self.ac = ac
+        self.move = move
+        self.dam = dam
+        self.sprites = sprites
+        
+        # Optional parameters with defaults
+        self.monster_type = kwargs.get('monster_type', 'beast')
+        self.level = kwargs.get('level', 1)
+        self.cr = kwargs.get('cr', 1)
+        self.vulnerabilities = kwargs.get('vulnerabilities', [])
+        self.resistances = kwargs.get('resistances', [])
+        self.immunities = kwargs.get('immunities', [])
+        self.special_abilities = kwargs.get('special_abilities', [])
+        self.is_dead = False
+        self.active_effects = []  # For status effects
+        self.can_move = True
+        self.can_act = True
+        
+        # Load and scale the live sprite for the monster
+        try:
+            if self.sprites and self.sprites.get('live') and os.path.exists(self.sprites['live']):
+                self.sprite = pygame.image.load(self.sprites['live']).convert_alpha()
+                self.sprite = pygame.transform.smoothscale(self.sprite, (TILE_SIZE, TILE_SIZE))
+            else:
+                # Use a predefined fallback sprite based on monster type
+                fallback_sprites = {
+                    'beast': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg',
+                    'humanoid': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/goblin.png',
+                    'undead': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/skel_01.png',
+                    'elemental': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg',
+                    'extraplanar': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/imp.jpg',
+                    'monstrosity': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/green_slime.jpg'
+                }
+                
+                fallback_path = fallback_sprites.get(self.monster_type, fallback_sprites['beast'])
+                self.sprite = pygame.image.load(fallback_path).convert_alpha()
+                self.sprite = pygame.transform.smoothscale(self.sprite, (TILE_SIZE, TILE_SIZE))
+        except (pygame.error, FileNotFoundError) as e:
+            print(f"Error loading sprite for {self.name}: {e}")
+            # Create a placeholder sprite if image loading fails
+            self.sprite = pygame.Surface((TILE_SIZE, TILE_SIZE))
+            self.sprite.fill((255, 0, 0))  # Red for monsters
+
+        # Set the position to None initially (will be set when placed in the dungeon)
+        self.position = None
+
+    def move_towards(self, target, dungeon, is_player=False):
+        if self.position is None or target.position is None:
+            print(f"{self.name} or target position is None. Cannot move.")
+            return
+
+        if not self.can_move:
+            print(f"Monster {self.name} cannot move because self.can_move is False.")
+            return
+    
+        old_position = self.position.copy()
+        monster_x, monster_y = self.position[0] // TILE_SIZE, self.position[1] // TILE_SIZE
+        target_x, target_y = target.position[0] // TILE_SIZE, target.position[1] // TILE_SIZE
+    
+        # Calculate the differences in the x and y positions
+        dx = target_x - monster_x
+        dy = target_y - monster_y
+    
+        # Log the monster's movement direction (dx, dy)
+        print(f"Monster '{self.name}' moving towards: dx={dx}, dy={dy}")
+    
+        # Try moving horizontally first, if it's not blocked
+        if abs(dx) > abs(dy):
+            step_x = 1 if dx > 0 else -1
+            new_x = monster_x + step_x
+            new_y = monster_y
+    
+            # Check if the tile is walkable (not blocked by walls)
+            if 0 <= new_x < dungeon.width and 0 <= new_y < dungeon.height:
+                target_tile = dungeon.tiles[new_x][new_y]
+                if target_tile.type not in ('floor', 'corridor', 'door'):
+                    print(f"Horizontal move blocked by {target_tile.type}. Trying vertical move.")
+                    # Try vertical move instead
+                    step_y = 1 if dy > 0 else -1
+                    new_x = monster_x
+                    new_y = monster_y + step_y
+                else:
+                    self.position = [new_x * TILE_SIZE + TILE_SIZE // 2, new_y * TILE_SIZE + TILE_SIZE // 2]
+                    print(f"{self.name} moved from {old_position} to {self.position}")
+            else:
+                print(f"{self.name} cannot move horizontally: tile out of bounds.")
+        
+        # If horizontal move was blocked or diagonal is better, try vertical move
+        else:
+            step_y = 1 if dy > 0 else -1
+            new_x = monster_x
+            new_y = monster_y + step_y
+    
+            if 0 <= new_x < dungeon.width and 0 <= new_y < dungeon.height:
+                target_tile = dungeon.tiles[new_x][new_y]
+                if target_tile.type not in ('floor', 'corridor', 'door'):
+                    print(f"Vertical move blocked by {target_tile.type}.")
+                else:
+                    self.position = [new_x * TILE_SIZE + TILE_SIZE // 2, new_y * TILE_SIZE + TILE_SIZE // 2]
+                    print(f"{self.name} moved from {old_position} to {self.position}")
+            else:
+                print(f"{self.name} cannot move vertically: tile out of bounds.")
+
+    def get_effective_ac(self):
+        return self.ac
+
+    def get_effective_damage(self):
+        """Roll damage based on the dice expression from the JSON data (e.g., '1d3', '2d4+1', etc.)."""
+        return roll_dice_expression(self.dam)
+
+    def set_dead_sprite(self):
+        """Load and scale the dead sprite when the monster dies."""
+        # Check if a dead sprite exists
+        if 'dead' in self.sprites and self.sprites['dead']:
+            try:
+                self.sprite = pygame.image.load(self.sprites['dead']).convert_alpha()
+                self.sprite = pygame.transform.smoothscale(self.sprite, (TILE_SIZE, TILE_SIZE))
+            except (pygame.error, FileNotFoundError):
+                # If loading fails, just tint the current sprite to indicate death
+                self._tint_sprite_gray()
+        else:
+            # If no dead sprite, just tint the current sprite
+            self._tint_sprite_gray()
+            
+    def _tint_sprite_gray(self):
+        """Create a more visually appealing grayscale effect for dead monsters"""
+        if self.sprite:
+            # More efficient grayscale method using pygame's surface manipulation
+            temp_sprite = self.sprite.copy()
+            
+            # Apply a dark gray overlay with transparency
+            gray_overlay = pygame.Surface(temp_sprite.get_size(), pygame.SRCALPHA)
+            gray_overlay.fill((30, 30, 30, 180))  # Dark gray with transparency
+            temp_sprite.blit(gray_overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            
+            # Add a slight red tint to indicate "fallen" status
+            red_tint = pygame.Surface(temp_sprite.get_size(), pygame.SRCALPHA)
+            red_tint.fill((100, 0, 0, 50))  # Red tint with transparency
+            temp_sprite.blit(red_tint, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            
+            # Reduce the overall brightness
+            dark_overlay = pygame.Surface(temp_sprite.get_size(), pygame.SRCALPHA)
+            dark_overlay.fill((0, 0, 0, 50))  # Black with transparency
+            temp_sprite.blit(dark_overlay, (0, 0))
+            
+            self.sprite = temp_sprite
+    
+    def apply_damage(self, damage_amount, damage_type="physical"):
+        """
+        Apply damage to the monster with vulnerability/resistance/immunity calculation
+        Returns the actual damage dealt after modifiers
+        """
+        # Check for immunities
+        if damage_type in self.immunities:
+            return 0  # No damage taken
+            
+        # Check for vulnerabilities (double damage)
+        if damage_type in self.vulnerabilities:
+            damage_amount *= 2
+            
+        # Check for resistances (half damage)
+        if damage_type in self.resistances:
+            damage_amount = max(1, damage_amount // 2)  # At least 1 damage
+            
+        # Apply the damage
+        self.hit_points -= damage_amount
+        
+        # Ensure hit points don't go below 0
+        self.hit_points = max(0, self.hit_points)
+        
+        # Check if monster died
+        if self.hit_points == 0:
+            self.is_dead = True
+            
+        return damage_amount
+
+class Dungeon:
+    def __init__(self, width, height, level=1, map_number=1, max_maps=1, 
+                 max_rooms=None, min_room_size=None, max_room_size=None):
+        self.width = width
+        self.height = height
+        self.level = level  # Current dungeon level (increases as player descends)
+        self.map_number = map_number  # Current map within this level (1-based)
+        self.max_maps = max_maps  # Total number of maps on this level
+        
+        # Room generation parameters (can be modified as player progresses)
+        self.max_rooms = max_rooms or (width // 4 + level)  # Default scales with level
+        self.min_room_size = min_room_size or 3  # Default minimum room size
+        self.max_room_size = max_room_size or (6 + level // 3)  # Default scales with level
+        
+        self.tiles = [[Tile(x, y, 'wall') for y in range(height)] for x in range(width)]
+        self.monsters = []  # List to store spawned monsters
+        self.dropped_items = []  # List for item drops
+        self.doors = {}  # Dictionary to store door objects keyed by (x,y) coords
+        self.chests = {}  # Dictionary to store chest objects keyed by (x,y) coords
+        
+        # --- Special Features ---
+        # Transition points 
+        self.level_transition_door = None  # Door that leads to the next level
+        self.map_transition_doors = {}  # Doors that lead to other maps on same level
+        
+        # Debug flag for verbose door reporting
+        self._debug_doors_verbose = True
+        
+        # Create the dungeon structure and get starting position
+        self.start_position = self.create_rooms_and_corridors()  # Now returns just the start position
+
+    def place_chest(self, room):
+        """Place a treasure chest in a random position within the given room."""
+        x, y, w, h = room
+        
+        # Handle small rooms - ensure there's a valid position
+        if w <= 2:  # Room too narrow
+            chest_x = x + w // 2  # Place in center of width
+        else:
+            chest_x = random.randint(x + 1, x + w - 2)  # Avoid edges
+            
+        if h <= 2:  # Room too short
+            chest_y = y + h // 2  # Place in center of height
+        else:
+            chest_y = random.randint(y + 1, y + h - 2)  # Avoid edges
+        
+        # Create a new chest
+        chest = Chest(chest_x, chest_y)
+        
+        # Store the chest in our dictionary
+        self.chests[(chest_x, chest_y)] = chest
+        
+        print(f"Placed a treasure chest at ({chest_x}, {chest_y}) with {len(chest.contents)} items and {chest.gold} gold")
+        
+        return chest
+        
+    def create_rooms_and_corridors(self):
+        # --- Grid Settings ---
+        rows = random.randint(4, 6)  # Random number of rows between 4 and 6
+        cols = random.randint(4, 6)  # Random number of columns between 4 and 6
+        cell_width = self.width // cols
+        cell_height = self.height // rows
+        rooms = []
+        
+        margin = 1  # Number of tiles to leave as margin on each side
+        for i in range(rows):
+            for j in range(cols):
+                # Top-left of the cell
+                cell_x = j * cell_width
+                cell_y = i * cell_height
+                
+                # Calculate the maximum room width and height available if we leave a margin on both sides
+                max_room_w = cell_width - 2 * margin
+                max_room_h = cell_height - 2 * margin
+                
+                # Ensure room width and height are at least 3x2, but no larger than the available space
+                room_w = max(3, random.randint(min(max_room_w // 2, max_room_w), max_room_w))  # Random width
+                room_h = max(2, random.randint(min(max_room_h // 2, max_room_h), max_room_h))  # Random height
+
+                
+                # Random position within the cell
+                room_x = cell_x + random.randint(margin, max(margin, cell_width - room_w - margin))
+                room_y = cell_y + random.randint(margin, max(margin, cell_height - room_h - margin))
+
+                room = (room_x, room_y, room_w, room_h)
+                rooms.append(room)
+                
+                # Carve the room out as 'floor'
+                for rx in range(room_x, room_x + room_w):
+                    for ry in range(room_y, room_y + room_h):
+                        self.tiles[rx][ry].type = 'floor'
+                        self.tiles[rx][ry].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+        
+        # --- Connect Rooms with Corridors (carve complete paths) ---
+        rooms.sort(key=lambda r: r[0] + r[2] // 2)  # Sort rooms by x-coordinate of the center
+        for i in range(len(rooms) - 1):
+            (x1, y1, w1, h1) = rooms[i]
+            (x2, y2, w2, h2) = rooms[i + 1]
+            center1 = (x1 + w1 // 2, y1 + h1 // 2)
+            center2 = (x2 + w2 // 2, y2 + h2 // 2)
+            
+            if random.choice([True, False]):
+                # Horizontal then vertical
+                for x_coord in range(min(center1[0], center2[0]), max(center1[0], center2[0]) + 1): # Renamed x to x_coord
+                    if self.tiles[x_coord][center1[1]].type != 'floor':
+                        self.tiles[x_coord][center1[1]].type = 'corridor'
+                        self.tiles[x_coord][center1[1]].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+                for y_coord in range(min(center1[1], center2[1]), max(center1[1], center2[1]) + 1): # Renamed y to y_coord
+                    if self.tiles[center2[0]][y_coord].type != 'floor':
+                        self.tiles[center2[0]][y_coord].type = 'corridor'
+                        self.tiles[center2[0]][y_coord].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+            else:
+                # Vertical then horizontal
+                for y_coord in range(min(center1[1], center2[1]), max(center1[1], center2[1]) + 1): # Renamed y to y_coord
+                    if self.tiles[center1[0]][y_coord].type != 'floor':
+                        self.tiles[center1[0]][y_coord].type = 'corridor'
+                        self.tiles[center1[0]][y_coord].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+                for x_coord in range(min(center1[0], center2[0]), max(center1[0], center2[0]) + 1): # Renamed x to x_coord
+                    if self.tiles[x_coord][center2[1]].type != 'floor':
+                        self.tiles[x_coord][center2[1]].type = 'corridor'
+                        self.tiles[x_coord][center2[1]].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+        
+        # After carving corridors, post-process to place doors
+        self.carve_doors()
+    
+        # --- Set Start and Monster Positions ---
+        start_room = rooms[0]
+        start_tile_x = start_room[0] + (start_room[2] // 2)
+        start_tile_y = start_room[1] + (start_room[3] // 2)
+        start_position = [start_tile_x * TILE_SIZE + (TILE_SIZE // 2),
+                          start_tile_y * TILE_SIZE + (TILE_SIZE // 2)]
+    
+        # --- Spawn a Monster ---
+        if monsters_data and monsters_data.get('monsters'):
+            # Filter for monsters appropriate to dungeon level
+            level_appropriate_monsters = [m for m in monsters_data['monsters'] 
+                                         if m.get('level', 1) <= self.level + 1 and
+                                            m.get('level', 1) >= max(1, self.level - 1)]
+            
+            if not level_appropriate_monsters:
+                level_appropriate_monsters = monsters_data['monsters']  # Fallback if no appropriate monsters found
+                
+            monster_choice = random.choice(level_appropriate_monsters)
+            print(f"Selected monster: {monster_choice['name']}, Level: {monster_choice.get('level', 1)}")
+            
+            monster = Monster(
+                name=monster_choice['name'],
+                hit_points=monster_choice['hit_points'],
+                to_hit=monster_choice['to_hit'],
+                ac=monster_choice['ac'],
+                move=monster_choice['move'],
+                dam=monster_choice['dam'],
+                sprites=monster_choice['sprites'],
+                monster_type=monster_choice.get('type', 'beast'),
+                level=monster_choice.get('level', 1)
+            )
+            
+            # Place the monster in a random room
+            monster_room = random.choice(rooms)
+            monster_tile_x = monster_room[0] + (monster_room[2] // 2)
+            monster_tile_y = monster_room[1] + (monster_room[3] // 2)
+            monster.position = [monster_tile_x * TILE_SIZE + (TILE_SIZE // 2),
+                                monster_tile_y * TILE_SIZE + (TILE_SIZE // 2)]
+            
+            # Add the monster to the dungeon's monster list
+            self.monsters.append(monster)
+            print(f"A wild {monster.name} appears in the dungeon!")
+        else:
+            print("No monster data available to spawn a monster.")
+        
+        # --- Place a Treasure Chest ---
+        # Choose a random room, but not the starting room
+        non_starting_rooms = [room for room in rooms if room != start_room]
+        if non_starting_rooms:
+            chest_room = random.choice(non_starting_rooms)
+            self.place_chest(chest_room)
+        else:
+            # If there's only one room, place chest in a different part of it
+            self.place_chest(start_room)
+        
+        # --- Place a transition door ---
+        # Add a level/map transition door to a far room
+        print(f"DEBUG: Placing transition door. Level: {self.level}, Map: {self.map_number}, Max Maps: {self.max_maps}")
+        transition_door = self.place_transition_door(rooms, start_room)
+        if transition_door:
+            print(f"DEBUG: Transition door placed at ({transition_door.x}, {transition_door.y})")
+            print(f"DEBUG: Door type: {transition_door.door_type}, Locked: {transition_door.locked}")
+            if transition_door.door_type == "map_transition":
+                print(f"DEBUG: Destination map: {transition_door.destination_map}")
+        else:
+            print("DEBUG: Failed to place transition door!")
+        
+        return start_position
+
+
+    def remove_monster(self, monster):
+        """
+        Remove the specified monster from the dungeon.
+        Assumes that the monster is in the self.monsters list.
+        """
+        if monster in self.monsters:
+            self.monsters.remove(monster)
+            print(f"Monster {monster.name} has been removed from the dungeon.")
+        else:
+            print(f"Warning: Monster {monster.name} not found in the dungeon.")
+
+    def draw_corridor(self, x1, y1, x2, y2):
+        # (This method is not used in the grid-based method but kept for reference.)
+        if x1 != x2 and y1 != y2:
+            if random.choice([True, False]):
+                for x_coord in range(min(x1, x2), max(x1, x2) + 1): # Renamed x to x_coord
+                    self.tiles[x_coord][y1].type = 'floor'
+                for y_coord in range(min(y1, y2), max(y1, y2) + 1): # Renamed y to y_coord
+                    self.tiles[x2][y_coord].type = 'floor'
+            else:
+                for y_coord in range(min(y1, y2), max(y1, y2) + 1): # Renamed y to y_coord
+                    self.tiles[x1][y_coord].type = 'floor'
+                for x_coord in range(min(x1, x2), max(x1, x2) + 1): # Renamed x to x_coord
+                    self.tiles[x_coord][y2].type = 'floor'
+        elif x1 == x2:
+            for y_coord in range(min(y1, y2), max(y1, y2) + 1): # Renamed y to y_coord
+                self.tiles[x1][y_coord].type = 'floor'
+        else:
+            for x_coord in range(min(x1, x2), max(x1, x2) + 1): # Renamed x to x_coord
+                self.tiles[x_coord][y1].type = 'floor'
+
+    def find_start_position_in_room(self, room):
+        x_coord, y_coord, w, h = room # Renamed x,y to x_coord,y_coord
+        start_x = random.randint(x_coord, x_coord + w - 1)
+        start_y = random.randint(y_coord, y_coord + h - 1)
+        return [start_x * TILE_SIZE + TILE_SIZE // 2, start_y * TILE_SIZE + TILE_SIZE // 2]
+
+    def find_random_position_in_room(self, room):
+        x_coord, y_coord, w, h = room # Renamed x,y to x_coord,y_coord
+        return (random.randint(x_coord, x_coord + w - 1), random.randint(y_coord, y_coord + h - 1))
+
+    def draw(self, surface):
+        # Draw the background
+        pygame.draw.rect(surface, LIGHT_GRAY, (0, 0, self.width * TILE_SIZE, self.height * TILE_SIZE))
+        
+        # Draw grid lines (optional)
+        for x_coord in range(self.width + 1): # Renamed x to x_coord
+            pygame.draw.line(surface, BLACK, (x_coord * TILE_SIZE, 0), (x_coord * TILE_SIZE, self.height * TILE_SIZE), 1)
+        for y_coord in range(self.height + 1): # Renamed y to y_coord
+            pygame.draw.line(surface, BLACK, (0, y_coord * TILE_SIZE), (self.width * TILE_SIZE, y_coord * TILE_SIZE), 1)
+        
+        # Collect door information for debug output
+        door_count = 0
+        transition_door_count = 0
+        door_info = []
+        
+        # FIRST PASS: Draw regular tiles
+        for x_coord in range(self.width): # Renamed x to x_coord
+            for y_coord in range(self.height): # Renamed y to y_coord
+                # Handle regular tiles first
+                if self.tiles[x_coord][y_coord].type in ('floor', 'corridor') and self.tiles[x_coord][y_coord].sprite:
+                    surface.blit(self.tiles[x_coord][y_coord].sprite, (x_coord * TILE_SIZE, y_coord * TILE_SIZE))
+                    # Draw grid coordinates on floor tiles for debugging
+                    debug_text = font.render(f"{x_coord},{y_coord}", True, (100, 100, 100))
+                    surface.blit(debug_text, (x_coord * TILE_SIZE + 2, y_coord * TILE_SIZE + 2))
+                elif self.tiles[x_coord][y_coord].type == 'wall':
+                    pygame.draw.rect(surface, BLACK, (x_coord * TILE_SIZE, y_coord * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+        
+        # SECOND PASS: Draw doors without special highlighting
+        for x_coord in range(self.width): # Renamed x to x_coord
+            for y_coord in range(self.height): # Renamed y to y_coord
+                # Special handling for doors - draw them in a separate pass
+                if self.tiles[x_coord][y_coord].type in ('door', 'locked_door'):
+                    door_count += 1
+                    current_door_coords = (x_coord, y_coord) # Renamed door_coords to current_door_coords
+                    
+                    # Just draw the door sprite without any extra highlighting or labels
+                    if current_door_coords in self.doors:
+                        door = self.doors[current_door_coords]
+                        door_sprite = door.sprite
+                        surface.blit(door_sprite, (x_coord * TILE_SIZE, y_coord * TILE_SIZE))
+                        
+                        # Collect debug info (but don't display it)
+                        door_info.append(f"Door at ({x_coord}, {y_coord}): type={door.door_type}, locked={door.locked}")
+                        if hasattr(door, "destination_map"):
+                            door_info.append(f"  Destination map: {door.destination_map}")
+                            transition_door_count += 1
+                    # Otherwise, use the tile's sprite (fallback)
+                    elif self.tiles[x_coord][y_coord].sprite:
+                        surface.blit(self.tiles[x_coord][y_coord].sprite, (x_coord * TILE_SIZE, y_coord * TILE_SIZE))
+        
+        # Print summary of door information (only if we found doors)
+        if door_count > 0:
+            print(f"DEBUG: Found {door_count} doors total, {transition_door_count} are transition doors")
+            print("DEBUG: Door details:")
+            for info_line in door_info: # Renamed info to info_line
+                print(f"  {info_line}")
+        
+        # Draw treasure chests
+        for (chest_x, chest_y), chest in self.chests.items(): # Renamed x,y to chest_x, chest_y
+            if chest.sprite:
+                surface.blit(chest.sprite, (chest_x * TILE_SIZE, chest_y * TILE_SIZE))
+                
+                # If chest is locked, add a visual indicator
+                if chest.locked and not chest.open:
+                    # Draw a gold border around locked chests
+                    pygame.draw.rect(surface, (255, 215, 0), 
+                                    (chest_x * TILE_SIZE, chest_y * TILE_SIZE, TILE_SIZE, TILE_SIZE), 2)
+        
+        # Now draw dropped items
+        for drop in self.dropped_items:
+            item_sprite = getattr(drop['item'], 'sprite', loot_drop_sprite)  
+            item_x, item_y = drop['position'] # Renamed x,y to item_x, item_y
+        
+            if item_sprite:
+                # Draw the item sprite centered on its tile
+                surface.blit(item_sprite, (item_x - TILE_SIZE // 2, item_y - TILE_SIZE // 2))
+            else:
+                # If no sprite, draw a fallback marker
+                pygame.draw.circle(surface, RED, (item_x, item_y), 5)
+
+                    
+    def place_transition_door(self, rooms, start_room):
+        """Place a transition door in a room far from the start room."""
+        # Skip if no rooms or only one room
+        if not rooms or len(rooms) <= 1:
+            print("Not enough rooms to place a transition door")
+            return None
+        
+        # Calculate distances from start room to find the farthest room
+        start_center_x = start_room[0] + start_room[2] // 2
+        start_center_y = start_room[1] + start_room[3] // 2
+        
+        # Find the room farthest from start
+        farthest_room = None
+        max_distance = 0
+        
+        for room in rooms:
+            if room == start_room:
+                continue
+                
+            room_center_x = room[0] + room[2] // 2
+            room_center_y = room[1] + room[3] // 2
+            
+            # Calculate Euclidean distance
+            distance = ((room_center_x - start_center_x) ** 2 + 
+                       (room_center_y - start_center_y) ** 2) ** 0.5
+            
+            if distance > max_distance:
+                max_distance = distance
+                farthest_room = room
+        
+        if not farthest_room:
+            print("Could not find a suitable room for transition door")
+            return None
+        
+        # Place the door in the center of the far wall of the farthest room
+        room_x_coord, room_y_coord, room_w, room_h = farthest_room # Renamed x,y,w,h
+        
+        # Choose one of the four walls randomly, prioritizing walls against the dungeon edge
+        wall_options = []
+        
+        # North wall (top)
+        if room_y_coord == 0 or all(self.tiles[i][room_y_coord-1].type == 'wall' for i in range(room_x_coord, room_x_coord+room_w)):
+            wall_options.append(('north', 2))  # Higher weight for edge walls
+        else:
+            wall_options.append(('north', 1))
+            
+        # South wall (bottom)
+        if room_y_coord+room_h >= self.height-1 or all(self.tiles[i][room_y_coord+room_h].type == 'wall' for i in range(room_x_coord, room_x_coord+room_w)):
+            wall_options.append(('south', 2))
+        else:
+            wall_options.append(('south', 1))
+            
+        # East wall (right)
+        if room_x_coord+room_w >= self.width-1 or all(self.tiles[room_x_coord+room_w][j].type == 'wall' for j in range(room_y_coord, room_y_coord+room_h)):
+            wall_options.append(('east', 2))
+        else:
+            wall_options.append(('east', 1))
+            
+        # West wall (left)
+        if room_x_coord == 0 or all(self.tiles[room_x_coord-1][j].type == 'wall' for j in range(room_y_coord, room_y_coord+room_h)):
+            wall_options.append(('west', 2))
+        else:
+            wall_options.append(('west', 1))
+        
+        # Choose wall based on weights
+        weights = [option[1] for option in wall_options]
+        total_weight = sum(weights)
+        
+        print(f"DEBUG: Wall options: {wall_options}")
+        print(f"DEBUG: Total weight: {total_weight}")
+        
+        if total_weight == 0:
+            chosen_wall = random.choice(['north', 'south', 'east', 'west'])
+            print(f"DEBUG: No valid walls, randomly chose: {chosen_wall}")
+        else:
+            # Random weighted choice
+            r_val = random.uniform(0, total_weight) # Renamed r to r_val
+            upto = 0
+            for option, weight in wall_options:
+                if upto + weight >= r_val:
+                    chosen_wall = option
+                    break
+                upto += weight
+            else:
+                chosen_wall = wall_options[-1][0]  # Fallback
+            print(f"DEBUG: Chose wall with weights: {chosen_wall}")
+        
+        # Place the door based on the chosen wall
+        if chosen_wall == 'north':
+            door_x = room_x_coord + room_w // 2
+            door_y = room_y_coord
+        elif chosen_wall == 'south':
+            door_x = room_x_coord + room_w // 2
+            door_y = room_y_coord + room_h - 1
+        elif chosen_wall == 'east':
+            door_x = room_x_coord + room_w - 1
+            door_y = room_y_coord + room_h // 2
+        else:  # west
+            door_x = room_x_coord
+            door_y = room_y_coord + room_h // 2
+            
+        # Determine door type based on map_number and roll
+        # If we're on the last map of this level, this could be a level transition
+        if self.map_number >= self.max_maps:
+            door_type = "level_transition"
+            print(f"Creating level transition door at ({door_x}, {door_y})")
+        else:
+            door_type = "map_transition"
+            print(f"Creating map transition door at ({door_x}, {door_y})")
+        
+        # Create the transition door (always unlocked for easier progression)
+        door = Door(door_x, door_y, locked=False, door_type=door_type)
+        print(f"DEBUG: Created {door_type} door at ({door_x}, {door_y})")
+        
+        # If it's a map transition, set destination
+        if door_type == "map_transition":
+            door.destination_map = self.map_number + 1  # Next map in sequence
+            print(f"DEBUG: Set destination map to {door.destination_map}")
+        
+        # Check sprite status
+        if hasattr(door, "sprite") and door.sprite:
+            print(f"DEBUG: Door has sprite: {type(door.sprite)}, dimensions: {door.sprite.get_size()}")
+        else:
+            print("DEBUG: WARNING - Door has no sprite!")
+        
+        # Add it to the appropriate collection
+        if door_type == "level_transition":
+            self.level_transition_door = door
+        else:
+            self.map_transition_doors[(door_x, door_y)] = door
+            
+        # Update the doors dictionary too
+        self.doors[(door_x, door_y)] = door
+        
+        # Debug log the doors dictionary
+        print(f"DEBUG: Doors dictionary now has {len(self.doors)} entries")
+        for coords, door_obj in self.doors.items():
+            print(f"DEBUG: Door at {coords}: type={door_obj.door_type}, locked={door_obj.locked}")
+            if hasattr(door_obj, "destination_map") and door_obj.destination_map:
+                print(f"DEBUG: Door at {coords} has destination map: {door_obj.destination_map}")
+        
+        # Update the tile based on door's locked state
+        self.tiles[door_x][door_y].type = 'locked_door' if door.locked else 'door'
+        self.tiles[door_x][door_y].sprite = door.sprite
+        
+        return door
+
+    def carve_doors(self):
+        """
+        Create 1-3 locked doors in corridors connecting rooms,
+        ensuring they're truly in corridor spaces.
+        """
+        # First, identify corridor tiles that are exactly at the transition point 
+        # between rooms and corridors
+        door_coordinates = []
+        
+        # Check each corridor tile
+        for x_coord in range(1, self.width - 1): # Renamed x to x_coord
+            for y_coord in range(1, self.height - 1): # Renamed y to y_coord
+                if self.tiles[x_coord][y_coord].type == 'corridor':
+                    # Look at each cardinal direction
+                    north = (x_coord, y_coord-1)
+                    south = (x_coord, y_coord+1)
+                    east = (x_coord+1, y_coord)
+                    west = (x_coord-1, y_coord)
+                    
+                    # Check if we're at a dead end connecting to a room
+                    # This ensures the door is in the corridor, not the room
+                    connects_to_room = False
+                    connects_to_corridor = False
+                    
+                    # Check north
+                    if 0 <= north[1] < self.height:
+                        if self.tiles[north[0]][north[1]].type == 'floor':
+                            connects_to_room = True
+                        elif self.tiles[north[0]][north[1]].type == 'corridor':
+                            connects_to_corridor = True
+                            
+                    # Check south
+                    if 0 <= south[1] < self.height:
+                        if self.tiles[south[0]][south[1]].type == 'floor':
+                            connects_to_room = True
+                        elif self.tiles[south[0]][south[1]].type == 'corridor':
+                            connects_to_corridor = True
+                            
+                    # Check east
+                    if 0 <= east[0] < self.width:
+                        if self.tiles[east[0]][east[1]].type == 'floor':
+                            connects_to_room = True
+                        elif self.tiles[east[0]][east[1]].type == 'corridor':
+                            connects_to_corridor = True
+                            
+                    # Check west
+                    if 0 <= west[0] < self.width:
+                        if self.tiles[west[0]][west[1]].type == 'floor':
+                            connects_to_room = True
+                        elif self.tiles[west[0]][west[1]].type == 'corridor':
+                            connects_to_corridor = True
+                    
+                    # A good door location connects to both a room and a corridor
+                    if connects_to_room and connects_to_corridor:
+                        # Count nearby wall tiles to ensure this is truly a corridor
+                        wall_count = 0
+                        for nx, ny in [north, south, east, west]:
+                            if 0 <= nx < self.width and 0 <= ny < self.height:
+                                if self.tiles[nx][ny].type == 'wall':
+                                    wall_count += 1
+                                    
+                        # A corridor typically has walls on two sides
+                        if wall_count >= 1:  # At least one wall nearby
+                            door_coordinates.append((x_coord, y_coord))
+                            print(f"Found door location at corridor ({x_coord}, {y_coord}) - connects room to corridor")
+        
+        # No valid door locations? Create a fallback door
+        if not door_coordinates:
+            print("No valid door locations found between rooms.")
+            
+            # Find any corridor tile that connects to a floor tile (room)
+            for x_coord in range(1, self.width - 1): # Renamed x to x_coord
+                for y_coord in range(1, self.height - 1): # Renamed y to y_coord
+                    if self.tiles[x_coord][y_coord].type == 'corridor':
+                        # Check all adjacent tiles for a floor
+                        adjacent_coords = [(x_coord, y_coord-1), (x_coord, y_coord+1), (x_coord+1, y_coord), (x_coord-1, y_coord)]
+                        for nx, ny in adjacent_coords:
+                            if 0 <= nx < self.width and 0 <= ny < self.height:
+                                if self.tiles[nx][ny].type == 'floor':
+                                    door_coordinates.append((x_coord, y_coord))
+                                    print(f"Found fallback door location at ({x_coord}, {y_coord})")
+                                    break
+                    if door_coordinates:
+                        break
+                if door_coordinates:
+                    break
+            
+            # Still no valid door locations? Find any corridor
+            if not door_coordinates:
+                for x_coord in range(1, self.width - 1): # Renamed x to x_coord
+                    for y_coord in range(1, self.height - 1): # Renamed y to y_coord
+                        if self.tiles[x_coord][y_coord].type == 'corridor':
+                            door_coordinates.append((x_coord, y_coord))
+                            print(f"Found emergency fallback door at ({x_coord}, {y_coord})")
+                            break
+                    if door_coordinates:
+                        break
+            
+        # Shuffle and limit to 1-3 doors total
+        random.shuffle(door_coordinates)
+        max_doors = min(3, len(door_coordinates))
+        
+        # Fix for the case when no valid door locations were found
+        if max_doors < 1:
+            print("WARNING: No valid door locations found. Skipping door creation.")
+            return
+            
+        num_doors = random.randint(1, max_doors)
+        
+        print(f"Creating {num_doors} locked doors from {len(door_coordinates)} potential door locations")
+        
+        # Create the specified number of doors
+        door_count = 0
+        for x_coord, y_coord in door_coordinates: # Renamed x,y to x_coord,y_coord
+            if door_count >= num_doors:
+                break
+                
+            # Create the door object (always locked)
+            new_door = Door(x_coord, y_coord, locked=True)
+            
+            # Add it to our doors dictionary
+            self.doors[(x_coord, y_coord)] = new_door
+            
+            # Update the tile to be a locked door
+            self.tiles[x_coord][y_coord].type = 'locked_door'
+            
+            # Use the door's sprite for rendering
+            self.tiles[x_coord][y_coord].sprite = new_door.sprite
+            
+            door_count += 1
+            print(f"Created locked door at ({x_coord}, {y_coord})")
+        
+        # Make all other potential door locations normal corridors
+        for x_coord, y_coord in door_coordinates: # Renamed x,y to x_coord,y_coord
+            if (x_coord, y_coord) not in self.doors:
+                self.tiles[x_coord][y_coord].type = 'corridor'
+                self.tiles[x_coord][y_coord].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+
 
 # Help screen content
 help_content = [
