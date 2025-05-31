@@ -129,7 +129,14 @@ def run_hub(screen, clock, player):
     hub_running = True
     # Add a flag to ensure test interaction happens only once
     inn_test_interacted = False
+    loop_count = 0 # <--- ADDED
+    max_loops = 10 # <--- ADDED (run for a few frames)
     while hub_running:
+        loop_count += 1 # <--- ADDED
+        if loop_count > max_loops: # <--- ADDED
+            print(f"DEBUG: Hub test loop limit ({max_loops}) reached. Exiting hub loop.") # <--- ADDED
+            hub_running = False # <--- ADDED
+
         # Update the message manager
         message_manager.update() # ADDED THIS CALL
 

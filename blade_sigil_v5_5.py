@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
+print("DEBUG: blade_sigil_v5_5.py script execution started FIRST LINE.", flush=True)
 
 # In[2]:
 
@@ -85,7 +86,7 @@ from common_b_s import (
     has_line_of_sight, # bresenham, spells_dialogue, and cast_spell removed
  
     #Combat
-    draw_attack_prompt, handle_monster_turn, process_monster_death,
+    draw_attack_prompt, process_monster_death,
     handle_scroll_events,
     
     # Game Classes
@@ -104,39 +105,7 @@ add_message("Press D to toggle debug console", (255, 255, 0), MessageCategory.DE
 
 # Create spell effect images
 import math
-from common_b_s import create_fireball_image, create_frost_nova_image
-fireball_path = create_fireball_image()
-frost_nova_path = create_frost_nova_image()
 
-import novamagus_hub  # Ensure the hub module is imported
-SCREEN_HEIGHT = DUNGEON_SCREEN_HEIGHT
-SCREEN_WIDTH = DUNGEON_SCREEN_WIDTH
-TILE_SIZE = DUNGEON_TILE_SIZE
-# Make sure to use the imported in_dungeon variable
-in_dungeon = common_b_s.in_dungeon
-
-screen = pygame.display.set_mode((DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT))
-pygame.display.set_caption("Blade & Sigil v5.5")
-clock = pygame.time.Clock()
-FPS = 60
-
-# Debug logging
-import logging
-DEBUG_MODE = False  # Set this to False to disable the in-game debug overlay
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename="game_debug.log",
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__) # Module-level logger
-# Create a logger specifically for our test arena functionality
-test_arena_logger = logging.getLogger("test_arena")
-test_arena_logger.setLevel(logging.DEBUG)
-
-# Key diagnostics globals - disabled for normal gameplay
-KEY_DIAGNOSTIC_ENABLED = False  # Set to False to hide the key diagnostics overlay
-keys_pressed = []  # List of recently pressed keys (for display)
-key_state = {}     # Dictionary to track key states for combinations
 # Function to create a fireball explosion image
 def create_fireball_image():
     """
@@ -172,10 +141,56 @@ def create_fireball_image():
         pygame.draw.circle(img, color, (x, y), radius)
     
     # Save the image
-    output_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/spell_assets/fireball_explosion.png"
+    # Use a relative path
+    output_path = "Fantasy_Game_Art_Assets/Misc/spell_assets/fireball_explosion.png"
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     pygame.image.save(img, output_path)
-    print(f"Created fireball image at {output_path}")
+    print(f"Created fireball image at {output_path}", flush=True)
+    print("DEBUG: About to return from create_fireball_image", flush=True)
     return output_path
+
+# Functions create_fireball_image and create_frost_nova_image are defined locally
+fireball_path = create_fireball_image()
+print(f"DEBUG: fireball_path = {fireball_path}", flush=True)
+print("DEBUG: Next line: import novamagus_hub", flush=True)
+# frost_nova_path = create_frost_nova_image() # Definition missing, variable unused
+
+print("DEBUG: Importing novamagus_hub...", flush=True)
+import novamagus_hub  # Ensure the hub module is imported
+print("DEBUG: novamagus_hub imported.", flush=True)
+
+SCREEN_HEIGHT = DUNGEON_SCREEN_HEIGHT
+SCREEN_WIDTH = DUNGEON_SCREEN_WIDTH
+TILE_SIZE = DUNGEON_TILE_SIZE
+# Make sure to use the imported in_dungeon variable
+in_dungeon = common_b_s.in_dungeon
+print("DEBUG: Global screen constants set.", flush=True)
+
+print("DEBUG: Setting display mode...", flush=True)
+screen = pygame.display.set_mode((DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT))
+print("DEBUG: Display mode set.", flush=True)
+pygame.display.set_caption("Blade & Sigil v5.5")
+clock = pygame.time.Clock()
+FPS = 60
+
+# Debug logging
+import logging
+DEBUG_MODE = False  # Set this to False to disable the in-game debug overlay
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename="game_debug.log",
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__) # Module-level logger
+# Create a logger specifically for our test arena functionality
+test_arena_logger = logging.getLogger("test_arena")
+test_arena_logger.setLevel(logging.DEBUG)
+
+# Key diagnostics globals - disabled for normal gameplay
+KEY_DIAGNOSTIC_ENABLED = False  # Set to False to hide the key diagnostics overlay
+keys_pressed = []  # List of recently pressed keys (for display)
+key_state = {}     # Dictionary to track key states for combinations
 
 # Function to create the emergency test arena
 def create_emergency_arena(player, screen):
@@ -902,7 +917,9 @@ def show_title_screen():
     
     # Load the title screen image
     try:
-        title_image = pygame.image.load("/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/b&s_loading_screen.jpg")
+        # Use a relative path
+        title_image_path = "Fantasy_Game_Art_Assets/Misc/b&s_loading_screen.jpg"
+        title_image = pygame.image.load(title_image_path)
         title_image = pygame.transform.scale(title_image, (DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT))
     except pygame.error:
         # Fallback if image can't be loaded
@@ -1160,7 +1177,9 @@ def create_test_arena(player, dungeon):
 # =============================================================================
 
 # Show title screen and get user choice
+print("DEBUG: About to call show_title_screen()...", flush=True)
 title_choice = show_title_screen()
+print(f"DEBUG: show_title_screen() returned: {title_choice}", flush=True)
 
 if title_choice == "load_game":
     # Load a saved game
@@ -1340,7 +1359,9 @@ if title_choice == "load_game":
 else:  # New Game
     print("Creating new character via character_creation_screen...")
     # Call the new character creation screen
+    print("DEBUG: Calling character_creation_screen()...")
     player_common, game_dungeon_common = character_creation_screen(screen, clock) # Renamed
+    print(f"DEBUG: character_creation_screen() returned player: {'Yes' if player_common else 'No'}, dungeon: {'Yes' if game_dungeon_common else 'No'}")
 
     if player_common is None or game_dungeon_common is None:
         print("Character creation was cancelled. Exiting.")
@@ -1454,7 +1475,9 @@ while running:
         common_b_s.in_dungeon = False  # This makes sure the inventory and other functions know we're in the hub
         
         # Run the hub module via the novamagus_hub module.
+        print(f"DEBUG: Calling novamagus_hub.run_hub() for player {player.name}...")
         novamagus_hub.run_hub(screen, clock, player)
+        print("DEBUG: novamagus_hub.run_hub() returned.")
     
         # After the hub loop returns, check if the player has stepped on the dungeon entrance.
         print(f"DEBUG: After hub loop, checking transition_to_dungeon flag: {novamagus_hub.transition_to_dungeon}")
@@ -2245,10 +2268,10 @@ while running:
                         if is_poisoned:
                             logging.debug(f"Monster {monster.name} is POISONED. Starting its turn (after player action). Calling handle_monster_turn.")
                         
-                        logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}, Pending DoT Death: {getattr(monster, 'pending_death_from_dot', False)}) after player action. Calling handle_monster_turn.")
+                        logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}, Pending DoT Death: {getattr(monster, 'pending_death_from_dot', False)}) after player action. Calling common_b_s.handle_monster_turn.")
                         # REMOVED NESTED IF: Monster gets its turn if outer condition is met.
                         # handle_monster_turn itself should check if the monster can act (e.g. if HP > 0, not stunned, etc.)
-                        handle_monster_turn(monster, player, game_dungeon)
+                        common_b_s.handle_monster_turn(monster, player, game_dungeon)
                         
                         if getattr(monster, 'pending_death_from_dot', False) and monster.hit_points <= 0:
                             death_messages = process_monster_death(monster, player, game_dungeon)
