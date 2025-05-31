@@ -94,17 +94,25 @@ def character_creation_screen(screen, clock):
         ability_rects[name] = {"label": label_rect, "value": value_rect}
 
     last_stat_y_bottom = ability_rects[ability_names[-1]]["value"].bottom
-    stat_buttons_y_offset = last_stat_y_bottom + padding * 2
-    roll_button_rect = pygame.Rect(column_1_x, stat_buttons_y_offset, button_width, button_height)
-    accept_button_rect = pygame.Rect(column_1_x + button_width + padding, stat_buttons_y_offset, button_width, button_height)
-    # Adjusted help button X to avoid overlap if column_1_x is small or button_width is large
-    help_button_x = accept_button_rect.right + padding
-    if help_button_x + button_width > column_2_x - padding: # Check if it overlaps with next column
-        help_button_x = column_1_x # Stack it below if no space
-        stat_buttons_y_offset += button_height + padding
-        roll_button_rect.y = stat_buttons_y_offset
-        accept_button_rect.y = stat_buttons_y_offset
-    help_button_rect = pygame.Rect(help_button_x, stat_buttons_y_offset, button_width, button_height)
+    initial_stat_buttons_y = last_stat_y_bottom + padding * 2 # Y-level for Roll and Accept buttons
+
+    roll_button_rect = pygame.Rect(column_1_x, initial_stat_buttons_y, button_width, button_height)
+    accept_button_rect = pygame.Rect(column_1_x + button_width + padding, initial_stat_buttons_y, button_width, button_height)
+
+    # Determine Help button position independently
+    help_button_x_candidate = accept_button_rect.right + padding
+    help_button_y_candidate = initial_stat_buttons_y # Try to place on the same line
+
+    if help_button_x_candidate + button_width > column_2_x - padding: # If Help button doesn't fit horizontally
+        # Stack it below the Roll/Accept buttons, aligned with column_1_x
+        help_button_x_final = column_1_x
+        help_button_y_final = initial_stat_buttons_y + button_height + padding
+    else:
+        # It fits horizontally
+        help_button_x_final = help_button_x_candidate
+        help_button_y_final = help_button_y_candidate
+
+    help_button_rect = pygame.Rect(help_button_x_final, help_button_y_final, button_width, button_height)
 
     # Help Text Area (centered on actual screen)
     help_text_content = (
