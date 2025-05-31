@@ -78,7 +78,7 @@ def character_creation_screen(screen, clock):
     # Column X positions (relative to actual_screen_width for responsiveness)
     column_1_x = int(actual_screen_width * 0.05) # Name, Stats
     column_2_x = int(actual_screen_width * 0.40) # Dice, Race # Adjusted from 0.45
-    column_3_x = column_2_x + button_width + padding * 3 # Class (to the right of Race)
+    column_3_x = int(actual_screen_width * 0.80) # Class (Moved further right)
 
     # Name Input (shifted)
     name_label_y = ui_top_banner_height + padding + vertical_shift_amount - font_height
