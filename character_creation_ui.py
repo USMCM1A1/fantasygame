@@ -5,7 +5,7 @@ import os
 
 # Import necessary components from common_b_s.py
 from common_b_s import (
-    Player, Dungeon, roll_ability_helper, load_sprite, draw_text,
+    Player, Dungeon, load_sprite, draw_text, # roll_ability_helper removed
     assets_data, font,
     BLACK, WHITE, LIGHT_GRAY, GREEN, BLUE, RED, DARK_GRAY,
     HUB_SCREEN_WIDTH as SCREEN_WIDTH,
@@ -23,6 +23,13 @@ from common_b_s import (
 # For now, I'll use the imported font's height for line spacing calculations where DEFAULT_FONT_SIZE was used.
 # If a specific size "32" was intended for some text, a new font object would be needed.
 # Let's assume for now, all text uses the imported `font`.
+
+# Local helper for ability rolls, as it's no longer global in common_b_s
+def local_roll_ability_helper():
+    roll = sum(random.randint(1, 6) for _ in range(3))
+    while roll == 3:  # re-roll if all dice are 1's
+        roll = sum(random.randint(1, 6) for _ in range(3))
+    return roll
 
 # Main character creation function
 def character_creation_screen(screen, clock):
@@ -53,7 +60,7 @@ def character_creation_screen(screen, clock):
 
     # Core state variables
     character_name = ""
-    current_stats = {name: roll_ability_helper() for name in ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]}
+    current_stats = {name: local_roll_ability_helper() for name in ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]} # Use local helper
     stats_rolled = True
     stats_accepted = False
     selected_race = None
@@ -202,7 +209,7 @@ def character_creation_screen(screen, clock):
                             name_input_active = True
                         # Roll Button
                         elif roll_button_rect.collidepoint(mouse_pos):
-                            current_stats = {name: roll_ability_helper() for name in ability_names}
+                            current_stats = {name: local_roll_ability_helper() for name in ability_names} # Use local helper
                             stats_rolled = True
                             stats_accepted = False
                             print("Rerolled stats:", current_stats)

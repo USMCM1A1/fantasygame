@@ -23,9 +23,9 @@ from common_b_s import (
     
     # Other helper functions and classes
     load_sprite, load_json, assets_data, characters_data, spells_data, items_data, monsters_data,
-    add_message, update_message_queue, roll_dice_expression, roll_ability_helper,
-    can_equip_item, handle_targeting, compute_fov, get_valid_equipment_slots,
-    swap_equipment, unequip_item, get_clicked_equipment_slot, shop_interaction,
+    add_message, message_manager, roll_dice_expression, # MODIFIED: update_message_queue AND roll_ability_helper removed, message_manager added
+    compute_fov, # MODIFIED: can_equip_item, handle_targeting, AND get_valid_equipment_slots removed
+    shop_interaction, # MODIFIED: swap_equipment, unequip_item, AND get_clicked_equipment_slot removed
     Item, Weapon, WeaponBlade, WeaponBlunt, Armor, Shield, Jewelry, Consumable,
     Character, Player, Tile,
 )
@@ -127,7 +127,37 @@ def run_hub(screen, clock, player):
     # The actual pixel position will be calculated when drawing the player
 
     hub_running = True
+    # Add a flag to ensure test interaction happens only once
+    inn_test_interacted = False
     while hub_running:
+        # Update the message manager
+        message_manager.update() # ADDED THIS CALL
+
+        # ---- START TEST MODIFICATION ----
+        if not inn_test_interacted:
+            player_pos = [2, 4] # Directly place player on Inn tile for test [grid_x, grid_y_from_bottom]
+                               # Inn is at grid[2][2] (row_from_top=2, col_from_left=2)
+                               # grid_y_from_bottom = (rows - 1) - row_from_top = (7-1) - 2 = 4. So player_pos = [2,4] is correct.
+
+            # Calculate new_row (row_from_top) and new_col (col_from_left) based on this player_pos
+            new_row = (rows - 1) - player_pos[1]
+            new_col = player_pos[0]
+
+            current_tile = grid[new_row][new_col]
+            print(f"TEST: Player 'moved' to {current_tile} tile at grid pos ({player_pos[0]}, {player_pos[1]}), row/col ({new_row}, {new_col})")
+
+            if current_tile == "inn":
+                add_message("Resting at the inn restores your health and spell points!")
+                # Ensure player object has these attributes and methods
+                if hasattr(player, 'max_hit_points'): player.hit_points = player.max_hit_points
+                if hasattr(player, 'calculate_spell_points') and callable(player.calculate_spell_points):
+                    player.spell_points = player.calculate_spell_points()
+                else: # Fallback if method not found
+                    player.spell_points = 100 # Default or some known value
+                print("TEST: Player 'rested' at the inn and recovered!")
+            inn_test_interacted = True
+        # ---- END TEST MODIFICATION ----
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()

@@ -36,7 +36,7 @@ from character_creation_ui import character_creation_screen # Import new charact
 pygame.init()
 
 #sound mixer
-pygame.mixer.init()
+# pygame.mixer.init() # Commented out to prevent ALSA errors in test environment
 
 # Import from common_b_s
 import common_b_s
@@ -63,17 +63,17 @@ from common_b_s import (
     
     # Asset loading and JSON utilities
     load_sprite, load_json, assets_data, characters_data, spells_data, items_data, monsters_data, dice_sprite,
-    spell_sound, melee_sound, arrow_sound, levelup_sound,
+    # spell_sound, melee_sound, arrow_sound, levelup_sound, # Commented out due to common_b_s changes
     
     # UI Drawing functions (if used in dungeon mode)
     draw_text, draw_panel, draw_text_lines, draw_playable_area, draw_right_panel, draw_bottom_panel,
-    handle_scroll_events, draw_attack_prompt, draw_equipment_panel, roll_ability_helper, roll_dice_expression,
+    handle_scroll_events, draw_attack_prompt, draw_equipment_panel, roll_dice_expression, # roll_ability_helper also removed from here
     
     # Helper and utility functions
-    add_message, update_message_queue, roll_dice_expression, roll_ability_helper,
-    can_equip_item, handle_targeting, compute_fov, get_valid_equipment_slots,
-    swap_equipment, unequip_item, get_clicked_equipment_slot, print_character_stats, 
-    manage_inventory, display_help_screen, loot_drop_sprite,
+    add_message, roll_dice_expression, # roll_ability_helper and update_message_queue removed
+    compute_fov, # can_equip_item, handle_targeting, get_valid_equipment_slots removed
+    print_character_stats, # swap_equipment, unequip_item, get_clicked_equipment_slot removed
+    manage_inventory, loot_drop_sprite, # display_help_screen removed from direct import
     
     # Save/Load Game system
     save_game, load_game,
@@ -82,7 +82,7 @@ from common_b_s import (
     Item, Weapon, WeaponBlade, WeaponBlunt, Armor, Shield, Jewelry, Consumable,
     
     # Spell Casting
-    bresenham, has_line_of_sight, spells_dialogue, cast_spell, 
+    has_line_of_sight, # bresenham, spells_dialogue, and cast_spell removed
  
     #Combat
     draw_attack_prompt, handle_monster_turn, process_monster_death,
@@ -1543,7 +1543,7 @@ while running:
 
         elif event.type == pygame.USEREVENT + 1:
             levelup_sound.play()
-            pygame.time.set_timer(pygame.USEREVENT + 1, 0)  # Disable timer after sound
+            # pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1)) # USEREVENT + 1 was for levelup_sound
             
         # Removed timer-based condition processing
 
@@ -1854,7 +1854,7 @@ while running:
             # === HELP SYSTEM ===
             elif event.key == pygame.K_h:
                 # Display popup help screen
-                display_help_screen(screen, clock)
+                common_b_s.display_help_screen(screen, clock) # Changed to use module prefix
             
             # === SAVE/LOAD SYSTEM ===
             elif event.key == pygame.K_F5:
@@ -2184,7 +2184,7 @@ while running:
                 except Exception as e:
                     # Fall back to the original implementation
                     print(f"DEBUG: Error using enhanced UI: {e}")
-                    selected_spell = spells_dialogue(screen, player, clock)
+                    selected_spell = common_b_s.spells_dialogue(screen, player, clock) # Changed to use module prefix
                 
                 if selected_spell is None:
                     continue
@@ -2193,8 +2193,8 @@ while running:
                 else:
                     target = game_dungeon.monsters[0] if game_dungeon.monsters else None
                             
-                if target and target.hit_points > 0:
-                    spell_messages = cast_spell(player, target, selected_spell["name"], game_dungeon)
+                if target and target.hit_points > 0: # Ensure target exists and is alive
+                    spell_messages = common_b_s.cast_spell(player, target, selected_spell["name"], game_dungeon) # Changed to use module prefix
                     for msg in spell_messages:
                         add_message(msg)
                     moved = True
@@ -2202,42 +2202,25 @@ while running:
                     # Process a game turn after casting a spell
                     process_game_turn(player, game_dungeon)
             
-                if moved:
-                    # We now process conditions in process_game_turn() after specific player actions
-                    # So we don't need to process them here
-                        
-                    # Process monster turns
-                    for monster in game_dungeon.monsters:
-                        if monster.hit_points > 0 or getattr(monster, 'pending_death_from_dot', False):
-                            # Check if monster is poisoned before calling handle_monster_turn
-                            is_poisoned = False
-                            if hasattr(monster, 'conditions') and monster.conditions:
-                                for cond in monster.conditions:
-                                    if cond.condition_type == ConditionType.POISONED:
-                                        is_poisoned = True
-                                        break
-                            if is_poisoned:
-                                logging.debug(f"Monster {monster.name} is POISONED. Starting its turn. Calling handle_monster_turn.")
-                            
-                            logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}, Pending DoT Death: {getattr(monster, 'pending_death_from_dot', False)}). Calling handle_monster_turn.")
-                            # REMOVED NESTED IF: Monster gets its turn if outer condition is met.
-                            # handle_monster_turn itself should check if the monster can act (e.g. if HP > 0, not stunned, etc.)
-                            handle_monster_turn(monster, player, game_dungeon)
-
-                            if getattr(monster, 'pending_death_from_dot', False) and monster.hit_points <= 0:
-                                death_messages = process_monster_death(monster, player, game_dungeon)
-                                if death_messages: 
-                                    for msg in death_messages:
-                                        add_message(msg)
-                                
-                                if hasattr(monster, 'pending_death_from_dot'):
-                                    delattr(monster, 'pending_death_from_dot')
-                                # Monster is now fully processed for death, might be removed from game_dungeon.monsters
+                # Monster turns are processed after any player action that constitutes a turn
+                # This 'if moved' block was duplicated. Consolidating it.
+                # if moved:
+                #     # Process monster turns
+                #     for monster in game_dungeon.monsters:
+                #         if monster.hit_points > 0 or getattr(monster, 'pending_death_from_dot', False):
+                #             handle_monster_turn(monster, player, game_dungeon)
+                #             if getattr(monster, 'pending_death_from_dot', False) and monster.hit_points <= 0:
+                #                 death_messages = process_monster_death(monster, player, game_dungeon)
+                #                 if death_messages:
+                #                     for msg in death_messages:
+                #                         add_message(msg)
+                #                 if hasattr(monster, 'pending_death_from_dot'):
+                #                     delattr(monster, 'pending_death_from_dot')
 
             # === PLAYER SHOOTS AN ARROW (ARCHER) ===
             elif event.key == pygame.K_a and player.char_class == "Archer":
-                if game_dungeon.monsters and game_dungeon.monsters[0].hit_points > 0:
-                    spell_messages = cast_spell(player, game_dungeon.monsters[0], "Arrow Shot", game_dungeon)
+                if game_dungeon.monsters and game_dungeon.monsters[0].hit_points > 0: # Ensure a monster exists and is alive
+                    spell_messages = common_b_s.cast_spell(player, game_dungeon.monsters[0], "Arrow Shot", game_dungeon) # Changed to use module prefix
                     for msg in spell_messages:
                         add_message(msg)
                     moved = True

@@ -2108,54 +2108,92 @@ class Dungeon:
               f"room_width=({self.min_room_width}-{self.max_room_width}), room_height=({self.min_room_height}-{self.max_room_height}), "
               f"separation={self.min_room_separation}")
 
+        # Clear the dungeon first (all walls)
         for x_coord in range(self.width):
             for y_coord in range(self.height):
                 self.tiles[x_coord][y_coord].type = 'wall'
-                self.tiles[x_coord][y_coord].sprite = None # Wall sprites usually not set or black
+                # Wall sprites are typically not set here, or are just black.
+                # If you have a specific wall sprite, load it. Otherwise, None is fine.
+                self.tiles[x_coord][y_coord].sprite = None
 
-        placed_rooms_rects = []
-        num_rooms_to_generate = random.randint(self.num_rooms_min, self.num_rooms_max)
+        placed_rooms_rects = [] # Stores pygame.Rect objects of placed rooms
 
-        # Room Generation Attempts
-        for _ in range(num_rooms_to_generate * 5): # More attempts than rooms to generate
-            if len(placed_rooms_rects) >= num_rooms_to_generate: break
+        # Use dungeon parameters for room generation, with defaults if not set
+        num_room_attempts = getattr(self, 'num_room_attempts', 30)
+        min_rooms_to_place = getattr(self, 'min_rooms', 5)
+        max_rooms_to_place = getattr(self, 'max_rooms', 10) # This was self.max_rooms from __init__
+        min_room_dim = getattr(self, 'min_room_size', 3)
+        max_room_dim = getattr(self, 'max_room_size', 8) # Adjusted from 10 to make more varied rooms
+        min_separation = getattr(self, 'min_room_separation', 2)
 
-            room_w = random.randint(self.min_room_width, self.max_room_width)
-            room_h = random.randint(self.min_room_height, self.max_room_height)
+        for _ in range(num_room_attempts):
+            if len(placed_rooms_rects) >= max_rooms_to_place:
+                break
 
-            placed_successfully = False
+            room_w = random.randint(min_room_dim, max_room_dim)
+            room_h = random.randint(min_room_dim, max_room_dim)
+
+            # Try to place the current room
             for attempt in range(100): # Max attempts to place a single room
+                # Ensure room_x and room_y are within valid bounds
+                # Margin of 1 from the edge of the map
                 room_x = random.randint(1, self.width - room_w - 1)
                 room_y = random.randint(1, self.height - room_h - 1)
+
                 current_room_rect = pygame.Rect(room_x, room_y, room_w, room_h)
 
                 collides = False
                 for r_rect in placed_rooms_rects:
-                    if current_room_rect.colliderect(r_rect.inflate(self.min_room_separation*2, self.min_room_separation*2)):
-                        collides = True; break
+                    # Check collision with inflated rectangle for separation
+                    if current_room_rect.colliderect(r_rect.inflate(min_separation*2, min_separation*2)):
+                        collides = True
+                        break
 
                 if not collides:
+                    # Carve the room
                     for rx in range(room_x, room_x + room_w):
                         for ry in range(room_y, room_y + room_h):
-                            if 0 <= rx < self.width and 0 <= ry < self.height:
+                            if 0 <= rx < self.width and 0 <= ry < self.height: # Boundary check
                                 self.tiles[rx][ry].type = 'floor'
                                 self.tiles[rx][ry].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+
                     placed_rooms_rects.append(current_room_rect)
-                    placed_successfully = True
-                    break
-            # if placed_successfully: print(f"DEBUG: Placed room {len(placed_rooms_rects)}/{num_rooms_to_generate} (w:{room_w}, h:{room_h})")
+                    break # Successfully placed this room, move to next in num_room_attempts
 
-        print(f"DEBUG: Placed {len(placed_rooms_rects)} rooms after initial attempts.")
+            # If after 100 attempts we couldn't place the room, and we are below min_rooms,
+            # it's okay, the loop for num_room_attempts will continue.
+            # If we are above min_rooms, failing to place a room is also acceptable.
 
-        # Fallback: if not enough rooms, try adding smaller ones or one central room
-        if len(placed_rooms_rects) < self.num_rooms_min :
-            # print(f"Warning: Only {len(placed_rooms_rects)} rooms placed. Trying to add more or creating fallback.")
-            # Fallback logic similar to provided, but use self.min_room_width etc.
-            pass # Simplified for brevity
+        # Ensure minimum number of rooms are placed, otherwise create a fallback
+        if len(placed_rooms_rects) < min_rooms_to_place:
+            print(f"Warning: Only {len(placed_rooms_rects)} rooms placed. Trying to add more or creating fallback.")
+            # Try to add a few more smaller rooms if desperate
+            for _ in range(min_rooms_to_place - len(placed_rooms_rects)):
+                room_w = random.randint(min_room_dim, min_room_dim + 2) # smaller rooms
+                room_h = random.randint(min_room_dim, min_room_dim + 2)
+                for attempt in range(50): # Fewer attempts for these fallback rooms
+                    room_x = random.randint(1, self.width - room_w - 1)
+                    room_y = random.randint(1, self.height - room_h - 1)
+                    current_room_rect = pygame.Rect(room_x, room_y, room_w, room_h)
+                    collides = False
+                    for r_rect in placed_rooms_rects:
+                        if current_room_rect.colliderect(r_rect.inflate(min_separation*2, min_separation*2)):
+                            collides = True
+                            break
+                    if not collides:
+                        for rx in range(room_x, room_x + room_w):
+                            for ry in range(room_y, room_y + room_h):
+                                if 0 <= rx < self.width and 0 <= ry < self.height:
+                                    self.tiles[rx][ry].type = 'floor'
+                                    self.tiles[rx][ry].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+                        placed_rooms_rects.append(current_room_rect)
+                        break
 
-        if not placed_rooms_rects: # Absolute fallback
-            # print("Error: No rooms could be placed. Creating a default 5x5 room in the center.")
-            room_w, room_h = 5, 5; room_x = max(1, (self.width - room_w)//2); room_y = max(1, (self.height - room_h)//2)
+        if not placed_rooms_rects: # Absolute fallback: a single room
+            print("Error: No rooms could be placed. Creating a default 5x5 room in the center.")
+            room_w, room_h = 5, 5
+            room_x = max(1, (self.width - room_w) // 2)
+            room_y = max(1, (self.height - room_h) // 2)
             for rx in range(room_x, room_x + room_w):
                 for ry in range(room_y, room_y + room_h):
                     if 0 <= rx < self.width and 0 <= ry < self.height:
@@ -2163,112 +2201,108 @@ class Dungeon:
                         self.tiles[rx][ry].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
             placed_rooms_rects.append(pygame.Rect(room_x, room_y, room_w, room_h))
 
-        # Corridor Generation (MST)
+        # Connect rooms with corridors (simple sequential connection)
         if len(placed_rooms_rects) > 1:
-            # Create graph nodes (room centers)
-            nodes = {i: room.center for i, room in enumerate(placed_rooms_rects)}
-            edges = []
-            for i in range(len(nodes)):
-                for j in range(i + 1, len(nodes)):
-                    dist = math.hypot(nodes[i][0] - nodes[j][0], nodes[i][1] - nodes[j][1])
-                    edges.append((dist, i, j))
-            edges.sort()
+            for i in range(len(placed_rooms_rects) - 1):
+                room1_center_x, room1_center_y = placed_rooms_rects[i].center
+                room2_center_x, room2_center_y = placed_rooms_rects[i+1].center
 
-            # Simplified Kruskal's (DSU for cycle detection)
-            parent = list(range(len(nodes)))
-            def find(i):
-                if parent[i] == i: return i
-                parent[i] = find(parent[i])
-                return parent[i]
-            def union(i, j):
-                root_i = find(i); root_j = find(j)
-                if root_i != root_j: parent[root_i] = root_j; return True
-                return False
+                # Carve horizontal corridor part from room1's center y to room2's center x
+                for x_coord in range(min(room1_center_x, room2_center_x), max(room1_center_x, room2_center_x) + 1):
+                    if 0 <= x_coord < self.width and 0 <= room1_center_y < self.height:
+                        if self.tiles[x_coord][room1_center_y].type == 'wall':
+                            self.tiles[x_coord][room1_center_y].type = 'corridor'
+                            self.tiles[x_coord][room1_center_y].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
 
-            mst_edges = []
-            for dist, i, j in edges:
-                if union(i,j):
-                    mst_edges.append((nodes[i], nodes[j], i, j)) # Store original indices too
-
-            # print(f"DEBUG: Generated {len(mst_edges)} MST edges for corridors.")
-            for r1_center, r2_center, r1_idx, r2_idx in mst_edges:
-                # print(f"DEBUG: Connecting room {r1_idx} to {r2_idx} with corridor.")
-                # Carve L-shaped corridors
-                x1, y1 = r1_center; x2, y2 = r2_center
-                if random.choice([True, False]): # Horizontal then vertical
-                    for x in range(min(x1, x2), max(x1, x2) + 1):
-                        if 0 <= x < self.width and 0 <= y1 < self.height and self.tiles[x][y1].type == 'wall':
-                            self.tiles[x][y1].type = 'corridor'; self.tiles[x][y1].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
-                    for y in range(min(y1, y2), max(y1, y2) + 1):
-                        if 0 <= x2 < self.width and 0 <= y < self.height and self.tiles[x2][y].type == 'wall':
-                             self.tiles[x2][y].type = 'corridor'; self.tiles[x2][y].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
-                else: # Vertical then horizontal
-                    for y in range(min(y1, y2), max(y1, y2) + 1):
-                        if 0 <= x1 < self.width and 0 <= y < self.height and self.tiles[x1][y].type == 'wall':
-                            self.tiles[x1][y].type = 'corridor'; self.tiles[x1][y].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
-                    for x in range(min(x1, x2), max(x1, x2) + 1):
-                        if 0 <= x < self.width and 0 <= y2 < self.height and self.tiles[x][y2].type == 'wall':
-                            self.tiles[x][y2].type = 'corridor'; self.tiles[x][y2].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+                # Carve vertical corridor part from room1's center y to room2's center y, at room2's center x
+                for y_coord in range(min(room1_center_y, room2_center_y), max(room1_center_y, room2_center_y) + 1):
+                    if 0 <= room2_center_x < self.width and 0 <= y_coord < self.height:
+                        if self.tiles[room2_center_x][y_coord].type == 'wall':
+                            self.tiles[room2_center_x][y_coord].type = 'corridor'
+                            self.tiles[room2_center_x][y_coord].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
 
         self.carve_doors()
-        # print(f"DEBUG: Doors carved. Number of doors: {len(self.doors)}")
-
-
-        if not placed_rooms_rects: # Should not happen if fallback works
-            # print("CRITICAL ERROR: No rooms placed, cannot set start position.")
-            return [self.width // 2 * TILE_SIZE, self.height // 2 * TILE_SIZE] # Center of map
 
         first_room_rect = placed_rooms_rects[0]
         start_tile_x = first_room_rect.centerx
         start_tile_y = first_room_rect.centery
-        start_position = [start_tile_x * TILE_SIZE + (TILE_SIZE // 2), start_tile_y * TILE_SIZE + (TILE_SIZE // 2)]
+        start_position = [start_tile_x * TILE_SIZE + (TILE_SIZE // 2),
+                          start_tile_y * TILE_SIZE + (TILE_SIZE // 2)]
 
         # Spawn Monsters
         if monsters_data and monsters_data.get('monsters') and len(placed_rooms_rects) > 0:
-            num_monsters_to_spawn = random.randint(self.level, self.level + 2)
-            # print(f"DEBUG: Spawning monsters. Target: {num_monsters_to_spawn}")
+            num_monsters_to_spawn = random.randint(self.level, self.level + 2) # Scale with dungeon level
             spawned_monster_count = 0
             for _ in range(num_monsters_to_spawn):
+                # Filter appropriate monsters
                 level_appropriate_monsters = [m for m in monsters_data['monsters']
-                                             if m.get('level', 1) <= self.level + 2 and m.get('level', 1) >= max(1, self.level - 2)]
-                if not level_appropriate_monsters: level_appropriate_monsters = monsters_data['monsters']
-                if not level_appropriate_monsters: break
+                                             if m.get('level', 1) <= self.level + 2 and # Allow slightly tougher
+                                                m.get('level', 1) >= max(1, self.level - 2)] # And slightly weaker
+                if not level_appropriate_monsters:
+                    level_appropriate_monsters = monsters_data['monsters'] # Fallback to any monster
+
+                if not level_appropriate_monsters: break # No monsters defined
 
                 monster_choice = random.choice(level_appropriate_monsters)
-                monster = Monster(name=monster_choice['name'], hit_points=monster_choice['hit_points'], to_hit=monster_choice['to_hit'],
-                                  ac=monster_choice['ac'], move=monster_choice['move'], dam=monster_choice['dam'],
-                                  sprites=monster_choice['sprites'], monster_type=monster_choice.get('monster_type', 'beast'),
-                                  level=monster_choice.get('level', 1))
+                monster = Monster(
+                    name=monster_choice['name'],
+                    hit_points=monster_choice['hit_points'],
+                    to_hit=monster_choice['to_hit'],
+                    ac=monster_choice['ac'],
+                    move=monster_choice['move'],
+                    dam=monster_choice['dam'],
+                    sprites=monster_choice['sprites'],
+                    monster_type=monster_choice.get('monster_type', 'beast'), # Use 'monster_type'
+                    level=monster_choice.get('level', 1)
+                )
 
                 possible_monster_rooms = [r for r in placed_rooms_rects if r != first_room_rect]
-                if not possible_monster_rooms: possible_monster_rooms = [first_room_rect]
+                if not possible_monster_rooms: possible_monster_rooms = [first_room_rect] # Only one room
+
                 monster_room_rect = random.choice(possible_monster_rooms)
+                # Place monster randomly within the chosen room, not just center
                 m_x = random.randint(monster_room_rect.left, monster_room_rect.right -1)
                 m_y = random.randint(monster_room_rect.top, monster_room_rect.bottom -1)
-                monster.position = [m_x * TILE_SIZE + (TILE_SIZE // 2), m_y * TILE_SIZE + (TILE_SIZE // 2)]
-                self.monsters.append(monster); spawned_monster_count +=1
-            # print(f"DEBUG: Actually spawned {spawned_monster_count} monsters.")
+
+                monster.position = [m_x * TILE_SIZE + (TILE_SIZE // 2),
+                                    m_y * TILE_SIZE + (TILE_SIZE // 2)]
+                self.monsters.append(monster)
+                spawned_monster_count +=1
+            print(f"Spawned {spawned_monster_count} monsters.")
 
         # Place Treasure Chests
-        if len(placed_rooms_rects) > 0:
-            num_chests_to_spawn = random.randint(1, max(1, len(placed_rooms_rects) // 3))
-            # print(f"DEBUG: Spawning chests. Target: {num_chests_to_spawn}")
+        if len(placed_rooms_rects) > 0: # Check if there are any rooms to place chests
+            num_chests_to_spawn = random.randint(1, max(1, len(placed_rooms_rects) // 3)) # 1 chest per 3 rooms approx
             spawned_chest_count = 0
+
+            # Create a list of rooms that can have chests (not the start room initially)
             eligible_chest_rooms = [r for r in placed_rooms_rects if r != first_room_rect]
-            if not eligible_chest_rooms and placed_rooms_rects: eligible_chest_rooms = [first_room_rect]
-            random.shuffle(eligible_chest_rooms)
+            if not eligible_chest_rooms and placed_rooms_rects: # If only start room exists, allow chest there
+                eligible_chest_rooms = [first_room_rect]
+
+            random.shuffle(eligible_chest_rooms) # Shuffle to pick random rooms
+
             for i in range(min(num_chests_to_spawn, len(eligible_chest_rooms))):
-                self.place_chest(eligible_chest_rooms[i]); spawned_chest_count +=1 # Pass pygame.Rect
-            # print(f"DEBUG: Actually spawned {spawned_chest_count} chests.")
+                chest_room_rect = eligible_chest_rooms[i]
+                # Pass pygame.Rect directly to place_chest
+                self.place_chest(chest_room_rect)
+                spawned_chest_count +=1
+            print(f"Spawned {spawned_chest_count} chests.")
+
 
         # Place Transition Door
         if placed_rooms_rects:
+             # Convert pygame.Rect rooms to (x,y,w,h) tuples for place_transition_door
             tuple_rooms_for_transition = [(r.x, r.y, r.width, r.height) for r in placed_rooms_rects]
             start_room_tuple_for_transition = (first_room_rect.x, first_room_rect.y, first_room_rect.width, first_room_rect.height)
+
             transition_door = self.place_transition_door(tuple_rooms_for_transition, start_room_tuple_for_transition)
-            # if transition_door: print(f"DEBUG: Transition door placed at ({transition_door.x}, {transition_door.y}) Type: {transition_door.door_type}")
-            # else: print("DEBUG: Failed to place transition door in new algorithm.")
-        # else: print("DEBUG: No rooms available to attempt transition door placement.")
+            if transition_door:
+                print(f"DEBUG: Transition door placed at ({transition_door.x}, {transition_door.y}) Type: {transition_door.door_type}")
+            else:
+                print("DEBUG: Failed to place transition door in new algorithm (after room placement).")
+        else:
+            print("DEBUG: No rooms available to attempt transition door placement.")
 
         return start_position
 
