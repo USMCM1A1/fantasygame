@@ -201,6 +201,10 @@ def load_json(file_path):
 # Load data globally for the module
 load_all_data()
 
+def roll_ability_helper():
+    # Standard 3d6 roll for an ability score
+    return sum(random.randint(1, 6) for _ in range(3))
+
 
 # In[2]:
 
@@ -2438,12 +2442,46 @@ class Dungeon:
 
 class Character:
     def __init__(self, name, race, char_class, abilities=None):
-        self.name = name; self.race = race; self.char_class = char_class
-        self.abilities = abilities or { 'strength': 10, 'intelligence': 10, 'wisdom': 10, 'dexterity': 10, 'constitution': 10 }
-        # self.apply_race_bonus() # This might require characters_data
-        self.level = 1; self.spell_points = 100 # Simplified
+        self.name = name
+        self.race = race
+        self.char_class = char_class
+        if abilities is None:
+            self.abilities = {
+                'strength': roll_ability_helper(),
+                'intelligence': roll_ability_helper(),
+                'wisdom': roll_ability_helper(),
+                'dexterity': roll_ability_helper(),
+                'constitution': roll_ability_helper()
+            }
+        else:
+            self.abilities = abilities
+
+        self.apply_race_bonus()
+
+        self.level = 1
+        self.spell_points = 100 # Simplified
         self.max_hit_points = 10; self.hit_points = 10; self.ac = 0; self.attack_bonus = 0
         self.conditions = []; self.damage_modifier = 0; self.can_move = True
+
+    def apply_race_bonus(self):
+        if not hasattr(self, 'abilities') or not isinstance(self.abilities, dict):
+            print("Warning: Character abilities not initialized before apply_race_bonus.")
+            return
+
+        if self.race == 'High Elf':
+            self.abilities['intelligence'] = self.abilities.get('intelligence', 0) + 1
+        elif self.race == 'Wood Elf':
+            self.abilities['dexterity'] = self.abilities.get('dexterity', 0) + 1
+        elif self.race == 'Halfling':
+            self.abilities['dexterity'] = self.abilities.get('dexterity', 0) + 1
+        elif self.race == 'Dwarf':
+            self.abilities['constitution'] = self.abilities.get('constitution', 0) + 1
+        elif self.race == 'Human':
+            if self.char_class == 'Warrior':
+                self.abilities['strength'] = self.abilities.get('strength', 0) + 1
+            elif self.char_class == 'Priest':
+                self.abilities['wisdom'] = self.abilities.get('wisdom', 0) + 1
+
     def calculate_modifier(self, ability_score): return (ability_score - 10) // 2 # Simplified
     def get_effective_ability(self, ability_name): return self.abilities.get(ability_name, 10) # Simplified
     def get_effective_ac(self): return self.ac # Simplified
