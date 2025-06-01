@@ -2459,9 +2459,18 @@ class Character:
         self.apply_race_bonus()
 
         self.level = 1
-        self.spell_points = 100 # Simplified
-        self.max_hit_points = 10; self.hit_points = 10; self.ac = 0; self.attack_bonus = 0
-        self.conditions = []; self.damage_modifier = 0; self.can_move = True
+        # Use roll_hit_points for initial HP calculation
+        self.max_hit_points = self.roll_hit_points()
+        self.hit_points = self.max_hit_points
+
+        # Use calculate_spell_points and calculate_ac for initialization
+        self.spell_points = self.calculate_spell_points()
+        self.ac = self.calculate_ac()
+
+        self.attack_bonus = 0
+        self.conditions = []
+        self.damage_modifier = 0
+        self.can_move = True
 
     def apply_race_bonus(self):
         if not hasattr(self, 'abilities') or not isinstance(self.abilities, dict):
@@ -2481,6 +2490,47 @@ class Character:
                 self.abilities['strength'] = self.abilities.get('strength', 0) + 1
             elif self.char_class == 'Priest':
                 self.abilities['wisdom'] = self.abilities.get('wisdom', 0) + 1
+
+    def roll_hit_points(self):
+        # Defines the hit die type for each character class.
+        hit_dice_map = {
+            'Warrior': 10,
+            'Priest': 8,
+            'Spellblade': 8,
+            'Archer': 6,
+            'Thief': 6,
+            'Wizard': 4
+        }
+        # Default to a d6 if class is not in the map
+        base_hp_die = hit_dice_map.get(self.char_class, 6)
+
+        con_score = self.abilities.get('constitution', 10)
+        con_modifier = self.calculate_modifier(con_score)
+
+        if self.level == 1:
+            hp = base_hp_die + con_modifier
+        else:
+            hp_roll = random.randint(1, base_hp_die)
+            hp = hp_roll + con_modifier
+
+        return max(1, hp)
+
+    def calculate_spell_points(self):
+        if self.char_class in ['Wizard', 'Spellblade']:
+            int_bonus = self.calculate_modifier(self.abilities.get('intelligence', 10))
+            return 4 + self.level - 1 + int_bonus
+        elif self.char_class == 'Priest':
+            wis_bonus = self.calculate_modifier(self.abilities.get('wisdom', 10))
+            return 4 + self.level - 1 + wis_bonus
+        return 0
+
+    def calculate_ac(self):
+        base_ac = 0
+        if self.char_class == 'Warrior': base_ac = 1
+        elif self.char_class == 'Thief': base_ac = 1
+
+        dex_mod = self.calculate_modifier(self.abilities.get('dexterity', 10))
+        return base_ac + dex_mod
 
     def calculate_modifier(self, ability_score): return (ability_score - 10) // 2 # Simplified
     def get_effective_ability(self, ability_name): return self.abilities.get(ability_name, 10) # Simplified

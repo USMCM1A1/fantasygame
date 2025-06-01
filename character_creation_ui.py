@@ -371,7 +371,7 @@ def character_creation_screen(screen, clock):
         # Use imported Player and Dungeon classes
         created_player = Player(name=character_name.strip(), race=selected_race, char_class=selected_class, abilities=lowercase_abilities, start_position=[0,0], sprite=None) # start_pos and sprite are placeholders for common_b_s.Player
 
-        created_player.apply_race_bonus()
+        # apply_race_bonus is now called in Character.__init__ from common_b_s
         created_player.level = 1
         created_player.hit_points = created_player.roll_hit_points()
         created_player.max_hit_points = created_player.hit_points
