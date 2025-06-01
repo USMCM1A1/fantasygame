@@ -373,10 +373,7 @@ def character_creation_screen(screen, clock):
 
         # apply_race_bonus is now called in Character.__init__ from common_b_s
         created_player.level = 1
-        created_player.hit_points = created_player.roll_hit_points()
-        created_player.max_hit_points = created_player.hit_points
-        created_player.spell_points = created_player.calculate_spell_points()
-        created_player.ac = created_player.calculate_ac()
+        # HP, Max HP, SP, AC are now set by Character.__init__
         created_player.gold = random.randint(20, 50)
 
         initial_dungeon = Dungeon(width=20, height=15, level=1)
