@@ -1626,17 +1626,7 @@ while running:
                 # Use the enhanced spell dialog from spell_bridge if available
                 try:
                     print("DEBUG: Attempting to import update_spells_dialogue...")
-                    
-                    # Add Data directory to Python path
-                    import sys
-                    import os
-                    data_path = os.path.join(os.path.dirname(__file__), "Data")
-                    if data_path not in sys.path:
-                        sys.path.append(data_path)
-                    print(f"DEBUG: Python path now includes {data_path}")
-                    
-                    # Import using the proper path
-                    from spell_bridge import update_spells_dialogue
+                    from Data.spell_bridge import update_spells_dialogue # Use absolute package import
                     print("DEBUG: Imported update_spells_dialogue successfully")
                     
                     # Call the enhanced UI function
@@ -1644,6 +1634,9 @@ while running:
                 except Exception as e:
                     # Fall back to the original implementation
                     print(f"DEBUG: Error using enhanced UI: {e}")
+                    # Ensure spells_dialogue is available if update_spells_dialogue fails
+                    # This might require an import for spells_dialogue from common_b_s if not already global
+                    # For now, assuming spells_dialogue from common_b_s is accessible
                     selected_spell = spells_dialogue(screen, player, clock)
                 
                 if selected_spell is None:
