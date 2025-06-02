@@ -35,6 +35,11 @@ from character_creation_ui import character_creation_screen # Import new charact
 # =============================================================================
 pygame.init()
 
+# Define fonts to be used
+# 'font' is imported from common_b_s.
+# For small_font, needed by debug_system.draw_key_diagnostics:
+small_font = pygame.font.SysFont('monospace', 16)
+
 #sound mixer
 pygame.mixer.init()
 
