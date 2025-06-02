@@ -40,6 +40,7 @@ pygame.mixer.init()
 
 # Import from common_b_s
 import common_b_s
+import debug_system # Import the module itself
 # Import condition system
 from Data.condition_system import condition_manager, ConditionType
 
@@ -120,23 +121,11 @@ pygame.display.set_caption("Blade & Sigil v5.5")
 clock = pygame.time.Clock()
 FPS = 60
 
-# Debug logging
-import logging
-DEBUG_MODE = False  # Set this to False to disable the in-game debug overlay
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename="game_debug.log",
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__) # Module-level logger
-# Create a logger specifically for our test arena functionality
-test_arena_logger = logging.getLogger("test_arena")
-test_arena_logger.setLevel(logging.DEBUG)
+# Debug logging setup is now in debug_system.py
 
-# Key diagnostics globals - disabled for normal gameplay
-KEY_DIAGNOSTIC_ENABLED = False  # Set to False to hide the key diagnostics overlay
-keys_pressed = []  # List of recently pressed keys (for display)
-key_state = {}     # Dictionary to track key states for combinations
+# Key diagnostics globals DEBUG_MODE, KEY_DIAGNOSTIC_ENABLED, keys_pressed, key_state
+# are now defined in debug_system.py
+
 # Function to create a fireball explosion image
 def create_fireball_image():
     """
@@ -179,7 +168,7 @@ def create_fireball_image():
 
 # Function to create the emergency test arena
 def create_emergency_arena(player, screen):
-    test_arena_logger.info("CREATING EMERGENCY TEST ARENA")
+    debug_system.test_arena_logger.info("CREATING EMERGENCY TEST ARENA")
     screen.fill((0, 0, 0))
     draw_text(screen, "CREATING EMERGENCY TEST ARENA...", (255, 255, 255), DUNGEON_SCREEN_WIDTH//2 - 150, DUNGEON_SCREEN_HEIGHT//2)
     pygame.display.flip()
@@ -242,7 +231,7 @@ def create_emergency_arena(player, screen):
         add_message("Press 'x' to cast spells")
         add_message(f"You have {player.spell_points} spell points")
         
-        test_arena_logger.info("Emergency test arena created successfully")
+        debug_system.test_arena_logger.info("Emergency test arena created successfully")
         return min_arena, "dungeon"
         
     except Exception as e:
@@ -250,150 +239,12 @@ def create_emergency_arena(player, screen):
         draw_text(screen, f"ERROR: {str(e)}", (255, 0, 0), 50, 50)
         pygame.display.flip()
         pygame.time.delay(3000)  # Show error for 3 seconds
-        test_arena_logger.error(f"EMERGENCY ARENA CREATION FAILED: {e}", exc_info=True)
+        debug_system.test_arena_logger.error(f"EMERGENCY ARENA CREATION FAILED: {e}", exc_info=True)
         return None, None
 
-# Debug info overlay function
-def draw_debug_info(screen, player, dungeon):
-    """Draw debug information on screen, including player and dungeon state."""
-    if not DEBUG_MODE:
-        return
-        
-    # Create a semi-transparent overlay for debug info
-    debug_surface = pygame.Surface((400, 300), pygame.SRCALPHA)
-    debug_surface.fill((0, 0, 0, 180))  # Semi-transparent black
-    
-    # Title
-    title_text = "DEBUG INFO"
-    title_surface = font.render(title_text, True, (255, 255, 0))
-    debug_surface.blit(title_surface, (10, 10))
-    
-    # Player info
-    y_pos = 40
-    player_info = [
-        f"Player: {player.name} ({player.race} {player.char_class})",
-        f"Position: {player.position}",
-        f"HP: {player.hit_points}/{player.max_hit_points}",
-        f"SP: {player.spell_points}",
-    ]
-    
-    for info in player_info:
-        text_surface = font.render(info, True, (200, 200, 255))
-        debug_surface.blit(text_surface, (10, y_pos))
-        y_pos += 20
-    
-    # Dungeon info
-    y_pos += 10
-    try:
-        dungeon_info = [
-            f"Dungeon: {getattr(dungeon, 'level', 0)}",
-            f"Map: {getattr(dungeon, 'map_number', 0)}/{getattr(dungeon, 'max_maps', 0)}",
-            f"Monsters: {len(getattr(dungeon, 'monsters', []))}",
-            f"Doors: {len(getattr(dungeon, 'doors', {}))}",
-        ]
-        
-        for info in dungeon_info:
-            text_surface = font.render(info, True, (200, 255, 200))
-            debug_surface.blit(text_surface, (10, y_pos))
-            y_pos += 20
-    except:
-        # If any attribute access fails, just show a simple message
-        error_text = "Dungeon data unavailable"
-        text_surface = font.render(error_text, True, (255, 100, 100))
-        debug_surface.blit(text_surface, (10, y_pos))
-    
-    # Position the debug overlay at the top-left corner
-    screen.blit(debug_surface, (10, 10))
+# Function draw_debug_info is now in debug_system.py
 
-# Function to draw the key diagnostics overlay
-def draw_key_diagnostics(screen):
-    if not KEY_DIAGNOSTIC_ENABLED:
-        return
-        
-    # Create a more visible overlay
-    overlay_width = 350
-    overlay_height = 270
-    overlay = pygame.Surface((overlay_width, overlay_height), pygame.SRCALPHA)
-    overlay.fill((0, 0, 50, 230))  # More opaque, blue tint
-    
-    # Draw border with flashing effect based on time
-    border_flash = abs(pygame.time.get_ticks() % 1000 - 500) / 500  # 0.0 to 1.0 oscillation
-    border_color = (
-        int(255 * border_flash),  # R: pulsing
-        255,                      # G: always high
-        int(255 * (1 - border_flash))  # B: inverse pulsing
-    )
-    pygame.draw.rect(overlay, border_color, (0, 0, overlay_width, overlay_height), 3)
-    
-    # Title with shadow
-    font = pygame.font.SysFont('monospace', 20, bold=True)
-    small_font = pygame.font.SysFont('monospace', 16)
-    
-    title = font.render("KEY DIAGNOSTICS", True, (255, 255, 0))
-    # Shadow effect
-    title_shadow = font.render("KEY DIAGNOSTICS", True, (0, 0, 0))
-    overlay.blit(title_shadow, (12, 12))
-    overlay.blit(title, (10, 10))
-    
-    # Last keys pressed
-    y_pos = 40
-    if keys_pressed:
-        header = font.render("Recent Keys:", True, (255, 200, 200))
-        overlay.blit(header, (10, y_pos))
-        y_pos += 25
-        
-        # Show last keys with timestamp
-        for i, key in enumerate(keys_pressed[-5:]):
-            text_color = (200, 255, 255)  # Bright cyan
-            overlay.blit(small_font.render(f"> {key}", True, text_color), (20, y_pos + i*20))
-        y_pos += len(keys_pressed[-5:]) * 20 + 15
-    else:
-        msg = small_font.render("No keys detected yet - press any key", True, (255, 100, 100))
-        overlay.blit(msg, (10, y_pos))
-        y_pos += 30
-    
-    # Draw test arena activation instructions
-    pygame.draw.rect(overlay, (50, 100, 50), (10, y_pos, overlay_width - 20, 30))
-    activation_text = small_font.render("TEST ARENA: F1 or SHIFT+T", True, (255, 255, 0))
-    overlay.blit(activation_text, (20, y_pos + 8))
-    y_pos += 40
-    
-    # Current key states with visual indicators
-    overlay.blit(font.render("Active Keys:", True, (255, 200, 200)), (10, y_pos))
-    y_pos += 25
-    
-    # Define important keys to show
-    important_keys = ["F1", "F2", "Shift", "T", "Enter", "1", "X"]
-    
-    # Create a grid layout for key states (2 columns)
-    col_width = (overlay_width - 30) // 2
-    row_height = 25
-    col = 0
-    row = 0
-    
-    for key in important_keys:
-        state = key_state.get(key, False)
-        # Calculate position
-        x_pos = 15 + (col * col_width)
-        y_offset = y_pos + (row * row_height)
-        
-        # Draw key indicator
-        indicator_color = (0, 255, 0) if state else (255, 0, 0)  # Green/red
-        pygame.draw.rect(overlay, indicator_color, (x_pos, y_offset, 15, 15))
-        
-        # Draw key label with bright color when active
-        text_color = (255, 255, 255) if state else (180, 180, 180)
-        overlay.blit(small_font.render(f"{key}", True, text_color), (x_pos + 20, y_offset))
-        
-        # Update column/row position
-        col += 1
-        if col >= 2:
-            col = 0
-            row += 1
-    
-    # Position overlay in top-right corner for better visibility
-    screen.blit(overlay, (DUNGEON_SCREEN_WIDTH - overlay_width - 10, 10))
-
+# Function draw_key_diagnostics is now in debug_system.py
 
 # In[3]:
 
@@ -827,7 +678,7 @@ def process_game_turn(player, dungeon):
     Returns:
         None (messages are added directly to the message queue)
     """
-    logger.info(f"blade_sigil_v5_5.process_game_turn: Using condition_manager (id: {id(condition_manager)}) with current_turn: {condition_manager.current_turn}")
+    debug_system.logger.info(f"blade_sigil_v5_5.process_game_turn: Using condition_manager (id: {id(condition_manager)}) with current_turn: {condition_manager.current_turn}")
     # Process all active conditions on player and monsters
     condition_messages = condition_manager.process_turn([player] + dungeon.monsters)
     
@@ -1007,21 +858,21 @@ def create_test_arena(player, dungeon):
     """
     import math
     
-    test_arena_logger.info("Creating test arena...")
+    debug_system.test_arena_logger.info("Creating test arena...")
     
     # Create a new dungeon with a large open area
     width, height = 30, 30
-    test_arena_logger.debug(f"Creating arena with dimensions {width}x{height}")
+    debug_system.test_arena_logger.debug(f"Creating arena with dimensions {width}x{height}")
     arena = Dungeon(width, height, max_rooms=0)
     
     # Copy important properties from existing dungeon
     arena.dungeon_depth = getattr(dungeon, 'dungeon_depth', 1)
     arena.map_number = getattr(dungeon, 'map_number', 0)
     arena.max_maps = getattr(dungeon, 'max_maps', 3)
-    test_arena_logger.debug(f"Set dungeon properties: depth={arena.dungeon_depth}, map={arena.map_number}")
+    debug_system.test_arena_logger.debug(f"Set dungeon properties: depth={arena.dungeon_depth}, map={arena.map_number}")
     
     # Fill the entire dungeon with floor tiles
-    test_arena_logger.debug("Filling dungeon with floor tiles...")
+    debug_system.test_arena_logger.debug("Filling dungeon with floor tiles...")
     for x in range(width):
         for y in range(height):
             # Create walls at the edges
@@ -1054,10 +905,10 @@ def create_test_arena(player, dungeon):
     
     # Update player position
     player.position = list(arena.entrance)
-    test_arena_logger.debug(f"Positioned player in playable area at {player.position}")
+    debug_system.test_arena_logger.debug(f"Positioned player in playable area at {player.position}")
     
     # Create several monsters for testing both single target and AOE spells
-    test_arena_logger.debug("Creating test monsters (rats and spiders)")
+    debug_system.test_arena_logger.debug("Creating test monsters (rats and spiders)")
     
     # Clear any existing monsters
     arena.monsters = []
@@ -1146,14 +997,14 @@ def create_test_arena(player, dungeon):
         # Add monster to the dungeon
         arena.monsters.append(monster)
     
-    test_arena_logger.debug(f"Added {len(arena.monsters)} test monsters to the arena")
+    debug_system.test_arena_logger.debug(f"Added {len(arena.monsters)} test monsters to the arena")
     
     # Set player's health and spell points to full
     player.hit_points = player.max_hit_points
     player.spell_points = player.calculate_spell_points() + 100  # Extra spell points for testing
-    test_arena_logger.debug(f"Player set to full health ({player.hit_points}/{player.max_hit_points}) and {player.spell_points} spell points")
+    debug_system.test_arena_logger.debug(f"Player set to full health ({player.hit_points}/{player.max_hit_points}) and {player.spell_points} spell points")
     
-    test_arena_logger.info(f"Created test arena with {len(arena.monsters)} monsters.")
+    debug_system.test_arena_logger.info(f"Created test arena with {len(arena.monsters)} monsters.")
     return arena
 
 # === Main Game Loop with Proper Monster Reaction ===
@@ -1402,13 +1253,13 @@ while running:
     shift_pressed = key_states[pygame.K_LSHIFT] or key_states[pygame.K_RSHIFT]
     
     # Update key state dictionary for diagnostics display
-    key_state["F1"] = f1_pressed
-    key_state["F2"] = f2_pressed
-    key_state["T"] = t_key_pressed
-    key_state["1"] = one_key_pressed
-    key_state["Enter"] = enter_key_pressed
-    key_state["Shift"] = shift_pressed
-    key_state["X"] = key_states[pygame.K_x]
+    debug_system.key_state["F1"] = f1_pressed
+    debug_system.key_state["F2"] = f2_pressed
+    debug_system.key_state["T"] = t_key_pressed
+    debug_system.key_state["1"] = one_key_pressed
+    debug_system.key_state["Enter"] = enter_key_pressed
+    debug_system.key_state["Shift"] = shift_pressed
+    debug_system.key_state["X"] = key_states[pygame.K_x]
     
     # Check for key presses but don't print debugging
     # We'll keep the variables for the key detection to work
@@ -1425,7 +1276,7 @@ while running:
         
         # Log the activation to the log file only (not console)
         key_detected = "F1" if f1_pressed else "F2" if f2_pressed else "SHIFT+T" if shift_pressed and t_key_pressed else "T+ENTER"
-        test_arena_logger.info(f"Test arena activated via {key_detected} key")
+        debug_system.test_arena_logger.info(f"Test arena activated via {key_detected} key")
         
         # Create emergency test arena with all possible error handling
         try:
@@ -1434,12 +1285,12 @@ while running:
                 game_dungeon = emergency_result[0]
                 game_state = emergency_result[1]
                 common_b_s.in_dungeon = True
-                test_arena_logger.info("Emergency test arena created and activated")
+                debug_system.test_arena_logger.info("Emergency test arena created and activated")
                 print("Emergency test arena successfully created!")
         except Exception as e:
             error_msg = f"CRITICAL ERROR CREATING ARENA: {str(e)}"
             print(error_msg)
-            test_arena_logger.error(error_msg, exc_info=True)
+            debug_system.test_arena_logger.error(error_msg, exc_info=True)
             
             # Show error directly on screen
             screen.fill((0, 0, 0))
@@ -1550,12 +1401,12 @@ while running:
         elif event.type == pygame.KEYDOWN:
             # Debug key presses
             key_name = pygame.key.name(event.key)
-            test_arena_logger.debug(f"Key pressed: {key_name}")
+            debug_system.test_arena_logger.debug(f"Key pressed: {key_name}")
             
             # Add to keys_pressed for the diagnostic overlay
-            keys_pressed.append(key_name)
-            if len(keys_pressed) > 10:  # Keep last 10 keys only
-                keys_pressed.pop(0)
+            debug_system.keys_pressed.append(key_name)
+            if len(debug_system.keys_pressed) > 10:  # Keep last 10 keys only
+                debug_system.keys_pressed.pop(0)
                 
             # Toggle debug console with the 'D' key
             if event.key == pygame.K_d:
@@ -1569,7 +1420,7 @@ while running:
             
             # Track Shift+T combination
             if event.key == pygame.K_t and (pygame.key.get_mods() & pygame.KMOD_SHIFT):
-                test_arena_logger.info("SHIFT+T DETECTED - Direct test arena activation")
+                debug_system.test_arena_logger.info("SHIFT+T DETECTED - Direct test arena activation")
                 # Create emergency test arena
                 emergency_result = create_emergency_arena(player, screen)
                 if emergency_result and emergency_result[0]:
@@ -1579,7 +1430,7 @@ while running:
                 
             # Extra debug for T key
             elif key_name == 't':
-                test_arena_logger.info("T KEY DETECTED! You should see test arena loading...")
+                debug_system.test_arena_logger.info("T KEY DETECTED! You should see test arena loading...")
                 # Show immediate feedback on screen
                 screen.fill((0, 0, 0))
                 text = "T key detected - Loading test arena!"
@@ -1594,7 +1445,7 @@ while running:
 
             # === TEST ARENA (1 key - Unconditional, highest priority) ===
             if event.key == pygame.K_1:
-                test_arena_logger.info("NUMBER 1 KEY PRESSED - DIRECT TEST ARENA ACCESS")
+                debug_system.test_arena_logger.info("NUMBER 1 KEY PRESSED - DIRECT TEST ARENA ACCESS")
                 screen.fill((0, 0, 0))
                 draw_text(screen, "CREATING TEST ARENA...", (255, 255, 255), DUNGEON_SCREEN_WIDTH//2 - 150, DUNGEON_SCREEN_HEIGHT//2)
                 pygame.display.flip()
@@ -1658,7 +1509,7 @@ while running:
                     draw_text(screen, f"ERROR: {str(e)}", (255, 0, 0), 50, 50)
                     pygame.display.flip()
                     pygame.time.delay(3000)  # Show error for 3 seconds
-                    test_arena_logger.error(f"EMERGENCY ARENA CREATION FAILED: {e}", exc_info=True)
+                    debug_system.test_arena_logger.error(f"EMERGENCY ARENA CREATION FAILED: {e}", exc_info=True)
             
             # === PLAYER MOVEMENT ===
             elif event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]:
@@ -1891,8 +1742,8 @@ while running:
             elif event.key == pygame.K_t:
                 # Create the test arena for spell testing
                 add_message("Teleporting to the spell testing arena...")
-                test_arena_logger.debug("T key pressed, creating test arena...")
-                test_arena_logger.debug(f"Current game_state: {game_state}, in_dungeon: {common_b_s.in_dungeon}")
+                debug_system.test_arena_logger.debug("T key pressed, creating test arena...")
+                debug_system.test_arena_logger.debug(f"Current game_state: {game_state}, in_dungeon: {common_b_s.in_dungeon}")
                 
                 # Add a visible message to the screen to confirm the key was pressed
                 screen.fill((0, 0, 0))
@@ -1901,10 +1752,10 @@ while running:
                 
                 # Create a new test arena
                 try:
-                    test_arena_logger.debug("Calling create_test_arena...")
+                    debug_system.test_arena_logger.debug("Calling create_test_arena...")
                     # Create a test arena
                     game_dungeon = create_test_arena(player, game_dungeon)
-                    test_arena_logger.debug("Test arena created, setting game state...")
+                    debug_system.test_arena_logger.debug("Test arena created, setting game state...")
                     common_b_s.in_dungeon = True
                     game_state = "dungeon"
                     
@@ -1915,11 +1766,11 @@ while running:
                     # Give the player extra spell points
                     player.spell_points = player.calculate_spell_points() + 100
                     add_message(f"You have {player.spell_points} spell points for testing.")
-                    test_arena_logger.debug("Test arena created successfully")
-                    test_arena_logger.debug(f"Updated game_state: {game_state}, in_dungeon: {common_b_s.in_dungeon}")
+                    debug_system.test_arena_logger.debug("Test arena created successfully")
+                    debug_system.test_arena_logger.debug(f"Updated game_state: {game_state}, in_dungeon: {common_b_s.in_dungeon}")
                 except Exception as e:
                     add_message(f"Error creating test arena: {str(e)}")
-                    test_arena_logger.error(f"Error creating test arena: {e}", exc_info=True)
+                    debug_system.test_arena_logger.error(f"Error creating test arena: {e}", exc_info=True)
                     import traceback
                     traceback.print_exc()
                 
@@ -2217,9 +2068,9 @@ while running:
                                         is_poisoned = True
                                         break
                             if is_poisoned:
-                                logging.debug(f"Monster {monster.name} is POISONED. Starting its turn. Calling handle_monster_turn.")
+                                debug_system.logger.debug(f"Monster {monster.name} is POISONED. Starting its turn. Calling handle_monster_turn.")
                             
-                            logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}, Pending DoT Death: {getattr(monster, 'pending_death_from_dot', False)}). Calling handle_monster_turn.")
+                            debug_system.logger.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}, Pending DoT Death: {getattr(monster, 'pending_death_from_dot', False)}). Calling handle_monster_turn.")
                             # REMOVED NESTED IF: Monster gets its turn if outer condition is met.
                             # handle_monster_turn itself should check if the monster can act (e.g. if HP > 0, not stunned, etc.)
                             handle_monster_turn(monster, player, game_dungeon)
@@ -2260,9 +2111,9 @@ while running:
                                     is_poisoned = True
                                     break
                         if is_poisoned:
-                            logging.debug(f"Monster {monster.name} is POISONED. Starting its turn (after player action). Calling handle_monster_turn.")
+                            debug_system.logger.debug(f"Monster {monster.name} is POISONED. Starting its turn (after player action). Calling handle_monster_turn.")
                         
-                        logging.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}, Pending DoT Death: {getattr(monster, 'pending_death_from_dot', False)}) after player action. Calling handle_monster_turn.")
+                        debug_system.logger.debug(f"Main loop: Processing turn for {monster.name} (HP: {monster.hit_points}, Pending DoT Death: {getattr(monster, 'pending_death_from_dot', False)}) after player action. Calling handle_monster_turn.")
                         # REMOVED NESTED IF: Monster gets its turn if outer condition is met.
                         # handle_monster_turn itself should check if the monster can act (e.g. if HP > 0, not stunned, etc.)
                         handle_monster_turn(monster, player, game_dungeon)
@@ -2345,11 +2196,15 @@ while running:
         offset_y=0
     )
         
-    if DEBUG_MODE:
-        draw_debug_info(screen, player, game_dungeon)
+    if debug_system.DEBUG_MODE: # Use debug_system.DEBUG_MODE
+        # Call the function from debug_system module
+        # Arguments: screen, player, dungeon, font
+        debug_system.draw_debug_info(screen, player, game_dungeon, font)
     
     # Draw the key diagnostics overlay
-    draw_key_diagnostics(screen)
+    # Call the function from debug_system module
+    # Arguments: screen, font, small_font, DUNGEON_SCREEN_WIDTH
+    debug_system.draw_key_diagnostics(screen, font, small_font, DUNGEON_SCREEN_WIDTH)
     
     # Just draw a subtle hint at the bottom
     draw_text(screen, "Press F1 for Test Arena", WHITE, 

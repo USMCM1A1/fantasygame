@@ -9,11 +9,11 @@ import pygame
 import json
 import os
 import sys
-import logging
 import random
 import re
 from copy import deepcopy
 from Data.condition_system import condition_manager
+from debug_system import DEBUG_MODE # Import DEBUG_MODE
 
 # === Pygame Initialization Constants ===
 pygame.init()
@@ -85,12 +85,8 @@ import pygame
 font = pygame.font.SysFont('monospace', 15)
 
 # === Logging Configuration ===
-DEBUG_MODE = True
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename="game_debug.log",
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+# DEBUG_MODE is now imported from debug_system.
+# logging.basicConfig is expected to be called once, now in debug_system.py.
 
 # === Helper Functions ===
 def load_sprite(path):
