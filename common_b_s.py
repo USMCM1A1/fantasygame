@@ -9,6 +9,7 @@ import pygame
 import json
 import os
 import sys
+import logging # Add logging import
 import random
 import re
 from copy import deepcopy
