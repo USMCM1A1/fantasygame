@@ -46,6 +46,7 @@ pygame.mixer.init()
 # Import from common_b_s
 import common_b_s
 import debug_system # Import the module itself
+from test_arena import create_test_arena, create_emergency_arena, handle_test_arena_activation, handle_teleport_button_click # Import functions from test_arena.py
 # Import condition system
 from Data.condition_system import condition_manager, ConditionType
 
@@ -171,81 +172,7 @@ def create_fireball_image():
     print(f"Created fireball image at {output_path}")
     return output_path
 
-# Function to create the emergency test arena
-def create_emergency_arena(player, screen):
-    debug_system.test_arena_logger.info("CREATING EMERGENCY TEST ARENA")
-    screen.fill((0, 0, 0))
-    draw_text(screen, "CREATING EMERGENCY TEST ARENA...", (255, 255, 255), DUNGEON_SCREEN_WIDTH//2 - 150, DUNGEON_SCREEN_HEIGHT//2)
-    pygame.display.flip()
-    pygame.time.delay(500)  # Short delay to show the message
-    
-    try:
-        # Create a very minimal test arena
-        width, height = 20, 20
-        min_arena = Dungeon(width, height, max_rooms=0)
-        
-        # Make all tiles floor tiles
-        for x in range(width):
-            for y in range(height):
-                min_arena.tiles[x][y].type = "floor"
-                # Try to set the sprite
-                try:
-                    floor_sprite_path = assets_data["sprites"]["tiles"]["floor"]
-                    min_arena.tiles[x][y].sprite = load_sprite(floor_sprite_path)
-                except:
-                    # Create a fallback sprite if the proper one can't be loaded
-                    fallback_sprite = pygame.Surface((DUNGEON_TILE_SIZE, DUNGEON_TILE_SIZE))
-                    fallback_sprite.fill((100, 100, 100))  # Gray floor
-                    min_arena.tiles[x][y].sprite = fallback_sprite
-        
-        # Place player in center
-        player_x, player_y = width // 2, height // 2  
-        min_arena.start_position = [player_x * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2, 
-                                   player_y * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2]
-        player.position = list(min_arena.start_position)
-        
-        # Create a test monster with proper sprite paths
-        test_monster = Monster(
-            name="Test Monster",
-            hit_points=10,
-            to_hit=0,
-            ac=10,
-            move=1,
-            dam="1d4",
-            sprites={
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg",
-                "dead": ""
-            },
-            monster_type="beast"
-        )
-        
-        # Position the monster near player
-        test_monster.position = [player.position[0] + 5*DUNGEON_TILE_SIZE, player.position[1]]
-        
-        # Let the Monster class handle sprite loading with its fallback mechanisms
-        # Removed manual sprite override to use proper monster sprites
-        
-        # Add to arena
-        min_arena.monsters = [test_monster]
-        
-        # Set player spell points
-        player.spell_points = 200
-        
-        # Display messages
-        add_message("EMERGENCY TEST ARENA CREATED!")
-        add_message("Press 'x' to cast spells")
-        add_message(f"You have {player.spell_points} spell points")
-        
-        debug_system.test_arena_logger.info("Emergency test arena created successfully")
-        return min_arena, "dungeon"
-        
-    except Exception as e:
-        screen.fill((0, 0, 0))
-        draw_text(screen, f"ERROR: {str(e)}", (255, 0, 0), 50, 50)
-        pygame.display.flip()
-        pygame.time.delay(3000)  # Show error for 3 seconds
-        debug_system.test_arena_logger.error(f"EMERGENCY ARENA CREATION FAILED: {e}", exc_info=True)
-        return None, None
+# Function to create the emergency test arena has been moved to test_arena.py
 
 # Function draw_debug_info is now in debug_system.py
 
@@ -750,6 +677,8 @@ def combat(player, monster, dungeon_instance):
 # === Title Screen with Load Game / New Character Options ===
 # =============================================================================
 
+# The create_test_arena function has been moved to test_arena.py
+
 def show_title_screen():
     """Display the title screen with options to start a new game or load a saved game."""
     # Initialize screen for title
@@ -846,171 +775,6 @@ def show_title_screen():
         title_screen.blit(help_text, help_rect)
         
         pygame.display.flip()
-
-# =============================================================================
-# === Test Arena Function for Spell Testing ===
-def create_test_arena(player, dungeon):
-    """
-    Creates a special test arena for spell testing.
-    The arena is a large open room with multiple monsters for testing spells.
-    
-    Args:
-        player: The player character
-        dungeon: The current dungeon (to copy necessary configuration)
-        
-    Returns:
-        A new Dungeon instance configured as a test arena
-    """
-    import math
-    
-    debug_system.test_arena_logger.info("Creating test arena...")
-    
-    # Create a new dungeon with a large open area
-    width, height = 30, 30
-    debug_system.test_arena_logger.debug(f"Creating arena with dimensions {width}x{height}")
-    arena = Dungeon(width, height, max_rooms=0)
-    
-    # Copy important properties from existing dungeon
-    arena.dungeon_depth = getattr(dungeon, 'dungeon_depth', 1)
-    arena.map_number = getattr(dungeon, 'map_number', 0)
-    arena.max_maps = getattr(dungeon, 'max_maps', 3)
-    debug_system.test_arena_logger.debug(f"Set dungeon properties: depth={arena.dungeon_depth}, map={arena.map_number}")
-    
-    # Fill the entire dungeon with floor tiles
-    debug_system.test_arena_logger.debug("Filling dungeon with floor tiles...")
-    for x in range(width):
-        for y in range(height):
-            # Create walls at the edges
-            if x == 0 or x == width-1 or y == 0 or y == height-1:
-                arena.tiles[x][y].type = "wall"
-            else:
-                arena.tiles[x][y].type = "floor"
-                # Update the sprite as well
-                floor_sprite_path = assets_data["sprites"]["tiles"]["floor"]
-                arena.tiles[x][y].sprite = load_sprite(floor_sprite_path)
-    
-    # Place the player in the center of the playable area
-    player_x, player_y = width // 2, height // 2
-    
-    # Clamp player position to be within the playable area boundaries
-    max_x = (DUNGEON_PLAYABLE_AREA_WIDTH - DUNGEON_TILE_SIZE) // DUNGEON_TILE_SIZE
-    max_y = (DUNGEON_PLAYABLE_AREA_HEIGHT - DUNGEON_TILE_SIZE) // DUNGEON_TILE_SIZE
-    
-    # Ensure player is not too close to the edge
-    player_x = min(max(player_x, 2), max_x - 2)
-    player_y = min(max(player_y, 2), max_y - 2)
-    
-    # Calculate pixel coordinates
-    player_x_px = player_x * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2
-    player_y_px = player_y * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2
-    
-    # Set arena entrance and start position
-    arena.entrance = (player_x_px, player_y_px)
-    arena.start_position = list(arena.entrance)  # Also set start_position attribute
-    
-    # Update player position
-    player.position = list(arena.entrance)
-    debug_system.test_arena_logger.debug(f"Positioned player in playable area at {player.position}")
-    
-    # Create several monsters for testing both single target and AOE spells
-    debug_system.test_arena_logger.debug("Creating test monsters (rats and spiders)")
-    
-    # Clear any existing monsters
-    arena.monsters = []
-    
-    # Define different monster types
-    monster_types = [
-        {
-            "name": "Giant Rat",
-            "hit_points": 8,
-            "to_hit": 0,
-            "ac": 9,
-            "move": 2,
-            "dam": "1d3",
-            "color": (150, 100, 80),  # Brown
-            "monster_type": "beast",
-            "level": 1,
-            "cr": 0.5
-        },
-        {
-            "name": "Giant Spider",
-            "hit_points": 12,
-            "to_hit": 1,
-            "ac": 11,
-            "move": 1,
-            "dam": "1d6",
-            "color": (30, 30, 30),  # Dark gray/black
-            "monster_type": "beast",
-            "level": 1,
-            "cr": 1,
-            "vulnerabilities": ["Fire"]
-        }
-    ]
-    
-    # Create 5 monsters with varied positions
-    monster_count = 5
-    monster_positions = [
-        # In a loose formation around the player, good for testing AOE
-        (player_x + 3, player_y - 2),  # Upper right
-        (player_x + 4, player_y),      # Right
-        (player_x + 3, player_y + 2),  # Lower right
-        (player_x - 3, player_y - 1),  # Upper left
-        (player_x - 3, player_y + 1)   # Lower left
-    ]
-    
-    for i in range(monster_count):
-        # Alternate between monster types
-        monster_type = monster_types[i % len(monster_types)]
-        
-        # Create the monster
-        monster = Monster(
-            name=f"{monster_type['name']} #{i+1}",
-            hit_points=monster_type["hit_points"],
-            to_hit=monster_type["to_hit"],
-            ac=monster_type["ac"],
-            move=monster_type["move"],
-            dam=monster_type["dam"],
-            sprites={
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg" if monster_type["name"] == "Giant Rat" else 
-                       "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_spider.jpg",
-                "dead": ""
-            },
-            monster_type=monster_type["monster_type"],
-            level=monster_type["level"],
-            cr=monster_type["cr"],
-            vulnerabilities=monster_type.get("vulnerabilities", []),
-            resistances=monster_type.get("resistances", []),
-            immunities=monster_type.get("immunities", [])
-        )
-        
-        # Position the monster
-        monster_x, monster_y = monster_positions[i]
-        
-        # Ensure monster position is within bounds
-        monster_x = min(max(monster_x, 1), max_x - 1)
-        monster_y = min(max(monster_y, 1), max_y - 1)
-        
-        # Calculate pixel coordinates
-        monster_x_px = monster_x * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2
-        monster_y_px = monster_y * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2
-        
-        monster.position = [monster_x_px, monster_y_px]
-        
-        # Let the Monster class handle sprite loading with its fallback mechanisms
-        # Removed manual sprite override to use proper monster sprites
-        
-        # Add monster to the dungeon
-        arena.monsters.append(monster)
-    
-    debug_system.test_arena_logger.debug(f"Added {len(arena.monsters)} test monsters to the arena")
-    
-    # Set player's health and spell points to full
-    player.hit_points = player.max_hit_points
-    player.spell_points = player.calculate_spell_points() + 100  # Extra spell points for testing
-    debug_system.test_arena_logger.debug(f"Player set to full health ({player.hit_points}/{player.max_hit_points}) and {player.spell_points} spell points")
-    
-    debug_system.test_arena_logger.info(f"Created test arena with {len(arena.monsters)} monsters.")
-    return arena
 
 # === Main Game Loop with Proper Monster Reaction ===
 # =============================================================================
@@ -1245,66 +1009,33 @@ last_debug_update = 0  # For tracking periodic debug messages
 add_message(f"Starting main game loop with state: {game_state}, in_dungeon: {common_b_s.in_dungeon}", (150, 255, 150), MessageCategory.DEBUG)
 add_message(f"Player spell points: {player.spell_points}", (150, 255, 150), MessageCategory.DEBUG)
 print(f"DEBUG: T key handler is enabled")
+
+current_event_for_activation = None # Will be set in the event loop
+
 while running:
-    # CRITICAL: Direct key state polling (outside of event queue)
     key_states = pygame.key.get_pressed()
-    
-    # Check for emergency test arena activation keys
-    f1_pressed = key_states[pygame.K_F1]
-    f2_pressed = key_states[pygame.K_F2]
-    t_key_pressed = key_states[pygame.K_t]
-    one_key_pressed = key_states[pygame.K_1]
-    enter_key_pressed = key_states[pygame.K_RETURN]
-    shift_pressed = key_states[pygame.K_LSHIFT] or key_states[pygame.K_RSHIFT]
-    
-    # Update key state dictionary for diagnostics display
-    debug_system.key_state["F1"] = f1_pressed
-    debug_system.key_state["F2"] = f2_pressed
-    debug_system.key_state["T"] = t_key_pressed
-    debug_system.key_state["1"] = one_key_pressed
-    debug_system.key_state["Enter"] = enter_key_pressed
-    debug_system.key_state["Shift"] = shift_pressed
+
+    # Update key state dictionary for diagnostics display (can be simplified later if only used by moved logic)
+    debug_system.key_state["F1"] = key_states[pygame.K_F1]
+    debug_system.key_state["F2"] = key_states[pygame.K_F2]
+    debug_system.key_state["T"] = key_states[pygame.K_t]
+    debug_system.key_state["1"] = key_states[pygame.K_1]
+    debug_system.key_state["Enter"] = key_states[pygame.K_RETURN]
+    debug_system.key_state["Shift"] = key_states[pygame.K_LSHIFT] or key_states[pygame.K_RSHIFT]
     debug_system.key_state["X"] = key_states[pygame.K_x]
-    
-    # Check for key presses but don't print debugging
-    # We'll keep the variables for the key detection to work
-        
-    # EMERGENCY ACTIVATION: Check for ANY activation method 
-    # F1 is our guaranteed fallback key
-    if f1_pressed or f2_pressed or (t_key_pressed and enter_key_pressed) or (shift_pressed and t_key_pressed):
-        # Show simple loading message instead of flashing
-        screen.fill((0, 0, 0))
-        draw_text(screen, "Loading Test Arena...", WHITE, 
-                  DUNGEON_SCREEN_WIDTH//2 - 100, DUNGEON_SCREEN_HEIGHT//2)
-        pygame.display.flip()
-        pygame.time.delay(100)  # Brief delay
-        
-        # Log the activation to the log file only (not console)
-        key_detected = "F1" if f1_pressed else "F2" if f2_pressed else "SHIFT+T" if shift_pressed and t_key_pressed else "T+ENTER"
-        debug_system.test_arena_logger.info(f"Test arena activated via {key_detected} key")
-        
-        # Create emergency test arena with all possible error handling
-        try:
-            emergency_result = create_emergency_arena(player, screen)
-            if emergency_result and emergency_result[0]:
-                game_dungeon = emergency_result[0]
-                game_state = emergency_result[1]
-                common_b_s.in_dungeon = True
-                debug_system.test_arena_logger.info("Emergency test arena created and activated")
-                print("Emergency test arena successfully created!")
-        except Exception as e:
-            error_msg = f"CRITICAL ERROR CREATING ARENA: {str(e)}"
-            print(error_msg)
-            debug_system.test_arena_logger.error(error_msg, exc_info=True)
-            
-            # Show error directly on screen
-            screen.fill((0, 0, 0))
-            draw_text(screen, "ERROR CREATING TEST ARENA:", (255, 0, 0), 100, 100)
-            draw_text(screen, str(e), (255, 0, 0), 100, 130)
-            draw_text(screen, "Check console for details", (255, 255, 255), 100, 160)
-            pygame.display.flip()
-            pygame.time.delay(3000)  # Show error for 3 seconds
-    
+
+    # Call test arena activation handler (key-based)
+    # Pass current_event_for_activation which is updated in the event loop
+    activated_dungeon, new_game_state, new_in_dungeon = handle_test_arena_activation(
+        current_event_for_activation, key_states, player, screen, game_dungeon, game_state
+    )
+    if activated_dungeon:
+        game_dungeon = activated_dungeon
+        game_state = new_game_state
+        common_b_s.in_dungeon = new_in_dungeon
+        # Potentially skip rest of the loop iteration or reset current_event_for_activation
+        current_event_for_activation = None # Consume the event if it triggered activation
+
     if game_state == "hub":
         # Temporarily set in_dungeon to False while in hub
         common_b_s.in_dungeon = False  # This makes sure the inventory and other functions know we're in the hub
@@ -1360,42 +1091,26 @@ while running:
     # Update and process the message queue
     update_message_queue()
     
+    current_event_for_activation = None # Reset before event loop
     for event in pygame.event.get():
+        current_event_for_activation = event # Store current event for handle_test_arena_activation
+
         if event.type == pygame.QUIT:
             running = False
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            pos = event.pos
-            
-            # Check if "Teleport to Arena" button was clicked
-            teleport_button = pygame.Rect(DUNGEON_SCREEN_WIDTH - 150, 10, 140, 30)
-            if teleport_button.collidepoint(pos):
-                print("DEBUG: Teleport button clicked")
-                print(f"DEBUG: Current game_state: {game_state}, in_dungeon: {common_b_s.in_dungeon}")
-                add_message("Teleporting to the spell testing arena...")
-                
-                try:
-                    print("DEBUG: Calling create_test_arena from button click...")
-                    # Create a test arena
-                    game_dungeon = create_test_arena(player, game_dungeon)
-                    print("DEBUG: Test arena created, setting game state...")
-                    common_b_s.in_dungeon = True
-                    game_state = "dungeon"
-                    
-                    # Add help message
-                    add_message("Welcome to the spell testing arena!")
-                    add_message("Press 'x' to cast spells on the monsters.")
-                    
-                    # Give the player extra spell points
-                    player.spell_points = player.calculate_spell_points() + 100
-                    add_message(f"You have {player.spell_points} spell points for testing.")
-                    print("DEBUG: Test arena created successfully via button click")
-                    print(f"DEBUG: Updated game_state: {game_state}, in_dungeon: {common_b_s.in_dungeon}")
-                except Exception as e:
-                    add_message(f"Error creating test arena: {str(e)}")
-                    print(f"Error creating test arena: {e}")
-                    import traceback
-                    traceback.print_exc()
+            # Handle teleport button click
+            activated_dungeon_btn, new_game_state_btn, new_in_dungeon_btn = handle_teleport_button_click(
+                event.pos, player, game_dungeon, screen
+            )
+            if activated_dungeon_btn:
+                game_dungeon = activated_dungeon_btn
+                game_state = new_game_state_btn
+                common_b_s.in_dungeon = new_in_dungeon_btn
+                # current_event_for_activation = None # Consume event
+                continue # Skip other MOUSEBUTTONDOWN processing if teleported
+
+            # ... (other MOUSEBUTTONDOWN logic, if any, can go here)
 
         elif event.type == pygame.USEREVENT + 1:
             levelup_sound.play()
@@ -1404,120 +1119,42 @@ while running:
         # Removed timer-based condition processing
 
         elif event.type == pygame.KEYDOWN:
-            # Debug key presses
+            # Key-based test arena activation is now handled by handle_test_arena_activation at the start of the loop
+            # However, some specific key down events (like T for test arena message, D for debug) might still be here
+            # or moved entirely if they are part of the activation logic.
+
             key_name = pygame.key.name(event.key)
             debug_system.test_arena_logger.debug(f"Key pressed: {key_name}")
             
-            # Add to keys_pressed for the diagnostic overlay
             debug_system.keys_pressed.append(key_name)
-            if len(debug_system.keys_pressed) > 10:  # Keep last 10 keys only
+            if len(debug_system.keys_pressed) > 10: 
                 debug_system.keys_pressed.pop(0)
                 
-            # Toggle debug console with the 'D' key
             if event.key == pygame.K_d:
                 debug_console.toggle()
                 add_message("Debug console toggled", WHITE, MessageCategory.DEBUG)
                 
-            # Pass event to debug console for scrolling if visible
             if debug_console.visible:
                 if debug_console.handle_scroll(event):
-                    continue  # Event was handled by the debug console
+                    # current_event_for_activation = None # Consume event
+                    continue
             
-            # Track Shift+T combination
-            if event.key == pygame.K_t and (pygame.key.get_mods() & pygame.KMOD_SHIFT):
-                debug_system.test_arena_logger.info("SHIFT+T DETECTED - Direct test arena activation")
-                # Create emergency test arena
-                emergency_result = create_emergency_arena(player, screen)
-                if emergency_result and emergency_result[0]:
-                    game_dungeon = emergency_result[0]
-                    game_state = emergency_result[1]
-                    common_b_s.in_dungeon = True
-                
-            # Extra debug for T key
-            elif key_name == 't':
-                debug_system.test_arena_logger.info("T KEY DETECTED! You should see test arena loading...")
-                # Show immediate feedback on screen
-                screen.fill((0, 0, 0))
-                text = "T key detected - Loading test arena!"
-                draw_text(screen, text, WHITE, DUNGEON_SCREEN_WIDTH//2 - 150, DUNGEON_SCREEN_HEIGHT//2)
-                pygame.display.flip()
-                # Slight delay to ensure the message is seen
-                pygame.time.delay(500)
-                
+            # The T key press for "Loading Test Arena..." message logic was part of the activation
+            # and is now inside handle_test_arena_activation if that specific message is still desired
+            # For simple key presses like 't' that are not combos, direct key_states check is often enough
+            # but if it's tied to a specific message display upon PRESS, it might be here.
+            # For now, assuming the main activation handles the T key messages.
+            # if key_name == 't' and not (key_states[pygame.K_LSHIFT] or key_states[pygame.K_RSHIFT] or key_states[pygame.K_RETURN]):
+            #    # This is a standalone T press, not part of a combo handled by activation function
+            #    debug_system.test_arena_logger.info("Standalone T KEY DETECTED (outside combos)!")
+            #    # (Decide if any action needed for standalone T press, or if it's fully covered)
+
+
             handle_scroll_events(event)
+            moved = False
 
-            moved = False  # Tracks if player took an action
-
-            # === TEST ARENA (1 key - Unconditional, highest priority) ===
-            if event.key == pygame.K_1:
-                debug_system.test_arena_logger.info("NUMBER 1 KEY PRESSED - DIRECT TEST ARENA ACCESS")
-                screen.fill((0, 0, 0))
-                draw_text(screen, "CREATING TEST ARENA...", (255, 255, 255), DUNGEON_SCREEN_WIDTH//2 - 150, DUNGEON_SCREEN_HEIGHT//2)
-                pygame.display.flip()
-                pygame.time.delay(500)  # Short delay to show the message
-                
-                # Just create the simplest possible arena
-                try:
-                    # Create a very minimal test arena
-                    width, height = 20, 20
-                    min_arena = Dungeon(width, height, max_rooms=0)
-                    
-                    # Make all tiles floor tiles
-                    for x in range(width):
-                        for y in range(height):
-                            min_arena.tiles[x][y].type = "floor"
-                    
-                    # Place player in center
-                    player_x, player_y = width // 2, height // 2  
-                    min_arena.start_position = [player_x * TILE_SIZE + TILE_SIZE // 2, player_y * TILE_SIZE + TILE_SIZE // 2]
-                    player.position = min_arena.start_position.copy()
-                    
-                    # Create a test monster with proper sprite paths
-                    test_monster = Monster(
-                        name="Test Monster",
-                        hit_points=10,
-                        to_hit=0,
-                        ac=10,
-                        move=1,
-                        dam="1d4",
-                        sprites={
-                            "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg",
-                            "dead": ""
-                        },
-                        monster_type="beast"
-                    )
-                    
-                    # Position the monster near player
-                    test_monster.position = [player.position[0] + 100, player.position[1]]
-                    
-                    # Let the Monster class handle sprite loading with its fallback mechanisms
-                    # Removed manual sprite override to use proper monster sprites
-                    
-                    # Add to arena
-                    min_arena.monsters = [test_monster]
-                    
-                    # Update game state
-                    game_dungeon = min_arena
-                    common_b_s.in_dungeon = True
-                    game_state = "dungeon"
-                    
-                    # Set player spell points
-                    player.spell_points = 200
-                    
-                    # Display messages
-                    add_message("EMERGENCY TEST ARENA CREATED!")
-                    add_message("Press 'x' to cast spells")
-                    add_message(f"You have {player.spell_points} spell points")
-                    
-                except Exception as e:
-                    screen.fill((0, 0, 0))
-                    draw_text(screen, f"ERROR: {str(e)}", (255, 0, 0), 50, 50)
-                    pygame.display.flip()
-                    pygame.time.delay(3000)  # Show error for 3 seconds
-                    debug_system.test_arena_logger.error(f"EMERGENCY ARENA CREATION FAILED: {e}", exc_info=True)
-            
-            # === PLAYER MOVEMENT ===
-            elif event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]:
+            # Player movement and other actions
+            if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]:
                 dx, dy = 0, 0
                 if event.key == pygame.K_LEFT:
                     dx = -TILE_SIZE
@@ -1743,42 +1380,9 @@ while running:
                     add_message(f"Error loading game: {str(e)}")
                     print(f"Error loading game: {e}")
                     
-            # === TEST ARENA (T key) ===
-            elif event.key == pygame.K_t:
-                # Create the test arena for spell testing
-                add_message("Teleporting to the spell testing arena...")
-                debug_system.test_arena_logger.debug("T key pressed, creating test arena...")
-                debug_system.test_arena_logger.debug(f"Current game_state: {game_state}, in_dungeon: {common_b_s.in_dungeon}")
-                
-                # Add a visible message to the screen to confirm the key was pressed
-                screen.fill((0, 0, 0))
-                draw_text(screen, "Loading Test Arena...", WHITE, DUNGEON_SCREEN_WIDTH//2 - 100, DUNGEON_SCREEN_HEIGHT//2)
-                pygame.display.flip()
-                
-                # Create a new test arena
-                try:
-                    debug_system.test_arena_logger.debug("Calling create_test_arena...")
-                    # Create a test arena
-                    game_dungeon = create_test_arena(player, game_dungeon)
-                    debug_system.test_arena_logger.debug("Test arena created, setting game state...")
-                    common_b_s.in_dungeon = True
-                    game_state = "dungeon"
-                    
-                    # Add help message
-                    add_message("Welcome to the spell testing arena!")
-                    add_message("Press 'x' to cast spells on the monsters.")
-                    
-                    # Give the player extra spell points
-                    player.spell_points = player.calculate_spell_points() + 100
-                    add_message(f"You have {player.spell_points} spell points for testing.")
-                    debug_system.test_arena_logger.debug("Test arena created successfully")
-                    debug_system.test_arena_logger.debug(f"Updated game_state: {game_state}, in_dungeon: {common_b_s.in_dungeon}")
-                except Exception as e:
-                    add_message(f"Error creating test arena: {str(e)}")
-                    debug_system.test_arena_logger.error(f"Error creating test arena: {e}", exc_info=True)
-                    import traceback
-                    traceback.print_exc()
-                
+            # Test arena activation for 'T' key (non-combo) is handled by the main activation function if desired
+            # The old specific block for K_t is removed as its logic is merged into handle_test_arena_activation.
+            
             # === DOOR INTERACTION KEYS ===
             elif event.key == pygame.K_o:  # 'o' to open/force a door
                 # Check for adjacent doors
@@ -2022,17 +1626,7 @@ while running:
                 # Use the enhanced spell dialog from spell_bridge if available
                 try:
                     print("DEBUG: Attempting to import update_spells_dialogue...")
-                    
-                    # Add Data directory to Python path
-                    import sys
-                    import os
-                    data_path = os.path.join(os.path.dirname(__file__), "Data")
-                    if data_path not in sys.path:
-                        sys.path.append(data_path)
-                    print(f"DEBUG: Python path now includes {data_path}")
-                    
-                    # Import using the proper path
-                    from spell_bridge import update_spells_dialogue
+                    from Data.spell_bridge import update_spells_dialogue # Use absolute package import
                     print("DEBUG: Imported update_spells_dialogue successfully")
                     
                     # Call the enhanced UI function
@@ -2040,6 +1634,9 @@ while running:
                 except Exception as e:
                     # Fall back to the original implementation
                     print(f"DEBUG: Error using enhanced UI: {e}")
+                    # Ensure spells_dialogue is available if update_spells_dialogue fails
+                    # This might require an import for spells_dialogue from common_b_s if not already global
+                    # For now, assuming spells_dialogue from common_b_s is accessible
                     selected_spell = spells_dialogue(screen, player, clock)
                 
                 if selected_spell is None:
