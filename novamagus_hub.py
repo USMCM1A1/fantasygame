@@ -27,8 +27,9 @@ from common_b_s import (
     can_equip_item, handle_targeting, compute_fov, get_valid_equipment_slots,
     swap_equipment, unequip_item, get_clicked_equipment_slot, shop_interaction,
     Item, Weapon, WeaponBlade, WeaponBlunt, Armor, Shield, Jewelry, Consumable,
-    Character, Player, Tile,
+    Character, Tile, # Player removed
 )
+from player import Player # Player imported from player.py
 import common_b_s  # Import full module if needed
 in_dungeon = False
 
