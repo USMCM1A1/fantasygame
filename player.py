@@ -1,5 +1,5 @@
 import pygame
-from .common_b_s import (
+from common_b_s import (
     Character,
     roll_dice_expression,
     add_message,
