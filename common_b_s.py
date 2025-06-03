@@ -1692,447 +1692,7 @@ def shop_interaction(screen, clock, player, items_data=items_data):
 # === Helper Functions ===
 # =============================================================================
 
-# === Save/Load Game System ===
-def save_game(player, dungeon, game_state="dungeon"):
-    """
-    Save the current game state to a JSON file.
-    
-    Args:
-        player: The Player object to save
-        dungeon: The Dungeon object to save
-        game_state: Current game state (hub or dungeon)
-    
-    Returns:
-        bool: True if save was successful, False otherwise
-    """
-    import datetime
-    import os
-    
-    # Create save directory if it doesn't exist
-    save_dir = "/Users/williammarcellino/Documents/Fantasy_Game/B&S_savegame"
-    os.makedirs(save_dir, exist_ok=True)
-    
-    save_file = os.path.join(save_dir, "savefile.json")
-    
-    try:
-        # Create player data dictionary
-        player_data = {
-            "name": player.name,
-            "race": player.race,
-            "char_class": player.char_class,
-            "position": player.position,
-            "abilities": player.abilities,
-            "level": player.level,
-            "hit_points": player.hit_points,
-            "max_hit_points": player.max_hit_points,
-            "spell_points": player.spell_points,
-            "gold": player.gold,
-            "inventory": [],
-            "equipment": {
-                "weapon": None,
-                "armor": None,
-                "shield": None,
-                "jewelry": []
-            }
-        }
-        
-        # Save inventory items
-        for item in player.inventory:
-            item_data = {
-                "name": item.name,
-                "item_type": item.item_type,
-                "value": item.value,
-                "description": item.description
-            }
-            
-            # Save weapon-specific data
-            if hasattr(item, "damage"):
-                item_data["damage"] = item.damage
-            
-            # Save armor/shield-specific data
-            if hasattr(item, "ac_bonus"):
-                item_data["ac"] = item.ac_bonus
-                
-            # Save jewelry-specific data
-            # Check for both attribute naming patterns
-            if hasattr(item, "bonus_stat") and hasattr(item, "bonus_value"):
-                # Use the same attribute names as in the JSON
-                if item.bonus_stat == "intelligence":
-                    item_data["intelligence"] = item.bonus_value
-                elif item.bonus_stat == "strength":
-                    item_data["strength"] = item.bonus_value
-                elif item.bonus_stat == "dexterity":
-                    item_data["dexterity"] = item.bonus_value
-                elif item.bonus_stat == "wisdom":
-                    item_data["wisdom"] = item.bonus_value
-                elif item.bonus_stat == "constitution":
-                    item_data["constitution"] = item.bonus_value
-                elif item.bonus_stat == "sp":
-                    item_data["sp"] = item.bonus_value
-                
-                # Also add the effect structure
-                item_data["effect"] = {
-                    "type": "stat_bonus",
-                    "stat": item.bonus_stat,
-                    "value": item.bonus_value
-                }
-            # Fallback for old jewelry with stat_bonus attribute
-            elif hasattr(item, "stat_bonus") and hasattr(item, "bonus_value"):
-                item_data["effect"] = {
-                    "type": "stat_bonus",
-                    "stat": item.stat_bonus,
-                    "value": item.bonus_value
-                }
-                
-            player_data["inventory"].append(item_data)
-        
-        # Save equipment
-        if player.equipment.get("weapon"):
-            weapon = player.equipment["weapon"]
-            player_data["equipment"]["weapon"] = {
-                "name": weapon.name,
-                "item_type": weapon.item_type,
-                "damage": weapon.damage,
-                "value": weapon.value,
-                "description": weapon.description
-            }
-            
-        if player.equipment.get("armor"):
-            armor = player.equipment["armor"]
-            player_data["equipment"]["armor"] = {
-                "name": armor.name,
-                "item_type": armor.item_type,
-                "ac": armor.ac_bonus,
-                "value": armor.value,
-                "description": armor.description
-            }
-            
-        if player.equipment.get("shield"):
-            shield = player.equipment["shield"]
-            player_data["equipment"]["shield"] = {
-                "name": shield.name,
-                "item_type": shield.item_type,
-                "ac": shield.ac_bonus,
-                "value": shield.value,
-                "description": shield.description
-            }
-            
-        for jewelry in player.equipment.get("jewelry", []):
-            jewelry_data = {
-                "name": jewelry.name,
-                "item_type": jewelry.item_type,
-                "value": jewelry.value,
-                "description": jewelry.description
-            }
-            
-            # Get the bonus stat info consistently
-            stat = getattr(jewelry, 'bonus_stat', getattr(jewelry, 'stat_bonus', 'sp'))
-            value = getattr(jewelry, 'bonus_value', 1)
-            
-            # Use the same attribute names as in the JSON
-            if stat == "intelligence":
-                jewelry_data["intelligence"] = value
-            elif stat == "strength":
-                jewelry_data["strength"] = value
-            elif stat == "dexterity":
-                jewelry_data["dexterity"] = value
-            elif stat == "wisdom":
-                jewelry_data["wisdom"] = value
-            elif stat == "constitution":
-                jewelry_data["constitution"] = value
-            elif stat == "sp":
-                jewelry_data["sp"] = value
-                
-            # Also add the effect structure for future compatibility
-            jewelry_data["effect"] = {
-                "type": "stat_bonus",
-                "stat": stat,
-                "value": value
-            }
-            player_data["equipment"]["jewelry"].append(jewelry_data)
-        
-        # Create dungeon data dictionary
-        dungeon_data = {
-            "width": dungeon.width,
-            "height": dungeon.height,
-            "tiles": []
-        }
-        
-        # Save tile data
-        for x in range(dungeon.width):
-            row = []
-            for y in range(dungeon.height):
-                tile = dungeon.tiles[x][y]
-                row.append({"x": x, "y": y, "type": tile.type})
-            dungeon_data["tiles"].append(row)
-        
-        # Save doors
-        dungeon_data["doors"] = []
-        for coords, door in dungeon.doors.items():
-            door_data = {
-                "x": door.x,
-                "y": door.y,
-                "locked": door.locked,
-                "open": door.open
-            }
-            dungeon_data["doors"].append(door_data)
-            
-        # Save chests
-        dungeon_data["chests"] = []
-        for coords, chest in dungeon.chests.items():
-            chest_data = {
-                "x": chest.x,
-                "y": chest.y,
-                "locked": chest.locked,
-                "open": chest.open,
-                "gold": chest.gold,
-                "contents": []
-            }
-            
-            # Save chest contents
-            for item in chest.contents:
-                item_data = {
-                    "name": item.name,
-                    "item_type": item.item_type,
-                    "value": item.value,
-                    "description": item.description
-                }
-                
-                if hasattr(item, "damage"):
-                    item_data["damage"] = item.damage
-                
-                if hasattr(item, "ac_bonus"):
-                    item_data["ac"] = item.ac_bonus
-                    
-                chest_data["contents"].append(item_data)
-                
-            dungeon_data["chests"].append(chest_data)
-            
-        # Save monsters
-        dungeon_data["monsters"] = []
-        for monster in dungeon.monsters:
-            if monster.is_dead:
-                continue  # Skip dead monsters
-                
-            monster_data = {
-                "name": monster.name,
-                "hit_points": monster.hit_points,
-                "max_hit_points": monster.max_hit_points,
-                "to_hit": monster.to_hit,
-                "ac": monster.ac,
-                "move": monster.move,
-                "dam": monster.dam,
-                "position": monster.position,
-                "monster_type": monster.monster_type,
-                "level": monster.level,
-                "cr": monster.cr,
-                "vulnerabilities": monster.vulnerabilities,
-                "resistances": monster.resistances,
-                "immunities": monster.immunities
-            }
-            dungeon_data["monsters"].append(monster_data)
-            
-        # Save dropped items
-        dungeon_data["dropped_items"] = []
-        for dropped in dungeon.dropped_items:
-            item = dropped["item"]
-            item_data = {
-                "name": item.name,
-                "item_type": item.item_type,
-                "value": item.value,
-                "description": item.description,
-                "position": dropped["position"]
-            }
-            
-            if hasattr(item, "damage"):
-                item_data["damage"] = item.damage
-            
-            if hasattr(item, "ac_bonus"):
-                item_data["ac"] = item.ac_bonus
-                
-            dungeon_data["dropped_items"].append(item_data)
-            
-        # Build the complete save data structure
-        save_data = {
-            "player": player_data,
-            "dungeon": dungeon_data,
-            "game_state": game_state,
-            "condition_manager_turn": condition_manager.current_turn,
-            "timestamp": datetime.datetime.now().isoformat(),
-            "version": "1.0"
-        }
-        
-        # Write to the save file
-        with open(save_file, 'w') as f:
-            json.dump(save_data, f, indent=4)
-            
-        print(f"Game saved successfully to {save_file}")
-        return True
-        
-    except Exception as e:
-        print(f"Error saving game: {e}")
-        return False
-
-def load_game():
-    """
-    Load a game from the save file.
-    
-    Returns:
-        tuple: (player, dungeon, game_state) if successful, None otherwise
-    """
-    import os
-    import types
-    from copy import deepcopy
-    
-    save_file = "/Users/williammarcellino/Documents/Fantasy_Game/B&S_savegame/savefile.json"
-    
-    if not os.path.exists(save_file):
-        print("No save file found.")
-        return None
-    
-    try:
-        # Read the save file
-        with open(save_file, 'r') as f:
-            save_data = json.load(f)
-            
-        saved_condition_manager_turn = save_data.get("condition_manager_turn", 0)
-            
-        # Extract data components
-        player_data = save_data.get("player", {})
-        dungeon_data = save_data.get("dungeon", {})
-        game_state = save_data.get("game_state", "dungeon")
-        
-        # Create a temporary patched Player class to avoid the apply_race_bonus call
-        # We'll directly create a working Player object without inheritance issues
-        from blade_sigil_v5_4 import Character, Player
-        
-        # Load player sprite based on class
-        class_lower = player_data.get("char_class", "Warrior").lower()
-        sprite_path = assets_data["sprites"]["heroes"][class_lower]["live"]
-        player_sprite = load_sprite(sprite_path)
-        
-        # Create the player instance using Player's constructor instead of __new__
-        # This is crucial for preventing the character creation screen from appearing
-        abilities = deepcopy(player_data.get("abilities", {
-            'strength': 10,
-            'intelligence': 10,
-            'wisdom': 10,
-            'dexterity': 10,
-            'constitution': 10
-        }))
-        
-        # Create the player with the position from the save file
-        player = Player(
-            name=player_data.get("name", "Hero"),
-            race=player_data.get("race", "Human"),
-            char_class=player_data.get("char_class", "Warrior"),
-            start_position=player_data.get("position", [0, 0]),
-            sprite=player_sprite,
-            abilities=abilities
-        )
-        
-        # Override the attributes with saved data
-        player.level = player_data.get("level", 1)
-        player.hit_points = player_data.get("hit_points", 10)
-        player.max_hit_points = player_data.get("max_hit_points", 10)
-        player.spell_points = player_data.get("spell_points", 0)
-        player.gold = player_data.get("gold", 0)
-        
-        # Clear inventory and equipment before loading saved ones
-        player.inventory = []
-        player.equipment = {
-            "weapon": None,
-            "armor": None,
-            "shield": None,
-            "jewelry": []
-        }
-        
-        # Load inventory items
-        for item_data in player_data.get("inventory", []):
-            item = create_item(item_data)
-            if item:
-                player.inventory.append(item)
-        
-        # Load equipment with extra error checking
-        try:
-            if player_data.get("equipment"):
-                equipment_data = player_data["equipment"]
-                
-                # Load weapon with validation
-                if equipment_data.get("weapon"):
-                    weapon_data = equipment_data["weapon"]
-                    # Ensure weapon_data has a type
-                    if "type" not in weapon_data or weapon_data["type"] is None:
-                        weapon_data["type"] = "weapon"  # Default type
-                    
-                    weapon = create_item(weapon_data)
-                    if weapon:
-                        player.equipment["weapon"] = weapon
-                        print(f"Loaded weapon: {weapon.name}")
-                
-                # Load armor with validation
-                if equipment_data.get("armor"):
-                    armor_data = equipment_data["armor"]
-                    if "type" not in armor_data or armor_data["type"] is None:
-                        armor_data["type"] = "armor"  # Default type
-                        
-                    armor = create_item(armor_data)
-                    if armor:
-                        player.equipment["armor"] = armor
-                        print(f"Loaded armor: {armor.name}")
-                
-                # Load shield with validation
-                if equipment_data.get("shield"):
-                    shield_data = equipment_data["shield"]
-                    if "type" not in shield_data or shield_data["type"] is None:
-                        shield_data["type"] = "shield"  # Default type
-                        
-                    shield = create_item(shield_data)
-                    if shield:
-                        player.equipment["shield"] = shield
-                        print(f"Loaded shield: {shield.name}")
-                
-                # Load jewelry with validation
-                for jewelry_data in equipment_data.get("jewelry", []):
-                    if "type" not in jewelry_data or jewelry_data["type"] is None:
-                        jewelry_data["type"] = "jewelry"  # Default type
-                        
-                    jewelry = create_item(jewelry_data)
-                    if jewelry:
-                        player.equipment["jewelry"].append(jewelry)
-                        print(f"Loaded jewelry: {jewelry.name}")
-        except Exception as e:
-            print(f"Error loading equipment: {e}")
-            # Continue loading - don't abort the whole process for equipment errors
-        
-        # Recreate the Dungeon object - pass data back to main game
-        # Note: We're not creating a Dungeon here to avoid circular imports
-        # The main game will create the Dungeon using this data
-        dungeon_width = dungeon_data.get("width", 20)
-        dungeon_height = dungeon_data.get("height", 15)
-        dungeon_tiles_data = dungeon_data.get("tiles", [])
-        dungeon_doors_data = dungeon_data.get("doors", [])
-        dungeon_chests_data = dungeon_data.get("chests", [])
-        dungeon_monsters_data = dungeon_data.get("monsters", [])
-        
-        # Store all the dungeon data in a dictionary to return to the main game
-        # The main game will then create a proper Dungeon object
-        dungeon = {
-            "width": dungeon_width,
-            "height": dungeon_height,
-            "tiles": dungeon_data.get("tiles", []),
-            "doors": dungeon_data.get("doors", []),
-            "chests": dungeon_data.get("chests", []),
-            "monsters": dungeon_data.get("monsters", []),
-            "dropped_items": dungeon_data.get("dropped_items", [])
-        }
-                
-        print(f"Game loaded successfully from {save_file}")
-        return (player, dungeon, game_state, saved_condition_manager_turn)
-        
-    except Exception as e:
-        print(f"Error loading game: {e}")
-        return None
+# Save/Load functions have been moved to game_state_manager.py
 
 # debugging statements for stat logic:
 def print_character_stats(character):
@@ -2760,18 +2320,18 @@ message_manager = MessageManager()
 
 # === Game Entity Classes ===
 
+# Monster class (this is the more detailed version from blade_sigil_v5_5.py)
 class Monster:
     def __init__(self, name, hit_points, to_hit, ac, move, dam, sprites, **kwargs):
         self.name = name
         self.hit_points = hit_points
-        self.max_hit_points = hit_points  # Store max HP for reference
+        self.max_hit_points = hit_points
         self.to_hit = to_hit
         self.ac = ac
         self.move = move
         self.dam = dam
-        self.sprites = sprites
+        self.sprites = sprites # This should be a dict like {"live": "path/to/live.png", "dead": "path/to/dead.png"}
 
-        # Optional parameters with defaults
         self.monster_type = kwargs.get('monster_type', 'beast')
         self.level = kwargs.get('level', 1)
         self.cr = kwargs.get('cr', 1)
@@ -2780,166 +2340,97 @@ class Monster:
         self.immunities = kwargs.get('immunities', [])
         self.special_abilities = kwargs.get('special_abilities', [])
         self.is_dead = False
-        self.active_effects = []  # For status effects
+        self.active_effects = []
         self.can_move = True
         self.can_act = True
 
-        # Load and scale the live sprite for the monster
         try:
             if self.sprites and self.sprites.get('live') and os.path.exists(self.sprites['live']):
                 self.sprite = pygame.image.load(self.sprites['live']).convert_alpha()
                 self.sprite = pygame.transform.smoothscale(self.sprite, (TILE_SIZE, TILE_SIZE))
             else:
-                # Use a predefined fallback sprite based on monster type
                 fallback_sprites = {
                     'beast': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg',
                     'humanoid': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/goblin.png',
                     'undead': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/skel_01.png',
-                    'elemental': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg',
-                    'extraplanar': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/imp.jpg',
-                    'monstrosity': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/green_slime.jpg'
+                    # Add other types as needed or a more generic fallback
+                    'default': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/green_slime.jpg'
                 }
-
-                fallback_path = fallback_sprites.get(self.monster_type, fallback_sprites['beast'])
+                fallback_path = fallback_sprites.get(self.monster_type, fallback_sprites['default'])
                 self.sprite = pygame.image.load(fallback_path).convert_alpha()
                 self.sprite = pygame.transform.smoothscale(self.sprite, (TILE_SIZE, TILE_SIZE))
         except (pygame.error, FileNotFoundError) as e:
-            print(f"Error loading sprite for {self.name}: {e}")
-            # Create a placeholder sprite if image loading fails
+            print(f"Error loading sprite for {self.name}: {e}. Using placeholder.")
             self.sprite = pygame.Surface((TILE_SIZE, TILE_SIZE))
-            self.sprite.fill((255, 0, 0))  # Red for monsters
-
-        # Set the position to None initially (will be set when placed in the dungeon)
+            self.sprite.fill(RED)
         self.position = None
 
     def move_towards(self, target, dungeon, is_player=False):
-        if self.position is None or target.position is None:
-            print(f"{self.name} or target position is None. Cannot move.")
-            return
+        if self.position is None or target.position is None: return
+        if not self.can_move: return
 
-        if not self.can_move:
-            print(f"Monster {self.name} cannot move because self.can_move is False.")
-            return
-
-        old_position = self.position.copy()
         monster_x, monster_y = self.position[0] // TILE_SIZE, self.position[1] // TILE_SIZE
         target_x, target_y = target.position[0] // TILE_SIZE, target.position[1] // TILE_SIZE
-
-        # Calculate the differences in the x and y positions
         dx = target_x - monster_x
         dy = target_y - monster_y
 
-        # Log the monster's movement direction (dx, dy)
-        print(f"Monster '{self.name}' moving towards: dx={dx}, dy={dy}")
+        new_pos_x, new_pos_y = monster_x, monster_y
 
-        # Try moving horizontally first, if it's not blocked
         if abs(dx) > abs(dy):
             step_x = 1 if dx > 0 else -1
-            new_x = monster_x + step_x
-            new_y = monster_y
-
-            # Check if the tile is walkable (not blocked by walls)
-            if 0 <= new_x < dungeon.width and 0 <= new_y < dungeon.height:
-                target_tile = dungeon.tiles[new_x][new_y]
-                if target_tile.type not in ('floor', 'corridor', 'door'):
-                    print(f"Horizontal move blocked by {target_tile.type}. Trying vertical move.")
-                    # Try vertical move instead
-                    step_y = 1 if dy > 0 else -1
-                    new_x = monster_x
-                    new_y = monster_y + step_y
-                else:
-                    self.position = [new_x * TILE_SIZE + TILE_SIZE // 2, new_y * TILE_SIZE + TILE_SIZE // 2]
-                    print(f"{self.name} moved from {old_position} to {self.position}")
-            else:
-                print(f"{self.name} cannot move horizontally: tile out of bounds.")
-
-        # If horizontal move was blocked or diagonal is better, try vertical move
-        else:
+            if 0 <= monster_x + step_x < dungeon.width and dungeon.tiles[monster_x + step_x][monster_y].type in ('floor', 'corridor', 'door'):
+                new_pos_x = monster_x + step_x
+            elif dy != 0: # Try vertical if horizontal is blocked
+                step_y = 1 if dy > 0 else -1
+                if 0 <= monster_y + step_y < dungeon.height and dungeon.tiles[monster_x][monster_y + step_y].type in ('floor', 'corridor', 'door'):
+                    new_pos_y = monster_y + step_y
+        else: # abs(dy) >= abs(dx)
             step_y = 1 if dy > 0 else -1
-            new_x = monster_x
-            new_y = monster_y + step_y
+            if 0 <= monster_y + step_y < dungeon.height and dungeon.tiles[monster_x][monster_y + step_y].type in ('floor', 'corridor', 'door'):
+                new_pos_y = monster_y + step_y
+            elif dx != 0: # Try horizontal if vertical is blocked
+                step_x = 1 if dx > 0 else -1
+                if 0 <= monster_x + step_x < dungeon.width and dungeon.tiles[monster_x + step_x][monster_y].type in ('floor', 'corridor', 'door'):
+                    new_pos_x = monster_x + step_x
 
-            if 0 <= new_x < dungeon.width and 0 <= new_y < dungeon.height:
-                target_tile = dungeon.tiles[new_x][new_y]
-                if target_tile.type not in ('floor', 'corridor', 'door'):
-                    print(f"Vertical move blocked by {target_tile.type}.")
-                else:
-                    self.position = [new_x * TILE_SIZE + TILE_SIZE // 2, new_y * TILE_SIZE + TILE_SIZE // 2]
-                    print(f"{self.name} moved from {old_position} to {self.position}")
-            else:
-                print(f"{self.name} cannot move vertically: tile out of bounds.")
+        if new_pos_x != monster_x or new_pos_y != monster_y:
+            self.position = [new_pos_x * TILE_SIZE + TILE_SIZE // 2, new_pos_y * TILE_SIZE + TILE_SIZE // 2]
 
     def get_effective_ac(self):
         return self.ac
 
     def get_effective_damage(self):
-        """Roll damage based on the dice expression from the JSON data (e.g., '1d3', '2d4+1', etc.)."""
-        return roll_dice_expression(self.dam)
+        return roll_dice_expression(self.dam) # roll_dice_expression is in common_b_s
 
     def set_dead_sprite(self):
-        """Load and scale the dead sprite when the monster dies."""
-        # Check if a dead sprite exists
-        if 'dead' in self.sprites and self.sprites['dead']:
+        if 'dead' in self.sprites and self.sprites['dead'] and os.path.exists(self.sprites['dead']):
             try:
                 self.sprite = pygame.image.load(self.sprites['dead']).convert_alpha()
                 self.sprite = pygame.transform.smoothscale(self.sprite, (TILE_SIZE, TILE_SIZE))
-            except (pygame.error, FileNotFoundError):
-                # If loading fails, just tint the current sprite to indicate death
-                self._tint_sprite_gray()
-        else:
-            # If no dead sprite, just tint the current sprite
-            self._tint_sprite_gray()
+            except (pygame.error, FileNotFoundError): self._tint_sprite_gray()
+        else: self._tint_sprite_gray()
 
     def _tint_sprite_gray(self):
-        """Create a more visually appealing grayscale effect for dead monsters"""
         if self.sprite:
-            # More efficient grayscale method using pygame's surface manipulation
             temp_sprite = self.sprite.copy()
-
-            # Apply a dark gray overlay with transparency
             gray_overlay = pygame.Surface(temp_sprite.get_size(), pygame.SRCALPHA)
-            gray_overlay.fill((30, 30, 30, 180))  # Dark gray with transparency
+            gray_overlay.fill((30, 30, 30, 180))
             temp_sprite.blit(gray_overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-
-            # Add a slight red tint to indicate "fallen" status
             red_tint = pygame.Surface(temp_sprite.get_size(), pygame.SRCALPHA)
-            red_tint.fill((100, 0, 0, 50))  # Red tint with transparency
+            red_tint.fill((100, 0, 0, 50))
             temp_sprite.blit(red_tint, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
-
-            # Reduce the overall brightness
             dark_overlay = pygame.Surface(temp_sprite.get_size(), pygame.SRCALPHA)
-            dark_overlay.fill((0, 0, 0, 50))  # Black with transparency
+            dark_overlay.fill((0, 0, 0, 50))
             temp_sprite.blit(dark_overlay, (0, 0))
-
             self.sprite = temp_sprite
 
     def apply_damage(self, damage_amount, damage_type="physical"):
-        """
-        Apply damage to the monster with vulnerability/resistance/immunity calculation
-        Returns the actual damage dealt after modifiers
-        """
-        # Check for immunities
-        if damage_type in self.immunities:
-            return 0  # No damage taken
-
-        # Check for vulnerabilities (double damage)
-        if damage_type in self.vulnerabilities:
-            damage_amount *= 2
-
-        # Check for resistances (half damage)
-        if damage_type in self.resistances:
-            damage_amount = max(1, damage_amount // 2)  # At least 1 damage
-
-        # Apply the damage
+        if damage_type in self.immunities: return 0
+        if damage_type in self.vulnerabilities: damage_amount *= 2
+        if damage_type in self.resistances: damage_amount = max(1, damage_amount // 2)
         self.hit_points -= damage_amount
-
-        # Ensure hit points don't go below 0
         self.hit_points = max(0, self.hit_points)
-
-        # Check if monster died
-        if self.hit_points == 0:
-            self.is_dead = True
-
+        if self.hit_points == 0: self.is_dead = True
         return damage_amount
 
 class Dungeon:
@@ -4631,21 +4122,130 @@ class Character:
                 return False
         return True
 
+# Player class definition moved from blade_sigil_v5_5.py
 class Player(Character):
     def __init__(self, name, race, char_class, start_position, sprite, abilities=None):
-        # Pass the abilities into the parent constructor.
         super().__init__(name, race, char_class, abilities)
         self.position = start_position
-        self.sprite = sprite  # Dynamic sprite
+        self.sprite = sprite
         self.inventory = []
         self.equipment = {
-            "weapon": None,
-            "armor": None,
-            "shield": None,
-            "jewelry": []  # allow multiple rings/necklaces
+            "weapon": None, "armor": None, "shield": None, "jewelry": []
         }
-        self.gold = roll_dice_expression("4d6+200")
-        print(f"[DEBUG] Starting gold after dice roll: {self.gold}")
+        self.gold = roll_dice_expression("4d6+200") # roll_dice_expression is in common_b_s
+
+    def pickup_item(self, item):
+        self.inventory.append(item)
+        add_message(f"{self.name} picked up {item.name}!") # add_message is in common_b_s
+
+    def equip_item(self, item):
+        can_equip, reason = can_equip_item(self, item) # can_equip_item is in common_b_s
+        if not can_equip:
+            add_message(f"Cannot equip {item.name}: {reason}", RED) # RED is in common_b_s
+            return False
+        if item in self.inventory: self.inventory.remove(item)
+
+        item_type_str = getattr(item, "item_type", "") # Safe access to item_type
+
+        if item_type_str.startswith("weapon"):
+            if self.equipment["weapon"]: self.equipment["weapon"].remove_effect(self)
+            item.apply_effect(self)
+        elif item_type_str.startswith("armor"):
+            if self.equipment["armor"]: self.equipment["armor"].remove_effect(self)
+            item.apply_effect(self)
+        elif item_type_str.startswith("shield"):
+            if self.equipment.get("shield"): self.equipment["shield"].remove_effect(self)
+            item.apply_effect(self)
+        elif item_type_str.startswith("jewelry"):
+            if hasattr(item, 'can_equip') and not item.can_equip(self):
+                add_message(f"Cannot equip {item.name}: Maximum number already equipped", RED)
+                return False
+            item.apply_effect(self)
+        add_message(f"{self.name} equipped {item.name}!", GREEN) # GREEN is in common_b_s
+        return True
+
+    def move(self, dx, dy, dungeon):
+        new_x = self.position[0] + dx
+        new_y = self.position[1] + dy
+        tile_x = new_x // TILE_SIZE # TILE_SIZE is global in common_b_s
+        tile_y = new_y // TILE_SIZE
+
+        if not (0 <= tile_x < dungeon.width and 0 <= tile_y < dungeon.height):
+            return False, "", "You can't move through walls."
+        target_tile = dungeon.tiles[tile_x][tile_y]
+
+        if target_tile.type == 'locked_door':
+            door_coords = (tile_x, tile_y)
+            if door_coords in dungeon.doors and dungeon.doors[door_coords].locked:
+                return False, "", "The door is locked. Try another approach."
+
+        if target_tile.type in ('floor', 'corridor', 'door'):
+            door_coords = (tile_x, tile_y)
+            if target_tile.type == 'door' and door_coords in dungeon.doors:
+                door = dungeon.doors[door_coords]
+                self.position = [new_x, new_y]
+                if door.door_type == "level_transition":
+                    new_dungeon_level = dungeon.level + 1
+                    if self.level < new_dungeon_level:
+                        self.level = new_dungeon_level
+                        hp_per_level = {'Warrior': 10, 'Priest': 6, 'Wizard': 4}.get(self.char_class, 8)
+                        self.max_hit_points += hp_per_level
+                        self.hit_points += hp_per_level
+                        pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1)) # pygame is imported
+                        return True, "level_transition", f"Found stairs! Completed level {dungeon.level}. Leveled up to {self.level}!"
+                    return True, "level_transition", f"Found stairs! Completed level {dungeon.level}."
+                elif door.door_type == "map_transition":
+                    return True, "map_transition", door.destination_map, f"Passage to map {door.destination_map}."
+                else: return True, "", "You pass through the door."
+            else:
+                self.position = [new_x, new_y]
+                return True, "", ""
+        else: return False, "", "You can't move there."
+
+    def attack(self, target):
+        effective_str_mod = self.calculate_modifier(self.get_effective_ability("strength"))
+        attack_roll = roll_dice_expression("1d20") + effective_str_mod
+        if attack_roll >= target.get_effective_ac(): # Assumes target has get_effective_ac
+            damage = self.get_effective_damage()
+            target.hit_points -= damage # Assumes target has hit_points
+            return f"{self.name} hits {target.name} for {damage} damage!"
+        else: return f"{self.name} misses {target.name}!"
+
+    def get_effective_ability(self, stat):
+        base = self.abilities.get(stat, 0)
+        bonus = 0
+        for item in self.equipment.get('jewelry', []):
+            item_stat = getattr(item, 'bonus_stat', getattr(item, 'stat_bonus', None))
+            if item_stat == stat and hasattr(item, 'bonus_value'):
+                bonus += item.bonus_value
+        return base + bonus
+
+    def get_effective_ac(self):
+        base_ac = self.ac
+        if self.equipment.get("armor"): base_ac += self.equipment["armor"].ac_bonus
+        if self.equipment.get("shield"):
+            shield_item = self.equipment["shield"]
+            # Check if shield_ac_bonus is defined on player and is relevant for the current shield
+            # This logic might need refinement based on how shield_ac_bonus is set/managed
+            if hasattr(self, 'shield_ac_bonus') and shield_item == self.equipment.get("shield"):
+                 base_ac += self.shield_ac_bonus
+            elif hasattr(shield_item, 'ac_bonus'): # Fallback to item's own ac_bonus
+                 base_ac += shield_item.ac_bonus
+        return base_ac
+
+    def get_effective_damage(self):
+        if self.equipment.get("weapon"):
+            return self.equipment["weapon"].roll_damage(self) # Assumes weapon has roll_damage method
+        else: return roll_dice_expression("1d2") + self.calculate_modifier(self.get_effective_ability("strength"))
+
+    def add_experience(self, xp_amount):
+        if not hasattr(self, 'experience'): self.experience = 0
+        if not hasattr(self, 'level_thresholds'):
+            base_xp = 1000
+            self.level_thresholds = [0] + [base_xp * lvl * lvl for lvl in range(1, 21)]
+        self.experience += xp_amount
+        has_enough_xp = (self.level < 20 and self.experience >= self.level_thresholds[self.level + 1])
+        return has_enough_xp
 
 class Tile:
     def __init__(self, x, y, type, sprite=None):
