@@ -290,8 +290,8 @@ class TargetingSystem:
             else:
                 return (0, 0)  # Default if no position available
         
-        # Import tile size from common module
-        from common_b_s import TILE_SIZE
+        # Import tile size from game_config module
+        from game_config import TILE_SIZE
         
         return (pos[0] // TILE_SIZE, pos[1] // TILE_SIZE)
     
@@ -459,7 +459,7 @@ class TargetingSystem:
             bool: True if line of sight exists
         """
         # Create a dummy target positioned at the center of the target tile
-        from common_b_s import TILE_SIZE
+        from game_config import TILE_SIZE # Import TILE_SIZE from game_config
         
         # Convert target tile to pixel position (center of tile)
         target_pos = [
