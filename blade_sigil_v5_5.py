@@ -93,11 +93,12 @@ from common_b_s import (
     handle_scroll_events,
     
     # Game Classes
-    Character, Player, Tile, Door, Chest, Monster, Dungeon, # Added Player, Monster, Dungeon
+    Character, Tile, Door, Chest, Monster, Dungeon, # Player removed
     
     # Debug console
     debug_console, MessageCategory, get_memory_usage,
-) 
+)
+from player import Player # Player imported from player.py
 
 # Startup message
 print("Blade & Sigil v5.5 starting up...")

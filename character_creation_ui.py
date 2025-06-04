@@ -5,7 +5,7 @@ import os
 
 # Import necessary components from common_b_s.py
 from common_b_s import (
-    Player, Dungeon, roll_ability_helper, load_sprite, draw_text,
+    Dungeon, roll_ability_helper, load_sprite, draw_text, # Player removed
     assets_data, font,
     BLACK, WHITE, LIGHT_GRAY, GREEN, BLUE, RED, DARK_GRAY,
     HUB_SCREEN_WIDTH as SCREEN_WIDTH,
@@ -13,6 +13,7 @@ from common_b_s import (
     HUB_TILE_SIZE as TILE_SIZE, # Using HUB_TILE_SIZE and aliasing to TILE_SIZE
     # races # common_b_s.races not used for now, keeping local racial_bonuses_text
 )
+from player import Player # Player imported from player.py
 
 # DEFAULT_FONT_SIZE is used locally for text rendering logic, ensure it's defined if not from common_b_s
 # It was a placeholder, if `font` from common_b_s is used directly, this might not be needed
