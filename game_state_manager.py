@@ -18,8 +18,9 @@ from common_b_s import (
     create_item, load_sprite, assets_data, condition_manager, # Utilities and data
     roll_dice_expression, # for Player gold initialization within load_game if new player created
     # Added for state transitions and messaging:
-    add_message, GREEN, RED, YELLOW, levelup_sound, Player # Removed in_dungeon from here
+    add_message, GREEN, RED, YELLOW, levelup_sound # Player removed
 )
+from player import Player # Player imported from player.py
 # Player class from blade_sigil_v5_5.py is needed for save/load
 # Player class is now imported from common_b_s to resolve circular dependency.
 # from common_b_s import Player # Already added to the block above
