@@ -10,15 +10,20 @@ from common_b_s import (
     Monster,
     assets_data,
     load_sprite,
-    TILE_SIZE,
-    DUNGEON_PLAYABLE_AREA_WIDTH,
-    DUNGEON_PLAYABLE_AREA_HEIGHT,
-    DUNGEON_TILE_SIZE,
-    DUNGEON_SCREEN_WIDTH,
-    DUNGEON_SCREEN_HEIGHT,
+    # TILE_SIZE, # Moved to game_config
+    # DUNGEON_PLAYABLE_AREA_WIDTH, # Moved to game_config
+    # DUNGEON_PLAYABLE_AREA_HEIGHT, # Moved to game_config
+    # DUNGEON_TILE_SIZE, # Moved to game_config
+    # DUNGEON_SCREEN_WIDTH, # Moved to game_config
+    # DUNGEON_SCREEN_HEIGHT, # Moved to game_config
     draw_text,
     add_message,
-    WHITE # Added WHITE for text drawing
+    # WHITE # Moved to game_config
+)
+from game_config import (
+    TILE_SIZE, DUNGEON_PLAYABLE_AREA_WIDTH, DUNGEON_PLAYABLE_AREA_HEIGHT,
+    # DUNGEON_TILE_SIZE, # Removed, use TILE_SIZE
+    DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT, WHITE
 )
 
 # =============================================================================
@@ -63,12 +68,12 @@ def create_test_arena(player, dungeon):
                 arena.tiles[x_coord][y_coord].sprite = load_sprite(floor_sprite_path)
     
     player_x_tile, player_y_tile = width // 2, height // 2
-    max_x_tile = (DUNGEON_PLAYABLE_AREA_WIDTH - DUNGEON_TILE_SIZE) // DUNGEON_TILE_SIZE
-    max_y_tile = (DUNGEON_PLAYABLE_AREA_HEIGHT - DUNGEON_TILE_SIZE) // DUNGEON_TILE_SIZE
+    max_x_tile = (DUNGEON_PLAYABLE_AREA_WIDTH - TILE_SIZE) // TILE_SIZE
+    max_y_tile = (DUNGEON_PLAYABLE_AREA_HEIGHT - TILE_SIZE) // TILE_SIZE
     player_x_tile = min(max(player_x_tile, 2), max_x_tile - 2)
     player_y_tile = min(max(player_y_tile, 2), max_y_tile - 2)
-    player_x_px = player_x_tile * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2
-    player_y_px = player_y_tile * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2
+    player_x_px = player_x_tile * TILE_SIZE + TILE_SIZE // 2
+    player_y_px = player_y_tile * TILE_SIZE + TILE_SIZE // 2
     arena.entrance = (player_x_px, player_y_px)
     arena.start_position = list(arena.entrance)
     player.position = list(arena.entrance)
@@ -97,8 +102,8 @@ def create_test_arena(player, dungeon):
         monster_x_tile, monster_y_tile = monster_positions[i]
         monster_x_tile = min(max(monster_x_tile, 1), max_x_tile - 1)
         monster_y_tile = min(max(monster_y_tile, 1), max_y_tile - 1)
-        monster_x_px = monster_x_tile * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2
-        monster_y_px = monster_y_tile * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2
+        monster_x_px = monster_x_tile * TILE_SIZE + TILE_SIZE // 2
+        monster_y_px = monster_y_tile * TILE_SIZE + TILE_SIZE // 2
         monster.position = [monster_x_px, monster_y_px]
         arena.monsters.append(monster)
     debug_system.test_arena_logger.debug(f"Added {len(arena.monsters)} test monsters to the arena")
@@ -128,18 +133,18 @@ def create_emergency_arena(player, screen):
                     floor_sprite_path = assets_data["sprites"]["tiles"]["floor"]
                     min_arena.tiles[x][y].sprite = load_sprite(floor_sprite_path)
                 except:
-                    fallback_sprite = pygame.Surface((DUNGEON_TILE_SIZE, DUNGEON_TILE_SIZE))
+                    fallback_sprite = pygame.Surface((TILE_SIZE, TILE_SIZE))
                     fallback_sprite.fill((100, 100, 100))
                     min_arena.tiles[x][y].sprite = fallback_sprite
         player_x, player_y = width // 2, height // 2  
-        min_arena.start_position = [player_x * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2, player_y * DUNGEON_TILE_SIZE + DUNGEON_TILE_SIZE // 2]
+        min_arena.start_position = [player_x * TILE_SIZE + TILE_SIZE // 2, player_y * TILE_SIZE + TILE_SIZE // 2]
         player.position = list(min_arena.start_position)
         test_monster = Monster(
             name="Test Monster", hit_points=10, to_hit=0, ac=10, move=1, dam="1d4",
-            sprites={"live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg", "dead": ""},
+            sprites={"live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg", "dead": ""}, # This path will also need fixing if used
             monster_type="beast"
         )
-        test_monster.position = [player.position[0] + 5*DUNGEON_TILE_SIZE, player.position[1]]
+        test_monster.position = [player.position[0] + 5*TILE_SIZE, player.position[1]]
         min_arena.monsters = [test_monster]
         player.spell_points = 200
         add_message("EMERGENCY TEST ARENA CREATED!")

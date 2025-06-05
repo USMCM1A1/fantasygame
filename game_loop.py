@@ -4,7 +4,7 @@ import os # For os.path.join if used for SPELLS_FILE path construction
 
 # Import from our new utility/config files first
 from game_config import * # TILE_SIZE, screen dimensions, FPS, colors etc.
-from game_utils import roll_dice_expression # load_json, load_sprite are not directly used in game_loop.py but by its imports
+from game_utils import roll_dice_expression, draw_bordered_text, get_memory_usage # Added get_memory_usage
 from game_effects import spell_sound, melee_sound, arrow_sound, levelup_sound, frost_sound # Sounds
 # Visual effects are called by spell_system or common_b_s legacy spells, not directly here.
 
@@ -12,12 +12,13 @@ from game_effects import spell_sound, melee_sound, arrow_sound, levelup_sound, f
 import common_b_s # For assets_data, and items_list for now
 from common_b_s import (
     add_message, update_message_queue, MessageCategory,
-    draw_bordered_text, draw_attack_prompt, draw_right_panel, draw_bottom_panel,
-    handle_scroll_events, get_memory_usage, loot_drop_sprite,
+    # draw_bordered_text, # Removed from here
+    draw_attack_prompt, draw_right_panel, draw_bottom_panel,
+    handle_scroll_events, loot_drop_sprite, # get_memory_usage was confirmed removed here
     cast_spell, # This is the legacy common_b_s.cast_spell
     spells_dialogue, # This is the legacy common_b_s.spells_dialogue
-    save_game, load_game, # These are from common_b_s, originally from game_state_manager
-    handle_monster_turn, # Legacy monster turn from common_b_s
+    # save_game, load_game, # Removed from here
+    # handle_monster_turn, # Removed from common_b_s import
     Dungeon, items_list # Dungeon class, items_list for loot
 )
 
@@ -27,17 +28,18 @@ from debug_system import debug_console
 from game_state_manager import GameState, game_state_manager, \
                                transition_from_hub_to_dungeon, \
                                handle_dungeon_level_transition, \
-                               handle_dungeon_map_transition
+                               handle_dungeon_map_transition, \
+                               save_game, load_game
                                # handle_test_arena_teleport (Commented out as test arena features are commented out in loop)
 
 from player import Player
-from novamagus_hub import nova_magus_hub # For run_hub, transition_to_dungeon flag
+import novamagus_hub # Changed import for novamagus_hub
 
 from Data.condition_system import condition_manager
 from Data.spell_bridge import update_spells_dialogue # New spell dialogue UI
 
-# Import the refactored process_monster_death
-from game_logic_utils import process_monster_death as util_process_monster_death
+# Import game logic utils
+from game_logic_utils import process_monster_death as util_process_monster_death, handle_monster_turn
 
 
 def process_game_turn(player, dungeon):

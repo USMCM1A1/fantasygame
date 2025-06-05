@@ -56,32 +56,59 @@ condition_manager.current_turn = 0
 
 # Turn counter will increment whenever the player takes an action via the process_game_turn function
 
-from common_b_s import (
-    # Dungeon-specific configurations
-    DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT, DUNGEON_FPS, DUNGEON_TILE_SIZE,
+# Pygame font init
+pygame.font.init() # Ensure font system is initialized
+small_font = pygame.font.SysFont('monospace', 16)
+
+# Import necessary constants from common_b_s for debug console initialization
+# Note: common_b_s itself imports from game_config, so these are ultimately from game_config.
+# This import must happen before initialize_debug_console
+from common_b_s import DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT
+
+# Initialize debug console
+debug_system.initialize_debug_console(font=small_font, screen_width=DUNGEON_SCREEN_WIDTH, screen_height=DUNGEON_SCREEN_HEIGHT)
+
+# Import game constants directly from game_config
+from game_config import (
+    DUNGEON_FPS, TILE_SIZE, # Use TILE_SIZE instead of DUNGEON_TILE_SIZE
     DUNGEON_RIGHT_PANEL_WIDTH, DUNGEON_BOTTOM_PANEL_HEIGHT, DUNGEON_PLAYABLE_AREA_WIDTH, DUNGEON_PLAYABLE_AREA_HEIGHT,
     RIGHT_PANEL_OFFSET, BOTTOM_PANEL_OFFSET,
-    
-    # Door and Chest configuration
     DOOR_CHANCE, LOCKED_DOOR_CHANCE, DOOR_DIFFICULTY, 
     CHEST_DIFFICULTY, CHEST_ITEMS_COUNT, CHEST_GOLD_DICE,
+    WHITE, BLACK, LIGHT_GRAY, RED, GREEN, BLUE # Colors
+    # font object is initialized in common_b_s, so import it from there
+)
+
+from common_b_s import (
+    # Dungeon-specific configurations
+    # DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT, # Already imported above
+    # DUNGEON_FPS, DUNGEON_TILE_SIZE, # Moved to game_config
+    # DUNGEON_RIGHT_PANEL_WIDTH, DUNGEON_BOTTOM_PANEL_HEIGHT, DUNGEON_PLAYABLE_AREA_WIDTH, DUNGEON_PLAYABLE_AREA_HEIGHT, # Moved
+    # RIGHT_PANEL_OFFSET, BOTTOM_PANEL_OFFSET, # Moved
+
+    # Door and Chest configuration
+    # DOOR_CHANCE, LOCKED_DOOR_CHANCE, DOOR_DIFFICULTY, # Moved
+    # CHEST_DIFFICULTY, CHEST_ITEMS_COUNT, CHEST_GOLD_DICE, # Moved
     
     # Colors and Font
-    WHITE, BLACK, LIGHT_GRAY, RED, GREEN, BLUE, font,
+    # WHITE, BLACK, LIGHT_GRAY, RED, GREEN, BLUE, # Moved to game_config
+    font, # Font object is initialized in common_b_s
     
     # Asset loading and JSON utilities
     load_sprite, load_json, assets_data, characters_data, spells_data, items_data, monsters_data, dice_sprite,
     spell_sound, melee_sound, arrow_sound, levelup_sound,
     
     # UI Drawing functions (if used in dungeon mode)
-    draw_text, draw_panel, draw_text_lines, draw_playable_area, draw_right_panel, draw_bottom_panel, # draw_playable_area, draw_right_panel, draw_bottom_panel might be only for game_loop now
-    draw_equipment_panel, roll_ability_helper, # roll_dice_expression is used by Player, manage_inventory
+    draw_text, draw_panel, draw_text_lines, draw_playable_area, draw_right_panel, draw_bottom_panel,
+    draw_equipment_panel, # roll_ability_helper removed, roll_dice_expression is used by Player, manage_inventory
     
     # Helper and utility functions
     add_message, # update_message_queue was for the loop, roll_dice_expression used by Player
-    can_equip_item, handle_targeting, compute_fov, get_valid_equipment_slots, # Targeting/FOV might be specific to loop/combat
-    swap_equipment, unequip_item, get_clicked_equipment_slot, print_character_stats, 
-    manage_inventory, display_help_screen, loot_drop_sprite, # manage_inventory and display_help_screen are called from blade_sigil if not moved to states
+    # can_equip_item, handle_targeting, compute_fov, get_valid_equipment_slots, # Moved to game_logic_utils
+    # swap_equipment, unequip_item, get_clicked_equipment_slot, # Moved to game_logic_utils
+    # print_character_stats, # Moved to game_utils
+    # manage_inventory, display_help_screen, # Moved to game_logic_utils
+    loot_drop_sprite, # This might need moving
     
     # Base and derived item classes (still needed by create_item, manage_inventory)
     Item, Weapon, WeaponBlade, WeaponBlunt, Armor, Shield, Jewelry, Consumable,
@@ -98,7 +125,13 @@ from common_b_s import (
     Character, Tile, Door, Chest, Monster, Dungeon,
     
     # Debug console
-    debug_console, MessageCategory, get_memory_usage,
+    debug_console, MessageCategory, # get_memory_usage removed
+)
+from game_utils import roll_ability_helper, get_memory_usage, print_character_stats # Import from game_utils
+from game_logic_utils import (
+    can_equip_item, handle_targeting, compute_fov, get_valid_equipment_slots,
+    swap_equipment, unequip_item, get_clicked_equipment_slot,
+    manage_inventory, display_help_screen # Added these
 )
 from player import Player # Player imported from player.py
 
@@ -106,12 +139,15 @@ from player import Player # Player imported from player.py
 print("Blade & Sigil v5.5 starting up...")
 
 # Add initial debug messages
+# These calls will use the debug_console instance which is now initialized with a font.
 add_message("Debug system initialized", (200, 200, 255), MessageCategory.DEBUG)
 add_message("Press D to toggle debug console", (255, 255, 0), MessageCategory.DEBUG)
 
 # Create spell effect images
 import math
-from common_b_s import create_fireball_image, create_frost_nova_image
+# Import asset creation utilities from game_effects
+from game_effects import create_fireball_asset_image as create_fireball_image
+from game_effects import create_frost_nova_asset_image as create_frost_nova_image
 fireball_path = create_fireball_image()
 frost_nova_path = create_frost_nova_image()
 
@@ -129,7 +165,8 @@ FPS = 60
 # Debug logging setup is now in debug_system.py
 
 # Key diagnostics globals DEBUG_MODE, KEY_DIAGNOSTIC_ENABLED, keys_pressed, key_state
-# are now defined in debug_system.py
+# are now defined in debug_system.py and debug_console is also initialized in debug_system.py
+
 
 # Function to create a fireball explosion image
 def create_fireball_image():

@@ -30,27 +30,31 @@ def character_creation_screen(screen, clock):
     actual_screen_width, actual_screen_height = screen.get_size()
 
     # Load background image (scaled to actual screen size)
-    background_path_from_assets = assets_data.get("sprites", {}).get("background", {}).get("character_creation_bg")
-    fallback_background_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/B&S_UI_background.png"
+    # Assuming ART_ASSETS_DIR_CONFIG_PATH is available via `from common_b_s import *` which gets it from `game_config.py`
+    # If not, this will need `from game_config import ART_ASSETS_DIR_CONFIG_PATH` at the top of character_creation_ui.py
+    relative_bg_path = assets_data.get("sprites", {}).get("background", {}).get("character_creation_bg")
     background_image = None
-    if background_path_from_assets and os.path.exists(background_path_from_assets):
-        try:
-            background_image = pygame.image.load(background_path_from_assets).convert()
-            background_image = pygame.transform.scale(background_image, (actual_screen_width, actual_screen_height))
-            print(f"Loaded background from assets_data: {background_path_from_assets}")
-        except pygame.error as e:
-            print(f"Error loading background from assets_data: {e}. Trying fallback.")
+
+    if relative_bg_path:
+        full_bg_path = os.path.join(common_b_s.ART_ASSETS_DIR_CONFIG_PATH, relative_bg_path)
+        if os.path.exists(full_bg_path):
+            try:
+                background_image = pygame.image.load(full_bg_path).convert()
+                background_image = pygame.transform.scale(background_image, (actual_screen_width, actual_screen_height))
+                print(f"Loaded background from assets_data: {full_bg_path}")
+            except pygame.error as e:
+                print(f"Error loading background from '{full_bg_path}': {e}. Using black background.")
+                background_image = None # Ensure fallback
+        else:
+            print(f"Background image path not found: {full_bg_path}. Using black background.")
             background_image = None
-    if not background_image and os.path.exists(fallback_background_path):
-        try:
-            background_image = pygame.image.load(fallback_background_path).convert()
-            background_image = pygame.transform.scale(background_image, (actual_screen_width, actual_screen_height))
-            print(f"Loaded background from fallback path: {fallback_background_path}")
-        except pygame.error as e:
-            print(f"Error loading background from fallback: {e}")
-            background_image = None
-    if not background_image:
-        print("Background image not found. Using black background.")
+    else:
+        print("Background image key not found in assets_data. Using black background.")
+        background_image = None
+
+    if not background_image: # If any loading step failed, ensure it's None
+        print("Fallback: Using black background for character creation.")
+        # No need to create a surface, the screen.fill(BLACK) later will handle it.
 
     # Core state variables
     character_name = ""
@@ -126,14 +130,21 @@ def character_creation_screen(screen, clock):
     help_text_area_rect = pygame.Rect(actual_screen_width // 4, actual_screen_height // 4, actual_screen_width // 2, actual_screen_height // 2)
 
     # Dice Sprite (shifted down)
-    dice_sprite_path = assets_data['sprites']['misc']['dice']
-    dice_image = None
-    if dice_sprite_path and os.path.exists(dice_sprite_path):
+    # Path construction for dice_sprite is already handled in common_b_s.py where dice_sprite is loaded.
+    # Here we just use the imported dice_sprite from common_b_s (which is actually `load_sprite` result).
+    # The variable `dice_sprite_path` was local and not what common_b_s.dice_sprite used.
+    # We should use common_b_s.dice_sprite if it's already loaded, or reconstruct path if needed.
+    # common_b_s.dice_sprite is already a loaded image.
+    dice_image = common_b_s.dice_sprite # Use the globally loaded and path-corrected dice_sprite
+    if dice_image:
         try:
-            dice_image = load_sprite(dice_sprite_path)
-            if dice_image: dice_image = pygame.transform.smoothscale(dice_image, (80, 80))
-        except Exception as e: print(f"Error loading dice sprite {dice_sprite_path}: {e}")
-    else: print(f"Dice sprite path not found: {dice_sprite_path}")
+            dice_image = pygame.transform.smoothscale(dice_image, (80, 80))
+        except Exception as e:
+            print(f"Error scaling dice sprite: {e}")
+            dice_image = None # Fallback if scaling fails
+    else:
+        print(f"Dice sprite from common_b_s is None.")
+
     dice_display_actual_rect = pygame.Rect(column_2_x, ui_top_banner_height + padding + vertical_shift_amount, 80, 80)
 
     # Race Selection (shifted down, in column_2_x)

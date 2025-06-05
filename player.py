@@ -3,12 +3,13 @@ from common_b_s import (
     Character,
     roll_dice_expression,
     add_message,
-    can_equip_item,
+    # can_equip_item, # Removed from common_b_s import
     TILE_SIZE,
     RED,
     GREEN,
     Item,
 )
+from game_logic_utils import can_equip_item # Added import from game_logic_utils
 
 # Player class definition moved from blade_sigil_v5_5.py
 class Player(Character):

@@ -10,10 +10,12 @@ import logging
 import random
 import re
 from copy import deepcopy
+from collections import deque # Import deque
 
 # Import from new utility/config files
 from game_config import * # Import all constants
-from game_utils import load_json, load_sprite, roll_dice_expression
+from game_utils import load_json, load_sprite, roll_dice_expression, roll_ability_helper # Added roll_ability_helper
+from game_logic_utils import handle_targeting, compute_fov # Added handle_targeting and compute_fov
 # Sounds and visual effects are primarily for legacy spell functions if called directly from here
 from game_effects import spell_sound, melee_sound, arrow_sound, levelup_sound, frost_sound, store_bell_sound
 # Asset creation functions are called from blade_sigil_v5_5.py, but might be referenced here if legacy needs them
@@ -52,9 +54,10 @@ items_data = load_json(ITEMS_FILE_PATH)
 monsters_data = load_json(MONSTERS_FILE_PATH)
 
 # Misc sprites loaded using game_utils.load_sprite and game_config.TILE_SIZE
-DICE_SPRITE_PATH = assets_data['sprites']['misc']['dice']
+# Prepend ART_ASSETS_DIR_CONFIG_PATH to paths from assets_data
+DICE_SPRITE_PATH = os.path.join(ART_ASSETS_DIR_CONFIG_PATH, assets_data['sprites']['misc']['dice'])
 dice_sprite = load_sprite(DICE_SPRITE_PATH)
-LOOT_DROP_PATH = assets_data['sprites']['misc']['loot_drop']
+LOOT_DROP_PATH = os.path.join(ART_ASSETS_DIR_CONFIG_PATH, assets_data['sprites']['misc']['loot_drop'])
 loot_drop_sprite = load_sprite(LOOT_DROP_PATH)
 
 # MessagePriority class can remain here or be moved to game_config if widely needed
@@ -318,7 +321,90 @@ class Consumable(Item):
             return f"{character.name} uses {self.name} and heals {heal_amount} HP!"
         return f"{self.name} has no effect."
 
-items_list = load_items(ITEMS_FILE_PATH) # Uses game_utils.load_json via load_items
+# Function to create item instances from data
+def create_item(item_data):
+    name = item_data.get("name")
+    item_type = standardize_item_type(item_data.get("item_type")) # Use standardize_item_type
+    value = item_data.get("value", 0)
+    description = item_data.get("description", "")
+
+    # Requirements
+    requirements_data = item_data.get("requirements")
+    min_level = item_data.get("min_level", 1) # Legacy support if requirements dict isn't there
+    min_abilities = item_data.get("min_abilities") # Legacy support
+
+    actual_requirements = None
+    if requirements_data:
+        actual_requirements = ItemRequirements(requirements_data)
+    elif min_level > 1 or min_abilities: # Construct from legacy fields
+        actual_requirements = ItemRequirements({'min_level': min_level, 'min_abilities': min_abilities or {}})
+
+    # Default to base Item class
+    item_instance = None
+
+    if item_type.startswith("weapon"):
+        damage = item_data.get("damage", "1d4") # Default damage
+        if item_type.endswith("_blade"):
+            item_instance = WeaponBlade(name, item_type, damage, value, description)
+        elif item_type.endswith("_blunt"):
+            item_instance = WeaponBlunt(name, item_type, damage, value, description)
+        elif item_type.endswith("_bow"):
+            range_val = item_data.get("range", 4) # Default range for bows
+            item_instance = WeaponBow(name, item_type, damage, value, description, range_val=range_val)
+        else: # Generic weapon
+            item_instance = Weapon(name, item_type, damage, value, description)
+    elif item_type.startswith("armor"):
+        ac = item_data.get("ac", 1) # Default AC
+        item_instance = Armor(name, item_type, ac, value, description)
+    elif item_type.startswith("shield"):
+        ac_bonus = item_data.get("ac_bonus", item_data.get("ac", 1)) # Default AC bonus
+        item_instance = Shield(name, item_type, ac_bonus, value, description)
+    elif item_type.startswith("jewelry"):
+        # For jewelry, specific bonuses might be in 'effect' or direct keys like 'intelligence'
+        # The Jewelry class __init__ was simplified, this create_item might need to pass more effect details.
+        # For now, matching the simplified Jewelry constructor.
+        item_instance = Jewelry(name, item_type, value, description)
+        # If 'effect' dict is present, it could be used to set bonus_stat, bonus_value on the instance
+        effect_data = item_data.get("effect")
+        if isinstance(effect_data, dict) and effect_data.get("type") == "stat_bonus":
+            item_instance.bonus_stat = effect_data.get("stat")
+            item_instance.bonus_value = effect_data.get("value")
+    elif item_type.startswith("consumable"):
+        effect = item_data.get("effect", {"type": "healing", "dice": "1d4"}) # Default effect
+        item_instance = Consumable(name, item_type, effect, value, description)
+    else: # Default to base Item class if type is unknown or not specialized
+        item_instance = Item(name, item_type, value, description)
+
+    # Assign requirements if created
+    if actual_requirements and item_instance:
+        item_instance.requirements = actual_requirements
+
+    # Apply other common properties if they exist in data (weight, durability etc.)
+    if item_instance:
+        item_instance.weight = item_data.get("weight", getattr(item_instance, "weight", 0))
+        item_instance.durability = item_data.get("durability", getattr(item_instance, "durability", 100))
+        # sprite handling for items could be added here if items have individual sprites
+        # item_instance.sprite = load_sprite(os.path.join(ART_ASSETS_DIR_CONFIG_PATH, item_data.get("sprite_path")))
+
+    return item_instance
+
+def load_items(items_file_path):
+    """Loads items from a JSON file and creates Item objects."""
+    raw_items_data = load_json(items_file_path) # load_json from game_utils
+    loaded_item_objects = []
+    if "items" in raw_items_data: # Assuming items are under an "items" key in the JSON
+        for item_data_entry in raw_items_data["items"]:
+            item_obj = create_item(item_data_entry)
+            if item_obj:
+                loaded_item_objects.append(item_obj)
+    else: # If JSON is just a list of items directly
+        for item_data_entry in raw_items_data:
+             item_obj = create_item(item_data_entry)
+             if item_obj:
+                loaded_item_objects.append(item_obj)
+    return loaded_item_objects
+
+items_list = load_items(ITEMS_FILE_PATH)
 
 # Game Entity Classes (Character, Tile, Door, Chest, Monster, Dungeon)
 # These are quite large. For this diff, I'm focusing on the import structure.
@@ -361,7 +447,9 @@ class Tile:
     def __init__(self, x, y, type, sprite=None):
         self.x = x; self.y = y; self.type = type
         if type in ('floor', 'corridor') and "tiles" in assets_data["sprites"] and "floor" in assets_data["sprites"]["tiles"]:
-            self.sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+            floor_sprite_relative_path = assets_data["sprites"]["tiles"]["floor"]
+            floor_sprite_full_path = os.path.join(ART_ASSETS_DIR_CONFIG_PATH, floor_sprite_relative_path)
+            self.sprite = load_sprite(floor_sprite_full_path)
         else: self.sprite = None # Other sprite logic removed for brevity
 
 class Chest:
@@ -390,9 +478,24 @@ class Monster:
         self.monster_type=kwargs.get('monster_type','beast'); self.level=kwargs.get('level',1); self.cr=kwargs.get('cr',1)
         self.vulnerabilities=kwargs.get('vulnerabilities',[]); self.resistances=kwargs.get('resistances',[]); self.immunities=kwargs.get('immunities',[])
         self.is_dead=False; self.active_effects=[]; self.can_move=True; self.can_act=True; self.position=None
-        # Simplified sprite loading
-        if self.sprites and self.sprites.get('live') and os.path.exists(self.sprites['live']): self.sprite = load_sprite(self.sprites['live'])
-        else: self.sprite = None
+
+        # Load monster sprite
+        live_sprite_relative_path = self.sprites.get('live') if self.sprites else None
+        if live_sprite_relative_path:
+            full_sprite_path = os.path.join(ART_ASSETS_DIR_CONFIG_PATH, live_sprite_relative_path)
+            try:
+                # We rely on load_sprite from game_utils to handle FileNotFoundError if image doesn't exist
+                self.sprite = load_sprite(full_sprite_path)
+            except FileNotFoundError:
+                print(f"Warning: Monster sprite file not found: {full_sprite_path}. Monster will have no sprite.")
+                self.sprite = None
+            except pygame.error as e: # Catch other pygame errors during loading (e.g. corrupt file)
+                print(f"Warning: Pygame error loading monster sprite '{full_sprite_path}': {e}. Monster will have no sprite.")
+                self.sprite = None
+        else:
+            print(f"Warning: No live sprite path defined for monster '{self.name}'. Monster will have no sprite.")
+            self.sprite = None
+
     def get_effective_damage(self): return roll_dice_expression(self.dam) # from game_utils
     def set_dead_sprite(self): pass # Simplified
     def move_towards(self, target, dungeon, is_player=False): pass # Simplified

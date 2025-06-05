@@ -23,11 +23,19 @@ from common_b_s import (
     
     # Other helper functions and classes
     load_sprite, load_json, assets_data, characters_data, spells_data, items_data, monsters_data,
-    add_message, update_message_queue, roll_dice_expression, roll_ability_helper,
-    can_equip_item, handle_targeting, compute_fov, get_valid_equipment_slots,
-    swap_equipment, unequip_item, get_clicked_equipment_slot, shop_interaction,
+    add_message, update_message_queue, roll_dice_expression, # roll_ability_helper removed
+    # can_equip_item, # Removed from here
+    # handle_targeting, # Removed from here
+    # compute_fov, # Removed from here
+    # get_valid_equipment_slots, # Removed from here
+    # swap_equipment, unequip_item, get_clicked_equipment_slot, shop_interaction, # Removed from here
     Item, Weapon, WeaponBlade, WeaponBlunt, Armor, Shield, Jewelry, Consumable,
     Character, Tile, # Player removed
+)
+from game_utils import roll_ability_helper # Imported from game_utils
+from game_logic_utils import (
+    can_equip_item, handle_targeting, compute_fov, get_valid_equipment_slots,
+    swap_equipment, unequip_item, get_clicked_equipment_slot, shop_interaction
 )
 from player import Player # Player imported from player.py
 import common_b_s  # Import full module if needed

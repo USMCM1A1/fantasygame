@@ -15,11 +15,12 @@ from common_b_s import (
     DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT, WHITE, font, # for show_title_screen
     Character, Dungeon, Tile, Door, Chest, Monster, Item, # Basic game object classes
     Weapon, Armor, Shield, Jewelry, Consumable, # Item subclasses
-    create_item, load_sprite, assets_data, condition_manager, # Utilities and data
+    create_item, load_sprite, assets_data, # condition_manager, # Utilities and data # Removed condition_manager
     roll_dice_expression, # for Player gold initialization within load_game if new player created
     # Added for state transitions and messaging:
     add_message, GREEN, RED, YELLOW, levelup_sound # Player removed
 )
+from Data.condition_system import condition_manager # Added import for condition_manager
 from player import Player # Player imported from player.py
 # Player class from blade_sigil_v5_5.py is needed for save/load
 # Player class is now imported from common_b_s to resolve circular dependency.
@@ -27,6 +28,21 @@ from player import Player # Player imported from player.py
 from character_creation_ui import character_creation_screen
 import novamagus_hub # For hub transitions and its transition_to_dungeon flag
 import common_b_s # To access and modify common_b_s.in_dungeon -> This line is now uncommented.
+
+from enum import Enum, auto
+
+class GameState(Enum):
+    TITLE_SCREEN = auto()
+    CHARACTER_CREATION = auto()
+    HUB = auto()
+    PLAYING = auto()  # General gameplay state (dungeon, combat)
+    INVENTORY = auto()
+    CHARACTER_SHEET = auto()
+    PAUSE_MENU = auto()
+    GAME_OVER = auto()
+    SHOPPING = auto() # If shop is a distinct state
+    DIALOGUE = auto() # If dialogue is a distinct state
+    # Add other states as needed, e.g., SPELLBOOK, QUEST_LOG
 
 
 class GameStateManager:
@@ -243,8 +259,13 @@ def load_game():
         # Player object creation:
         # Using blade_sigil_v5_5.Player which inherits common_b_s.Character
         player_sprite_path_key = player_data.get("char_class", "Warrior").lower()
-        sprite_path = assets_data["sprites"]["heroes"][player_sprite_path_key]["live"]
-        player_sprite = load_sprite(sprite_path) # load_sprite is from common_b_s
+        # Ensure ART_ASSETS_DIR_CONFIG_PATH is available (it should be via `from common_b_s import *` which gets it from game_config)
+        # Or, explicitly import ART_ASSETS_DIR_CONFIG_PATH from game_config if common_b_s star import is removed.
+        # For now, assuming ART_ASSETS_DIR_CONFIG_PATH is in scope.
+        # If not, this will need `from game_config import ART_ASSETS_DIR_CONFIG_PATH` at the top of game_state_manager.py
+        relative_sprite_path = assets_data["sprites"]["heroes"][player_sprite_path_key]["live"]
+        full_sprite_path = os.path.join(common_b_s.ART_ASSETS_DIR_CONFIG_PATH, relative_sprite_path)
+        player_sprite = load_sprite(full_sprite_path)
 
         # Abilities might need deepcopy if they are complex objects, but here they are dicts of primitives
         abilities = deepcopy(player_data.get("abilities", {}))
@@ -468,8 +489,11 @@ def initialize_game_after_title(title_choice, screen, clock):
         # We need an instance of blade_sigil_v5_5.Player for the main game.
 
         char_class_lower = created_player_common.char_class.lower()
-        sprite_path_key = assets_data["sprites"]["heroes"].get(char_class_lower, assets_data["sprites"]["heroes"]["warrior"]) # Fallback
-        player_sprite = load_sprite(sprite_path_key["live"])
+        # Assuming ART_ASSETS_DIR_CONFIG_PATH is in scope from common_b_s import *
+        hero_sprites_data = assets_data["sprites"]["heroes"].get(char_class_lower, assets_data["sprites"]["heroes"]["warrior"]) # Fallback
+        relative_player_sprite_path = hero_sprites_data["live"]
+        full_player_sprite_path = os.path.join(common_b_s.ART_ASSETS_DIR_CONFIG_PATH, relative_player_sprite_path)
+        player_sprite = load_sprite(full_player_sprite_path)
 
         player = Player( # Instantiating blade_sigil_v5_5.Player
             name=created_player_common.name,
@@ -582,28 +606,18 @@ def show_title_screen():
 
     # Load the title screen image
     try:
-        # Corrected path to be more generic if possible, or ensure it's an absolute path
-        # For now, using the original path from blade_sigil_v5_5.py
-        # Consider making this path configurable or relative to an assets directory
-        title_image_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/b&s_loading_screen.jpg"
-        if not os.path.exists(title_image_path):
-            # Attempt a relative path as a fallback, assuming 'Fantasy_Game_Art_Assets' is in a known location
-            # This is a guess and might need adjustment based on actual project structure
-            # For example, if 'game_state_manager.py' is in the root of 'Fantasy_Game'
-            script_dir = os.path.dirname(__file__) # directory of game_state_manager.py
-            # This relative path is an example, it might not be correct.
-            # title_image_path = os.path.join(script_dir, "Fantasy_Game_Art_Assets", "Misc", "b&s_loading_screen.jpg")
+        # Assuming ART_ASSETS_DIR_CONFIG_PATH is available from common_b_s import *
+        # If not, this will need `from game_config import ART_ASSETS_DIR_CONFIG_PATH`
+        title_image_relative_path = "Misc/b&s_loading_screen.jpg" # Relative path for the title screen
+        title_image_full_path = os.path.join(common_b_s.ART_ASSETS_DIR_CONFIG_PATH, title_image_relative_path)
 
+        if os.path.exists(title_image_full_path):
+            title_image = pygame.image.load(title_image_full_path)
+            title_image = pygame.transform.scale(title_image, (DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT))
+        else:
+            print(f"Warning: Title image not found at '{title_image_full_path}'. Using fallback.")
+            raise pygame.error("Title image file not found") # Force fallback
 
-            # If the above relative path doesn't work, we must rely on the absolute path or a known structure.
-            # For this exercise, I'll stick to the original absolute path if the first attempt fails.
-            # A more robust solution would involve an asset management system or configuration.
-            if not os.path.exists(title_image_path):
-                 title_image_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/b&s_loading_screen.jpg"
-
-
-        title_image = pygame.image.load(title_image_path)
-        title_image = pygame.transform.scale(title_image, (DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT))
     except pygame.error as e:
         print(f"Error loading title image: {e}. Using fallback.")
         # Fallback if image can't be loaded
@@ -694,3 +708,6 @@ def show_title_screen():
         title_screen.blit(help_text, help_rect)
 
         pygame.display.flip()
+
+# Global instance of the GameStateManager
+game_state_manager = GameStateManager()

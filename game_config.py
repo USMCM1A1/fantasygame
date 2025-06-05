@@ -73,15 +73,16 @@ CHEST_ITEMS_COUNT = 3
 CHEST_GOLD_DICE = "3d10"
 
 # --- Data File Paths ---
-# It's better to define base data directory and construct paths from it
-DATA_DIR_CONFIG_PATH = "/Users/williammarcellino/Documents/Fantasy_Game/Data" # Keep original path style
-CHARACTERS_FILE_CONFIG_PATH = "characters.json" # Relative to DATA_DIR
-ASSETS_FILE_CONFIG_PATH = "assets.json"
-SPELLS_FILE_CONFIG_PATH = "spells.json"
-ITEMS_FILE_CONFIG_PATH = "items.json"
-MONSTERS_FILE_CONFIG_PATH = "monsters.json"
-SOUND_EFFECTS_DIR_CONFIG_PATH = "/Users/williammarcellino/Documents/Fantasy_Game/B&S_sfx"
-ART_ASSETS_DIR_CONFIG_PATH = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets"
+# Relative paths from the root of the project
+DATA_DIR_CONFIG_PATH = "Data"
+CHARACTERS_FILE_CONFIG_PATH = "characters.json" # Relative to DATA_DIR_CONFIG_PATH
+ASSETS_FILE_CONFIG_PATH = "assets.json"         # Relative to DATA_DIR_CONFIG_PATH
+SPELLS_FILE_CONFIG_PATH = "spells.json"         # Relative to DATA_DIR_CONFIG_PATH
+ITEMS_FILE_CONFIG_PATH = "items.json"           # Relative to DATA_DIR_CONFIG_PATH
+MONSTERS_FILE_CONFIG_PATH = "monsters.json"       # Relative to DATA_DIR_CONFIG_PATH
+
+SOUND_EFFECTS_DIR_CONFIG_PATH = "sfx" # Placeholder relative path
+ART_ASSETS_DIR_CONFIG_PATH = "art"    # Placeholder relative path
 
 # This file is for constants. Font object creation, image loading, sound loading
 # should happen in modules that initialize pygame and handle assets.
