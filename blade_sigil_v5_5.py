@@ -100,15 +100,11 @@ from common_b_s import (
     
     # UI Drawing functions (if used in dungeon mode)
     draw_text, draw_panel, draw_text_lines, draw_playable_area, draw_right_panel, draw_bottom_panel,
-    draw_equipment_panel, # roll_ability_helper removed, roll_dice_expression is used by Player, manage_inventory
+    draw_equipment_panel,
     
     # Helper and utility functions
-    add_message, # update_message_queue was for the loop, roll_dice_expression used by Player
-    # can_equip_item, handle_targeting, compute_fov, get_valid_equipment_slots, # Moved to game_logic_utils
-    # swap_equipment, unequip_item, get_clicked_equipment_slot, # Moved to game_logic_utils
-    # print_character_stats, # Moved to game_utils
-    # manage_inventory, display_help_screen, # Moved to game_logic_utils
-    loot_drop_sprite, # This might need moving
+    add_message,
+    loot_drop_sprite,
     
     # Base and derived item classes (still needed by create_item, manage_inventory)
     Item, Weapon, WeaponBlade, WeaponBlunt, Armor, Shield, Jewelry, Consumable,
@@ -125,13 +121,13 @@ from common_b_s import (
     Character, Tile, Door, Chest, Monster, Dungeon,
     
     # Debug console
-    debug_console, MessageCategory, # get_memory_usage removed
+    debug_console, MessageCategory,
 )
 from game_utils import roll_ability_helper, get_memory_usage, print_character_stats # Import from game_utils
 from game_logic_utils import (
     can_equip_item, handle_targeting, compute_fov, get_valid_equipment_slots,
     swap_equipment, unequip_item, get_clicked_equipment_slot,
-    manage_inventory, display_help_screen # Added these
+    manage_inventory, display_help_screen
 )
 from player import Player # Player imported from player.py
 
@@ -154,7 +150,8 @@ frost_nova_path = create_frost_nova_image()
 import novamagus_hub  # Ensure the hub module is imported
 SCREEN_HEIGHT = DUNGEON_SCREEN_HEIGHT
 SCREEN_WIDTH = DUNGEON_SCREEN_WIDTH
-TILE_SIZE = DUNGEON_TILE_SIZE
+# TILE_SIZE = DUNGEON_TILE_SIZE # This line is problematic as DUNGEON_TILE_SIZE is not defined here.
+                                # TILE_SIZE is already imported from game_config.py and should be used directly.
 # common_b_s.in_dungeon will be managed by game_state_manager's set_game_state
 
 screen = pygame.display.set_mode((DUNGEON_SCREEN_WIDTH, DUNGEON_SCREEN_HEIGHT))

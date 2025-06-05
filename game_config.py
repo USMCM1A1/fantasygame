@@ -81,8 +81,8 @@ SPELLS_FILE_CONFIG_PATH = "spells.json"         # Relative to DATA_DIR_CONFIG_PA
 ITEMS_FILE_CONFIG_PATH = "items.json"           # Relative to DATA_DIR_CONFIG_PATH
 MONSTERS_FILE_CONFIG_PATH = "monsters.json"       # Relative to DATA_DIR_CONFIG_PATH
 
-SOUND_EFFECTS_DIR_CONFIG_PATH = "sfx" # Placeholder relative path
-ART_ASSETS_DIR_CONFIG_PATH = "art"    # Placeholder relative path
+SOUND_EFFECTS_DIR_CONFIG_PATH = "B&S_sfx/" # Corrected relative path
+ART_ASSETS_DIR_CONFIG_PATH = "Fantasy_Game_Art_Assets/"    # Corrected relative path
 
 # This file is for constants. Font object creation, image loading, sound loading
 # should happen in modules that initialize pygame and handle assets.
