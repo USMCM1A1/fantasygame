@@ -5,30 +5,38 @@ import os
 
 # Import necessary components from common_b_s.py
 from common_b_s import (
-    Dungeon, roll_ability_helper, load_sprite, draw_text,
+    Dungeon, roll_ability_helper, load_sprite, draw_text, # Player removed
     assets_data, font,
     BLACK, WHITE, LIGHT_GRAY, GREEN, BLUE, RED, DARK_GRAY,
     HUB_SCREEN_WIDTH as SCREEN_WIDTH,
     HUB_SCREEN_HEIGHT as SCREEN_HEIGHT,
     HUB_TILE_SIZE as TILE_SIZE, # Using HUB_TILE_SIZE and aliasing to TILE_SIZE
+    # races # common_b_s.races not used for now, keeping local racial_bonuses_text
 )
+from player import Player # Player imported from player.py
 
-# Import ART_ASSETS_DIR_CONFIG_PATH directly from game_config
-from game_config import ART_ASSETS_DIR_CONFIG_PATH
-
-# Import Player class from player.py
-from player import Player
+# DEFAULT_FONT_SIZE is used locally for text rendering logic, ensure it's defined if not from common_b_s
+# It was a placeholder, if `font` from common_b_s is used directly, this might not be needed
+# or should be derived from the imported font's size. For now, let's keep a local definition
+# if it's used for calculations independent of the actual imported font object's size.
+# common_b_s.font is pygame.font.SysFont('monospace', 15). So DEFAULT_FONT_SIZE should be 15 or related.
+# The character_creation_ui used 32. This will cause rendering issues if not handled.
+# For now, I'll use the imported font's height for line spacing calculations where DEFAULT_FONT_SIZE was used.
+# If a specific size "32" was intended for some text, a new font object would be needed.
+# Let's assume for now, all text uses the imported `font`.
 
 # Main character creation function
 def character_creation_screen(screen, clock):
     actual_screen_width, actual_screen_height = screen.get_size()
 
     # Load background image (scaled to actual screen size)
+    # Assuming ART_ASSETS_DIR_CONFIG_PATH is available via `from common_b_s import *` which gets it from `game_config.py`
+    # If not, this will need `from game_config import ART_ASSETS_DIR_CONFIG_PATH` at the top of character_creation_ui.py
     relative_bg_path = assets_data.get("sprites", {}).get("background", {}).get("character_creation_bg")
     background_image = None
 
     if relative_bg_path:
-        full_bg_path = os.path.join(ART_ASSETS_DIR_CONFIG_PATH, relative_bg_path)
+        full_bg_path = os.path.join(common_b_s.ART_ASSETS_DIR_CONFIG_PATH, relative_bg_path)
         if os.path.exists(full_bg_path):
             try:
                 background_image = pygame.image.load(full_bg_path).convert()
@@ -122,9 +130,12 @@ def character_creation_screen(screen, clock):
     help_text_area_rect = pygame.Rect(actual_screen_width // 4, actual_screen_height // 4, actual_screen_width // 2, actual_screen_height // 2)
 
     # Dice Sprite (shifted down)
-    # Import the dice_sprite from common_b_s
-    from common_b_s import dice_sprite
-    dice_image = dice_sprite # Use the globally loaded and path-corrected dice_sprite
+    # Path construction for dice_sprite is already handled in common_b_s.py where dice_sprite is loaded.
+    # Here we just use the imported dice_sprite from common_b_s (which is actually `load_sprite` result).
+    # The variable `dice_sprite_path` was local and not what common_b_s.dice_sprite used.
+    # We should use common_b_s.dice_sprite if it's already loaded, or reconstruct path if needed.
+    # common_b_s.dice_sprite is already a loaded image.
+    dice_image = common_b_s.dice_sprite # Use the globally loaded and path-corrected dice_sprite
     if dice_image:
         try:
             dice_image = pygame.transform.smoothscale(dice_image, (80, 80))

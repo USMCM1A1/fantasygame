@@ -49,35 +49,45 @@ class GameStateManager:
     def __init__(self):
         self.states = {}
         self.current_state = None
+        # Initialize the states
+        self._initialize_states()
+
+    def _initialize_states(self):
+        """Initialize all game states"""
+        for state in GameState:
+            self.states[state] = state
+        print(f"DEBUG: Initialized states: {list(self.states.keys())}")
 
     def add_state(self, state_name, state_object):
         self.states[state_name] = state_object
 
     def set_state(self, state_name):
+        print(f"DEBUG: Setting state to: {state_name}")
         if state_name in self.states:
             self.current_state = state_name
+            print(f"DEBUG: State set successfully to: {self.current_state}")
         else:
-            print(f"Error: State '{state_name}' not found.")
+            print(f"Error: State '{state_name}' not found in {list(self.states.keys())}")
 
     def get_state(self):
         if self.current_state and self.current_state in self.states:
-            return self.states[self.current_state]
+            return self.current_state
         else:
             return None
 
     def update(self, dt):
         state = self.get_state()
-        if state:
+        if state and hasattr(state, 'update'):
             state.update(dt)
 
     def handle_events(self, events):
         state = self.get_state()
-        if state:
+        if state and hasattr(state, 'handle_events'):
             state.handle_events(events)
 
     def draw(self, screen):
         state = self.get_state()
-        if state:
+        if state and hasattr(state, 'draw'):
             state.draw(screen)
 
 # === Save/Load Game System ===
