@@ -347,7 +347,7 @@ def run_game_loop(screen, clock, player, game_dungeon, initial_game_state_enum):
 
             if current_draw_state == GameState.PLAYING:
                 if hasattr(game_dungeon, 'draw'):
-                    game_dungeon.draw(screen, player.position[0], player.position[1])
+                    game_dungeon.draw(screen)
                 if hasattr(player, 'draw'):
                     player.draw(screen, getattr(game_dungeon, 'tile_size', TILE_SIZE), 
                                getattr(game_dungeon, 'camera_offset_x', 0), 
