@@ -329,7 +329,8 @@ def character_creation_screen(screen, clock):
             pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2)
 
             # Change text color to WHITE
-            draw_text(screen, race_name_val, WHITE, button_rect.centerx - font.size(race_name_val)[0]//2, button_rect.centery - font_height//2 + (button_rect.height - font_height)//2 ) # Better centering for variable height buttons
+            # Align text to top-left with 5px padding
+            draw_text(screen, race_name_val, WHITE, button_rect.x + 5, button_rect.y + 5)
 
         # Race Help Text Display
         if race_buttons:
@@ -356,7 +357,8 @@ def character_creation_screen(screen, clock):
             pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2)
 
             # Change text color to WHITE
-            draw_text(screen, class_name_val, WHITE, button_rect.centerx - font.size(class_name_val)[0]//2, button_rect.centery - font_height//2 + (button_rect.height - font_height)//2 )
+            # Align text to top-left with 5px padding
+            draw_text(screen, class_name_val, WHITE, button_rect.x + 5, button_rect.y + 5)
 
         # Ready Button (uses actual_screen_width/height for positioning)
         ready_button_active = bool(character_name.strip() and stats_accepted and selected_race and selected_class)
