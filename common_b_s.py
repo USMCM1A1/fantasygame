@@ -512,7 +512,51 @@ class Dungeon:
         self.start_position = self.create_rooms_and_corridors()
     def create_rooms_and_corridors(self): return [0,0] # Highly simplified
     def remove_monster(self,monster): pass # Simplified
-    def draw(self, surface): pass # Simplified
+    def draw(self, surface, player_x_px, player_y_px):
+        # Ensure DUNGEON_TILE_SIZE, DUNGEON_PLAYABLE_AREA_WIDTH, DUNGEON_PLAYABLE_AREA_HEIGHT are accessible
+        # from game_config import *
+
+        # Calculate camera offsets to center the player
+        self.camera_offset_x = (DUNGEON_PLAYABLE_AREA_WIDTH // 2) - player_x_px
+        self.camera_offset_y = (DUNGEON_PLAYABLE_AREA_HEIGHT // 2) - player_y_px
+
+        # Optional: Clamp camera offsets
+        self.camera_offset_x = min(0, self.camera_offset_x)
+        self.camera_offset_x = max(DUNGEON_PLAYABLE_AREA_WIDTH - self.width * DUNGEON_TILE_SIZE, self.camera_offset_x)
+        self.camera_offset_y = min(0, self.camera_offset_y)
+        self.camera_offset_y = max(DUNGEON_PLAYABLE_AREA_HEIGHT - self.height * DUNGEON_TILE_SIZE, self.camera_offset_y)
+
+        for x_coord in range(self.width):
+            for y_coord in range(self.height):
+                tile = self.tiles[x_coord][y_coord]
+                if tile.sprite:
+                    surface.blit(tile.sprite, (x_coord * DUNGEON_TILE_SIZE + self.camera_offset_x, y_coord * DUNGEON_TILE_SIZE + self.camera_offset_y))
+                # else: (optional default color drawing)
+                    # pygame.draw.rect(surface, (50,50,50), (x_coord * DUNGEON_TILE_SIZE + self.camera_offset_x, y_coord * DUNGEON_TILE_SIZE + self.camera_offset_y, DUNGEON_TILE_SIZE, DUNGEON_TILE_SIZE))
+
+        for (door_x, door_y), door_obj in self.doors.items():
+            if hasattr(door_obj, 'sprite') and door_obj.sprite:
+                surface.blit(door_obj.sprite, (door_x * DUNGEON_TILE_SIZE + self.camera_offset_x, door_y * DUNGEON_TILE_SIZE + self.camera_offset_y))
+            # else: (fallback drawing)
+                # pygame.draw.rect(surface, (100, 50, 0), (door_x * DUNGEON_TILE_SIZE + self.camera_offset_x, door_y * DUNGEON_TILE_SIZE + self.camera_offset_y, DUNGEON_TILE_SIZE, DUNGEON_TILE_SIZE), 2)
+
+        for (chest_x, chest_y), chest_obj in self.chests.items():
+            if hasattr(chest_obj, 'sprite') and chest_obj.sprite:
+                surface.blit(chest_obj.sprite, (chest_x * DUNGEON_TILE_SIZE + self.camera_offset_x, chest_y * DUNGEON_TILE_SIZE + self.camera_offset_y))
+            # else: (fallback drawing)
+                # pygame.draw.rect(surface, (150, 100, 0), (chest_x * DUNGEON_TILE_SIZE + self.camera_offset_x, chest_y * DUNGEON_TILE_SIZE + self.camera_offset_y, DUNGEON_TILE_SIZE, DUNGEON_TILE_SIZE))
+
+        if 'loot_drop_sprite' in globals():
+            for item_drop in self.dropped_items:
+                drop_pos = item_drop.get('position')
+                if isinstance(drop_pos, (list, tuple)) and len(drop_pos) == 2:
+                    surface.blit(loot_drop_sprite, (drop_pos[0] * DUNGEON_TILE_SIZE + self.camera_offset_x, drop_pos[1] * DUNGEON_TILE_SIZE + self.camera_offset_y))
+                else:
+                    if DEBUG_MODE:
+                        print(f"Warning: Dropped item has invalid or missing position format: {item_drop}")
+
+        # FoV and explicit camera scrolling are partially handled by these offsets.
+        # If this method is the sole renderer, further FoV logic might be integrated here or kept separate.
     def place_transition_door(self,rooms,start_room): return None # Simplified
     def carve_doors(self): pass # Simplified
 
