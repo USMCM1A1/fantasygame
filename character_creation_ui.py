@@ -137,6 +137,7 @@ def character_creation_screen(screen, clock):
     dice_display_actual_rect = pygame.Rect(column_2_x, ui_top_banner_height + padding + vertical_shift_amount, 80, 80)
 
     # Race Selection (shifted down, in column_2_x)
+    choice_button_height = button_height - 10 # New height definition for Race/Class buttons
     race_names = ['High Elf', 'Wood Elf', 'Halfling', 'Dwarf', 'Human']
     racial_bonuses_text = {
         'High Elf': 'Bonuses: +1 Intelligence. Keen intellect and magical aptitude.',
@@ -149,7 +150,7 @@ def character_creation_screen(screen, clock):
     race_buttons = {}
     current_race_y_for_buttons = race_section_y_start + font_height + padding // 2
     for i, name in enumerate(race_names):
-        rect = pygame.Rect(column_2_x, current_race_y_for_buttons + i * (button_height // 1.5 + padding // 2), button_width, button_height // 1.5)
+        rect = pygame.Rect(column_2_x, current_race_y_for_buttons + i * (choice_button_height + padding // 2), button_width, choice_button_height)
         race_buttons[name] = rect
 
     # Class Selection (shifted down, in column_3_x, aligned vertically with Race label)
@@ -158,7 +159,7 @@ def character_creation_screen(screen, clock):
     class_buttons = {}
     current_class_y_for_buttons = class_section_label_y + font_height + padding // 2
     for i, name in enumerate(class_names):
-        rect = pygame.Rect(column_3_x, current_class_y_for_buttons + i * (button_height // 1.5 + padding // 2), button_width, button_height // 1.5)
+        rect = pygame.Rect(column_3_x, current_class_y_for_buttons + i * (choice_button_height + padding // 2), button_width, choice_button_height)
         class_buttons[name] = rect
 
     running = True
@@ -319,10 +320,16 @@ def character_creation_screen(screen, clock):
         for race_name_val in race_names:
             button_rect = race_buttons[race_name_val]
             highlight = (selected_race == race_name_val)
-            btn_color = GREEN if highlight else BLUE
+
+            # Set background color to DARK_GRAY consistently
+            btn_color = DARK_GRAY
             pygame.draw.rect(screen, btn_color, button_rect)
+
+            # Keep existing outline logic (1px for normal, 2px for highlight)
             pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2)
-            draw_text(screen, race_name_val, BLACK, button_rect.centerx - font.size(race_name_val)[0]//2, button_rect.centery - font_height//2 + (button_rect.height - font_height)//2 ) # Better centering for variable height buttons
+
+            # Change text color to WHITE
+            draw_text(screen, race_name_val, WHITE, button_rect.centerx - font.size(race_name_val)[0]//2, button_rect.centery - font_height//2 + (button_rect.height - font_height)//2 ) # Better centering for variable height buttons
 
         # Race Help Text Display
         if race_buttons:
@@ -340,10 +347,16 @@ def character_creation_screen(screen, clock):
         for class_name_val in class_names:
             button_rect = class_buttons[class_name_val]
             highlight = (selected_class == class_name_val)
-            btn_color = GREEN if highlight else BLUE
+
+            # Set background color to DARK_GRAY consistently
+            btn_color = DARK_GRAY
             pygame.draw.rect(screen, btn_color, button_rect)
+
+            # Keep existing outline logic (1px for normal, 2px for highlight)
             pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2)
-            draw_text(screen, class_name_val, BLACK, button_rect.centerx - font.size(class_name_val)[0]//2, button_rect.centery - font_height//2 + (button_rect.height - font_height)//2 )
+
+            # Change text color to WHITE
+            draw_text(screen, class_name_val, WHITE, button_rect.centerx - font.size(class_name_val)[0]//2, button_rect.centery - font_height//2 + (button_rect.height - font_height)//2 )
 
         # Ready Button (uses actual_screen_width/height for positioning)
         ready_button_active = bool(character_name.strip() and stats_accepted and selected_race and selected_class)
