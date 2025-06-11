@@ -14,6 +14,7 @@ import random
 import re
 from copy import deepcopy
 from Data.condition_system import condition_manager
+from Data.save_system import SaveType
 from debug_system import DEBUG_MODE # Import DEBUG_MODE
 
 # === Pygame Initialization Constants ===
