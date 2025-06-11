@@ -137,6 +137,7 @@ def character_creation_screen(screen, clock):
     dice_display_actual_rect = pygame.Rect(column_2_x, ui_top_banner_height + padding + vertical_shift_amount, 80, 80)
 
     # Race Selection (shifted down, in column_2_x)
+    choice_button_height = button_height - 10 # New height definition for Race/Class buttons
     race_names = ['High Elf', 'Wood Elf', 'Halfling', 'Dwarf', 'Human']
     racial_bonuses_text = {
         'High Elf': 'Bonuses: +1 Intelligence. Keen intellect and magical aptitude.',
@@ -149,7 +150,7 @@ def character_creation_screen(screen, clock):
     race_buttons = {}
     current_race_y_for_buttons = race_section_y_start + font_height + padding // 2
     for i, name in enumerate(race_names):
-        rect = pygame.Rect(column_2_x, current_race_y_for_buttons + i * (button_height // 1.5 + padding // 2), button_width, button_height // 1.5)
+        rect = pygame.Rect(column_2_x, current_race_y_for_buttons + i * (choice_button_height + padding // 2), button_width, choice_button_height)
         race_buttons[name] = rect
 
     # Class Selection (shifted down, in column_3_x, aligned vertically with Race label)
@@ -158,7 +159,7 @@ def character_creation_screen(screen, clock):
     class_buttons = {}
     current_class_y_for_buttons = class_section_label_y + font_height + padding // 2
     for i, name in enumerate(class_names):
-        rect = pygame.Rect(column_3_x, current_class_y_for_buttons + i * (button_height // 1.5 + padding // 2), button_width, button_height // 1.5)
+        rect = pygame.Rect(column_3_x, current_class_y_for_buttons + i * (choice_button_height + padding // 2), button_width, choice_button_height)
         class_buttons[name] = rect
 
     running = True
@@ -278,13 +279,30 @@ def character_creation_screen(screen, clock):
 
         # Stat Buttons (Roll, Accept, Help) - use their pre-calculated rects
         roll_text_render = "Re-roll" if stats_accepted else "Roll"
-        pygame.draw.rect(screen, GREEN, roll_button_rect)
-        draw_text(screen, roll_text_render, BLACK, roll_button_rect.centerx - font.size(roll_text_render)[0]//2, roll_button_rect.centery - font_height//2 +2)
+        pygame.draw.rect(screen, DARK_GRAY, roll_button_rect) # Changed background to DARK_GRAY
+        pygame.draw.rect(screen, WHITE, roll_button_rect, 1) # Added WHITE outline
+        draw_text(screen, roll_text_render, WHITE, roll_button_rect.centerx - font.size(roll_text_render)[0]//2, roll_button_rect.centery - font_height//2 +2) # Changed text to WHITE
 
-        accept_color = LIGHT_GRAY if not stats_rolled else (GREEN if stats_accepted else BLUE)
         accept_text_render = "Accepted" if stats_accepted else "Accept"
-        pygame.draw.rect(screen, accept_color, accept_button_rect)
-        draw_text(screen, accept_text_render, BLACK, accept_button_rect.centerx - font.size(accept_text_render)[0]//2, accept_button_rect.centery - font_height//2+2)
+        # Default background
+        pygame.draw.rect(screen, DARK_GRAY, accept_button_rect)
+
+        # Determine outline color and thickness based on state
+        outline_color = WHITE
+        outline_thickness = 1
+        if not stats_rolled: # Not rolled yet, button is somewhat inactive
+            outline_color = LIGHT_GRAY
+        elif stats_accepted: # Rolled and accepted
+            outline_thickness = 2 # Make outline thicker to show "accepted" state
+
+        pygame.draw.rect(screen, outline_color, accept_button_rect, outline_thickness) # Draw outline
+
+        # Text color is WHITE, consider dimming if not stats_rolled
+        text_color = WHITE
+        if not stats_rolled:
+            text_color = LIGHT_GRAY # Dim text if button is inactive
+
+        draw_text(screen, accept_text_render, text_color, accept_button_rect.centerx - font.size(accept_text_render)[0]//2, accept_button_rect.centery - font_height//2+2)
 
         pygame.draw.rect(screen, LIGHT_GRAY, help_button_rect)
         draw_text(screen, "Help", BLACK, help_button_rect.centerx - font.size("Help")[0]//2, help_button_rect.centery - font_height//2+2)
@@ -302,10 +320,17 @@ def character_creation_screen(screen, clock):
         for race_name_val in race_names:
             button_rect = race_buttons[race_name_val]
             highlight = (selected_race == race_name_val)
-            btn_color = GREEN if highlight else BLUE
+
+            # Set background color to DARK_GRAY consistently
+            btn_color = DARK_GRAY
             pygame.draw.rect(screen, btn_color, button_rect)
+
+            # Keep existing outline logic (1px for normal, 2px for highlight)
             pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2)
-            draw_text(screen, race_name_val, BLACK, button_rect.centerx - font.size(race_name_val)[0]//2, button_rect.centery - font_height//2 + (button_rect.height - font_height)//2 ) # Better centering for variable height buttons
+
+            # Change text color to WHITE
+            # Align text to top-left with 5px padding
+            draw_text(screen, race_name_val, WHITE, button_rect.x + 5, button_rect.y + 5)
 
         # Race Help Text Display
         if race_buttons:
@@ -323,10 +348,17 @@ def character_creation_screen(screen, clock):
         for class_name_val in class_names:
             button_rect = class_buttons[class_name_val]
             highlight = (selected_class == class_name_val)
-            btn_color = GREEN if highlight else BLUE
+
+            # Set background color to DARK_GRAY consistently
+            btn_color = DARK_GRAY
             pygame.draw.rect(screen, btn_color, button_rect)
+
+            # Keep existing outline logic (1px for normal, 2px for highlight)
             pygame.draw.rect(screen, WHITE, button_rect, 1 if not highlight else 2)
-            draw_text(screen, class_name_val, BLACK, button_rect.centerx - font.size(class_name_val)[0]//2, button_rect.centery - font_height//2 + (button_rect.height - font_height)//2 )
+
+            # Change text color to WHITE
+            # Align text to top-left with 5px padding
+            draw_text(screen, class_name_val, WHITE, button_rect.x + 5, button_rect.y + 5)
 
         # Ready Button (uses actual_screen_width/height for positioning)
         ready_button_active = bool(character_name.strip() and stats_accepted and selected_race and selected_class)
