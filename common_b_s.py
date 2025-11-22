@@ -2484,70 +2484,77 @@ class Dungeon:
         return chest
 
     def create_rooms_and_corridors(self):
-        # --- Grid Settings ---
-        rows = random.randint(4, 6)  # Random number of rows between 4 and 6
-        cols = random.randint(4, 6)  # Random number of columns between 4 and 6
-        cell_width = self.width // cols
-        cell_height = self.height // rows
         rooms = []
+        max_attempts = self.max_rooms * 3  # Try more times than max_rooms to find spots
 
-        margin = 1  # Number of tiles to leave as margin on each side
-        for i in range(rows):
-            for j in range(cols):
-                # Top-left of the cell
-                cell_x = j * cell_width
-                cell_y = i * cell_height
+        for _ in range(max_attempts):
+            if len(rooms) >= self.max_rooms:
+                break
 
-                # Calculate the maximum room width and height available if we leave a margin on both sides
-                max_room_w = cell_width - 2 * margin
-                max_room_h = cell_height - 2 * margin
+            # Generate random room dimensions
+            room_w = random.randint(self.min_room_size, self.max_room_size)
+            room_h = random.randint(self.min_room_size, self.max_room_size)
 
-                # Ensure room width and height are at least 3x2, but no larger than the available space
-                room_w = max(3, random.randint(min(max_room_w // 2, max_room_w), max_room_w))  # Random width
-                room_h = max(2, random.randint(min(max_room_h // 2, max_room_h), max_room_h))  # Random height
+            # Generate random position within map bounds (with 1 tile margin)
+            room_x = random.randint(1, self.width - room_w - 1)
+            room_y = random.randint(1, self.height - room_h - 1)
 
+            new_room = (room_x, room_y, room_w, room_h)
 
-                # Random position within the cell
-                room_x = cell_x + random.randint(margin, max(margin, cell_width - room_w - margin))
-                room_y = cell_y + random.randint(margin, max(margin, cell_height - room_h - margin))
+            # Check for overlap with existing rooms
+            failed = False
+            for other_room in rooms:
+                # Add 1 tile buffer around room to ensure separation (except for corridors)
+                # Check if rectangles overlap: (x1 < x2 + w2) and (x1 + w1 > x2) and ...
+                # Using padding of 2 to ensure at least 1 wall between rooms
+                if (room_x - 2 < other_room[0] + other_room[2] and
+                    room_x + room_w + 2 > other_room[0] and
+                    room_y - 2 < other_room[1] + other_room[3] and
+                    room_y + room_h + 2 > other_room[1]):
+                    failed = True
+                    break
 
-                room = (room_x, room_y, room_w, room_h)
-                rooms.append(room)
+            if not failed:
+                # Create the room
+                rooms.append(new_room)
 
-                # Carve the room out as 'floor'
+                # Carve room
                 for rx in range(room_x, room_x + room_w):
                     for ry in range(room_y, room_y + room_h):
                         self.tiles[rx][ry].type = 'floor'
                         self.tiles[rx][ry].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
 
-        # --- Connect Rooms with Corridors (carve complete paths) ---
-        rooms.sort(key=lambda r: r[0] + r[2] // 2)  # Sort rooms by x-coordinate of the center
-        for i in range(len(rooms) - 1):
-            (x1, y1, w1, h1) = rooms[i]
-            (x2, y2, w2, h2) = rooms[i + 1]
-            center1 = (x1 + w1 // 2, y1 + h1 // 2)
-            center2 = (x2 + w2 // 2, y2 + h2 // 2)
+                # Connect to previous room (if any)
+                if len(rooms) > 1:
+                    prev_room = rooms[-2]
 
-            if random.choice([True, False]):
-                # Horizontal then vertical
-                for x_coord in range(min(center1[0], center2[0]), max(center1[0], center2[0]) + 1): # Renamed x to x_coord
-                    if self.tiles[x_coord][center1[1]].type != 'floor':
-                        self.tiles[x_coord][center1[1]].type = 'corridor'
-                        self.tiles[x_coord][center1[1]].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
-                for y_coord in range(min(center1[1], center2[1]), max(center1[1], center2[1]) + 1): # Renamed y to y_coord
-                    if self.tiles[center2[0]][y_coord].type != 'floor':
-                        self.tiles[center2[0]][y_coord].type = 'corridor'
-                        self.tiles[center2[0]][y_coord].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
-            else:
-                # Vertical then horizontal
-                for y_coord in range(min(center1[1], center2[1]), max(center1[1], center2[1]) + 1): # Renamed y to y_coord
-                    if self.tiles[center1[0]][y_coord].type != 'floor':
-                        self.tiles[center1[0]][y_coord].type = 'corridor'
-                        self.tiles[center1[0]][y_coord].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
-                for x_coord in range(min(center1[0], center2[0]), max(center1[0], center2[0]) + 1): # Renamed x to x_coord
-                    if self.tiles[x_coord][center2[1]].type != 'floor':
-                        self.tiles[x_coord][center2[1]].type = 'corridor'
-                        self.tiles[x_coord][center2[1]].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+                    # Get center points
+                    new_center_x, new_center_y = room_x + room_w // 2, room_y + room_h // 2
+                    prev_center_x, prev_center_y = prev_room[0] + prev_room[2] // 2, prev_room[1] + prev_room[3] // 2
+
+                    # Carve corridor (horizontal then vertical or vice versa)
+                    if random.choice([True, False]):
+                        # Horizontal first, then vertical
+                        self._carve_h_corridor(prev_center_x, new_center_x, prev_center_y)
+                        self._carve_v_corridor(prev_center_y, new_center_y, new_center_x)
+                    else:
+                        # Vertical first, then horizontal
+                        self._carve_v_corridor(prev_center_y, new_center_y, prev_center_x)
+                        self._carve_h_corridor(prev_center_x, new_center_x, new_center_y)
+
+    def _carve_h_corridor(self, x1, x2, y):
+        """Carve a horizontal corridor"""
+        for x in range(min(x1, x2), max(x1, x2) + 1):
+            if self.tiles[x][y].type != 'floor':
+                self.tiles[x][y].type = 'corridor'
+                self.tiles[x][y].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+
+    def _carve_v_corridor(self, y1, y2, x):
+        """Carve a vertical corridor"""
+        for y in range(min(y1, y2), max(y1, y2) + 1):
+            if self.tiles[x][y].type != 'floor':
+                self.tiles[x][y].type = 'corridor'
+                self.tiles[x][y].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
 
         # After carving corridors, post-process to place doors
         self.carve_doors()
