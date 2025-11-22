@@ -15,6 +15,7 @@ import re
 from copy import deepcopy
 from Data.condition_system import condition_manager
 from debug_system import DEBUG_MODE # Import DEBUG_MODE
+import debug_system
 
 # === Pygame Initialization Constants ===
 pygame.init()
@@ -1366,28 +1367,21 @@ def handle_inventory_click(event, player, equipment_rect, inventory_rect):
                         # Remove the item from inventory after use
                         player.inventory.remove(selected_item)
                         
-                        # Import and use the process_game_turn function to advance the turn counter
-                        try:
-                            # We need to import this from blade_sigil_v5_5 
-                            # which has our process_game_turn function
-                            from blade_sigil_v5_5 import process_game_turn
+                        # Use the process_game_turn function to advance the turn counter
+
+                        # Since we're in common_b_s, we need to find the current dungeon
+                        # The calling function should pass the current dungeon instance
+                        if 'dungeon_instance' in locals() or 'dungeon_instance' in globals():
+                            dungeon = dungeon_instance
+                        elif 'current_dungeon' in locals() or 'current_dungeon' in globals():
+                            dungeon = current_dungeon
+                        else:
+                            # If we can't find a dungeon reference, we'll have to skip turn processing
+                            add_message("NOTE: Couldn't process turn after item use (no dungeon found)")
+                            return
                             
-                            # Since we're in common_b_s, we need to find the current dungeon
-                            # The calling function should pass the current dungeon instance
-                            if 'dungeon_instance' in locals() or 'dungeon_instance' in globals():
-                                dungeon = dungeon_instance
-                            elif 'current_dungeon' in locals() or 'current_dungeon' in globals():
-                                dungeon = current_dungeon
-                            else:
-                                # If we can't find a dungeon reference, we'll have to skip turn processing
-                                add_message("NOTE: Couldn't process turn after item use")
-                                return
-                                
-                            # Process the turn after using an item
-                            process_game_turn(player, dungeon)
-                        except ImportError:
-                            # If we can't import process_game_turn, we'll have to skip turn processing
-                            add_message("NOTE: Couldn't process turn after item use due to import error")
+                        # Process the turn after using an item
+                        process_game_turn(player, dungeon)
                         return  # Exit after using the consumable
                     else:
                         add_message(f"Cannot use {selected_item.name} - no use method defined.")
