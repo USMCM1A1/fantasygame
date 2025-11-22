@@ -5358,3 +5358,27 @@ def create_fireball_explosion(target_position, size=3, duration=2.0, frames=20, 
     except Exception as e:
         return False, str(e)
 
+
+# =============================================================================
+# === Combat Module ===
+# =============================================================================
+# Helper function for turn processing
+def process_game_turn(player, dungeon):
+    """
+    Process one game turn after any player action (movement, combat, spells).
+    Advances the condition manager turn counter and processes all active conditions.
+
+    Args:
+        player: The player character
+        dungeon: The current dungeon instance
+
+    Returns:
+        None (messages are added directly to the message queue)
+    """
+    debug_system.logger.info(f"process_game_turn: Using condition_manager (id: {id(condition_manager)}) with current_turn: {condition_manager.current_turn}")
+    # Process all active conditions on player and monsters
+    condition_messages = condition_manager.process_turn([player] + dungeon.monsters)
+
+    # Add messages to the game message queue
+    for msg in condition_messages:
+        add_message(msg)
