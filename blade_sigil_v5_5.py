@@ -454,6 +454,13 @@ while running:
             elif event.key == pygame.K_h:
                 display_help_screen(screen, clock)
             
+            elif event.key == pygame.K_t:
+                player.max_hit_points = 1000
+                player.hit_points = 1000
+                player.spell_points = 1000
+                player.max_spell_points = 1000
+                add_message("Testing mode activated: HP and SP set to 1000!", GREEN)
+
             elif event.key == pygame.K_F5:
                 add_message("Saving game...")
                 try:
