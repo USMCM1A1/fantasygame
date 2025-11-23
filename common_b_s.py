@@ -2483,70 +2483,163 @@ class Dungeon:
 
         return chest
 
+    def _create_room(self, x, y, w, h):
+        """Create a random room within a rectangular area and return its dimensions."""
+        # Generate random room dimensions within the container
+        # Ensure we respect min_room_size and don't exceed container
+        room_w = random.randint(self.min_room_size, max(self.min_room_size, w - 2))
+        room_h = random.randint(self.min_room_size, max(self.min_room_size, h - 2))
+
+        # Center the room in the container with some jitter
+        max_x_offset = w - room_w
+        max_y_offset = h - room_h
+
+        room_x = x + random.randint(0, max(0, max_x_offset))
+        room_y = y + random.randint(0, max(0, max_y_offset))
+
+        # Ensure room is within map bounds (accounting for outer walls)
+        room_x = max(1, min(room_x, self.width - room_w - 1))
+        room_y = max(1, min(room_y, self.height - room_h - 1))
+
+        # Carve the room
+        for rx in range(room_x, room_x + room_w):
+            for ry in range(room_y, room_y + room_h):
+                self.tiles[rx][ry].type = 'floor'
+                self.tiles[rx][ry].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+
+        return (room_x, room_y, room_w, room_h)
+
+    def _generate_bsp(self, x, y, w, h, depth):
+        """
+        Recursively split the dungeon area using Binary Space Partitioning.
+        Returns a list of rooms created in this subtree.
+        """
+        # Base case: Stop if max depth reached or area too small
+        # Depth 4 gives 16 potential rooms, Depth 5 gives 32.
+        # Adjust stopping condition based on desired density.
+
+        min_split_size = self.min_room_size * 2 + 4 # Enough for two rooms + walls + padding
+
+        # Randomly decide to stop splitting to create variety in room density
+        # Higher depth means higher chance to stop early, but we enforce splitting early on.
+        stop_chance = 0.05 * depth
+
+        # If we are deep enough or small enough, make a leaf (room)
+        if depth >= 5 or w < min_split_size or h < min_split_size or (depth > 2 and random.random() < stop_chance):
+            return [self._create_room(x, y, w, h)]
+
+        # Determine split direction
+        # If one dimension is much larger, split that one.
+        split_horizontally = None
+        if w > h * 1.25:
+            split_horizontally = True
+        elif h > w * 1.25:
+            split_horizontally = False
+        else:
+            split_horizontally = random.choice([True, False])
+
+        # Perform split
+        rooms_left = []
+        rooms_right = []
+
+        if split_horizontally:
+            # Split width (vertical cut)
+            if w < min_split_size: # Cannot split effectively
+                return [self._create_room(x, y, w, h)]
+
+            # Define split range (avoid making tiny slivers)
+            split_min = int(w * 0.4)
+            split_max = int(w * 0.6)
+            split_at = random.randint(split_min, split_max)
+
+            rooms_left = self._generate_bsp(x, y, split_at, h, depth + 1)
+            rooms_right = self._generate_bsp(x + split_at, y, w - split_at, h, depth + 1)
+        else:
+            # Split height (horizontal cut)
+            if h < min_split_size: # Cannot split effectively
+                return [self._create_room(x, y, w, h)]
+
+            split_min = int(h * 0.4)
+            split_max = int(h * 0.6)
+            split_at = random.randint(split_min, split_max)
+
+            rooms_left = self._generate_bsp(x, y, w, split_at, depth + 1)
+            rooms_right = self._generate_bsp(x, y + split_at, w, h - split_at, depth + 1)
+
+        # Connect the two subtrees
+        # We pick one room from left and one from right to connect
+        if rooms_left and rooms_right:
+            r1 = random.choice(rooms_left)
+            r2 = random.choice(rooms_right)
+
+            # Calculate center points
+            c1_x = r1[0] + r1[2] // 2
+            c1_y = r1[1] + r1[3] // 2
+
+            c2_x = r2[0] + r2[2] // 2
+            c2_y = r2[1] + r2[3] // 2
+
+            # Carve corridor connecting the two centers
+            if random.choice([True, False]):
+                self._carve_h_corridor(c1_x, c2_x, c1_y)
+                self._carve_v_corridor(c1_y, c2_y, c2_x)
+            else:
+                self._carve_v_corridor(c1_y, c2_y, c1_x)
+                self._carve_h_corridor(c1_x, c2_x, c2_y)
+
+        return rooms_left + rooms_right
+
+    def place_level_exit(self, room):
+        """
+        Place a level exit (stairs down) in the center of the specified room.
+        Guarantees the exit is not in a corridor.
+        """
+        x, y, w, h = room
+        center_x = x + w // 2
+        center_y = y + h // 2
+
+        # If this is a map transition, we need a door-like behavior but stairs look better for floor transitions
+        # For level transition (end of level), we definitely want stairs.
+
+        tile_type = 'stair_down'
+
+        # Set the tile type
+        self.tiles[center_x][center_y].type = tile_type
+
+        # Load stair sprite
+        if 'stair_down' in assets_data["sprites"]["tiles"]:
+            self.tiles[center_x][center_y].sprite = load_sprite(assets_data["sprites"]["tiles"]["stair_down"])
+        else:
+            # Fallback visual if stair sprite missing
+            print("Warning: stair_down sprite not found in assets")
+
+        print(f"Placed level exit at ({center_x}, {center_y}) inside room {room}")
+        return (center_x, center_y)
+
     def create_rooms_and_corridors(self):
-        rooms = []
-        max_attempts = self.max_rooms * 3  # Try more times than max_rooms to find spots
+        # Clear existing tiles to be safe
+        self.tiles = [[Tile(x, y, 'wall') for y in range(self.height)] for x in range(self.width)]
 
-        for _ in range(max_attempts):
-            if len(rooms) >= self.max_rooms:
-                break
+        # Use BSP to generate rooms and corridors
+        # Start with the full map area (minus 1 tile border)
+        rooms = self._generate_bsp(1, 1, self.width - 2, self.height - 2, 0)
 
-            # Generate random room dimensions
-            room_w = random.randint(self.min_room_size, self.max_room_size)
-            room_h = random.randint(self.min_room_size, self.max_room_size)
+        if not rooms:
+            # Fallback if BSP fails (shouldn't happen)
+            print("Error: BSP generation failed to create rooms. Using fallback.")
+            return self._fallback_generation()
 
-            # Generate random position within map bounds (with 1 tile margin)
-            room_x = random.randint(1, self.width - room_w - 1)
-            room_y = random.randint(1, self.height - room_h - 1)
+        # Sort rooms by distance from Top-Left (0,0) to ensure start/end separation
+        # We use Manhattan distance (x + y) as a simple metric
+        rooms.sort(key=lambda r: r[0] + r[1])
 
-            new_room = (room_x, room_y, room_w, room_h)
-
-            # Check for overlap with existing rooms
-            failed = False
-            for other_room in rooms:
-                # Add 1 tile buffer around room to ensure separation (except for corridors)
-                # Check if rectangles overlap: (x1 < x2 + w2) and (x1 + w1 > x2) and ...
-                # Using padding of 2 to ensure at least 1 wall between rooms
-                if (room_x - 2 < other_room[0] + other_room[2] and
-                    room_x + room_w + 2 > other_room[0] and
-                    room_y - 2 < other_room[1] + other_room[3] and
-                    room_y + room_h + 2 > other_room[1]):
-                    failed = True
-                    break
-
-            if not failed:
-                # Create the room
-                rooms.append(new_room)
-
-                # Carve room
-                for rx in range(room_x, room_x + room_w):
-                    for ry in range(room_y, room_y + room_h):
-                        self.tiles[rx][ry].type = 'floor'
-                        self.tiles[rx][ry].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
-
-                # Connect to previous room (if any)
-                if len(rooms) > 1:
-                    prev_room = rooms[-2]
-
-                    # Get center points
-                    new_center_x, new_center_y = room_x + room_w // 2, room_y + room_h // 2
-                    prev_center_x, prev_center_y = prev_room[0] + prev_room[2] // 2, prev_room[1] + prev_room[3] // 2
-
-                    # Carve corridor (horizontal then vertical or vice versa)
-                    if random.choice([True, False]):
-                        # Horizontal first, then vertical
-                        self._carve_h_corridor(prev_center_x, new_center_x, prev_center_y)
-                        self._carve_v_corridor(prev_center_y, new_center_y, new_center_x)
-                    else:
-                        # Vertical first, then horizontal
-                        self._carve_v_corridor(prev_center_y, new_center_y, prev_center_x)
-                        self._carve_h_corridor(prev_center_x, new_center_x, new_center_y)
+        start_room = rooms[0]
+        end_room = rooms[-1] # Farthest room from start
 
         # After carving corridors, post-process to place doors
         self.carve_doors()
 
-        # --- Set Start and Monster Positions ---
-        start_room = rooms[0]
+        # --- Set Start Position ---
         start_tile_x = start_room[0] + (start_room[2] // 2)
         start_tile_y = start_room[1] + (start_room[3] // 2)
         start_position = [start_tile_x * TILE_SIZE + (TILE_SIZE // 2),
@@ -2562,57 +2655,91 @@ class Dungeon:
             if not level_appropriate_monsters:
                 level_appropriate_monsters = monsters_data['monsters']  # Fallback if no appropriate monsters found
 
-            monster_choice = random.choice(level_appropriate_monsters)
-            print(f"Selected monster: {monster_choice['name']}, Level: {monster_choice.get('level', 1)}")
+            # Spawn monsters in random rooms (except start room)
+            # BSP tends to make many rooms, let's spawn a few monsters based on map size
+            num_monsters = min(len(rooms) // 2, 5 + self.level)
 
-            monster = Monster(
-                name=monster_choice['name'],
-                hit_points=monster_choice['hit_points'],
-                to_hit=monster_choice['to_hit'],
-                ac=monster_choice['ac'],
-                move=monster_choice['move'],
-                dam=monster_choice['dam'],
-                sprites=monster_choice['sprites'],
-                monster_type=monster_choice.get('type', 'beast'),
-                level=monster_choice.get('level', 1)
-            )
+            # Available rooms for spawning (exclude start room)
+            spawn_rooms = [r for r in rooms if r != start_room]
 
-            # Place the monster in a random room
-            monster_room = random.choice(rooms)
-            monster_tile_x = monster_room[0] + (monster_room[2] // 2)
-            monster_tile_y = monster_room[1] + (monster_room[3] // 2)
-            monster.position = [monster_tile_x * TILE_SIZE + (TILE_SIZE // 2),
-                                monster_tile_y * TILE_SIZE + (TILE_SIZE // 2)]
+            if spawn_rooms:
+                for _ in range(num_monsters):
+                    monster_choice = random.choice(level_appropriate_monsters)
+                    monster = Monster(
+                        name=monster_choice['name'],
+                        hit_points=monster_choice['hit_points'],
+                        to_hit=monster_choice['to_hit'],
+                        ac=monster_choice['ac'],
+                        move=monster_choice['move'],
+                        dam=monster_choice['dam'],
+                        sprites=monster_choice['sprites'],
+                        monster_type=monster_choice.get('type', 'beast'),
+                        level=monster_choice.get('level', 1)
+                    )
 
-            # Add the monster to the dungeon's monster list
-            self.monsters.append(monster)
-            print(f"A wild {monster.name} appears in the dungeon!")
+                    spawn_room = random.choice(spawn_rooms)
+                    monster_tile_x = spawn_room[0] + (spawn_room[2] // 2)
+                    monster_tile_y = spawn_room[1] + (spawn_room[3] // 2)
+
+                    # Jitter position slightly in room
+                    jitter_x = random.randint(-1, 1)
+                    jitter_y = random.randint(-1, 1)
+
+                    # Ensure jitter keeps inside room bounds
+                    mx = max(spawn_room[0], min(spawn_room[0] + spawn_room[2] - 1, monster_tile_x + jitter_x))
+                    my = max(spawn_room[1], min(spawn_room[1] + spawn_room[3] - 1, monster_tile_y + jitter_y))
+
+                    monster.position = [mx * TILE_SIZE + (TILE_SIZE // 2),
+                                        my * TILE_SIZE + (TILE_SIZE // 2)]
+
+                    self.monsters.append(monster)
+
+            print(f"Spawned {len(self.monsters)} monsters.")
         else:
             print("No monster data available to spawn a monster.")
 
         # --- Place a Treasure Chest ---
-        # Choose a random room, but not the starting room
+        # Place chests in random rooms (not start room)
         non_starting_rooms = [room for room in rooms if room != start_room]
         if non_starting_rooms:
-            chest_room = random.choice(non_starting_rooms)
-            self.place_chest(chest_room)
+            # 1-2 chests per level
+            num_chests = random.randint(1, 2)
+            for _ in range(num_chests):
+                chest_room = random.choice(non_starting_rooms)
+                self.place_chest(chest_room)
+                non_starting_rooms.remove(chest_room) # Don't put two chests in same room if possible
+                if not non_starting_rooms:
+                    break
         else:
             # If there's only one room, place chest in a different part of it
             self.place_chest(start_room)
 
-        # --- Place a transition door ---
-        # Add a level/map transition door to a far room
-        print(f"DEBUG: Placing transition door. Level: {self.level}, Map: {self.map_number}, Max Maps: {self.max_maps}")
-        transition_door = self.place_transition_door(rooms, start_room)
-        if transition_door:
-            print(f"DEBUG: Transition door placed at ({transition_door.x}, {transition_door.y})")
-            print(f"DEBUG: Door type: {transition_door.door_type}, Locked: {transition_door.locked}")
-            if transition_door.door_type == "map_transition":
-                print(f"DEBUG: Destination map: {transition_door.destination_map}")
+        # --- Place Exit / Transition ---
+        # If this is the last map of the level, place stairs down
+        if self.map_number >= self.max_maps:
+            print(f"DEBUG: Placing level exit (stairs) in room {end_room}")
+            self.place_level_exit(end_room)
         else:
-            print("DEBUG: Failed to place transition door!")
+            # Map transition (door to next map segment)
+            # For map transition, a door on the edge is appropriate
+            print(f"DEBUG: Placing map transition door in room {end_room}")
+            transition_door = self.place_transition_door(rooms, start_room)
+            if transition_door and transition_door.door_type == "map_transition":
+                 print(f"DEBUG: Destination map: {transition_door.destination_map}")
 
         return start_position
+
+    def _fallback_generation(self):
+        """Fallback to simple generation if BSP fails."""
+        # Simple 1 room center
+        cx, cy = self.width // 2, self.height // 2
+        w, h = 10, 10
+        x, y = cx - 5, cy - 5
+        for i in range(x, x+w):
+            for j in range(y, y+h):
+                self.tiles[i][j].type = 'floor'
+                self.tiles[i][j].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+        return [cx * TILE_SIZE, cy * TILE_SIZE]
 
     def _carve_h_corridor(self, x1, x2, y):
         """Carve a horizontal corridor"""

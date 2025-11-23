@@ -67,8 +67,22 @@ class Player(Character):
             if door_coords in dungeon.doors and dungeon.doors[door_coords].locked:
                 return False, "", "The door is locked. Try another approach."
 
-        if target_tile.type in ('floor', 'corridor', 'door'):
+        if target_tile.type in ('floor', 'corridor', 'door', 'stair_down', 'stair_up'):
             door_coords = (tile_x, tile_y)
+
+            # Handle stairs
+            if target_tile.type == 'stair_down':
+                self.position = [new_x, new_y]
+                new_dungeon_level = dungeon.level + 1
+                if self.level < new_dungeon_level:
+                    self.level = new_dungeon_level
+                    hp_per_level = {'Warrior': 10, 'Priest': 6, 'Wizard': 4}.get(self.char_class, 8)
+                    self.max_hit_points += hp_per_level
+                    self.hit_points += hp_per_level
+                    pygame.event.post(pygame.event.Event(pygame.USEREVENT + 1))
+                    return True, "level_transition", f"You descend the stairs! Completed level {dungeon.level}. Leveled up to {self.level}!"
+                return True, "level_transition", f"You descend the stairs! Completed level {dungeon.level}."
+
             if target_tile.type == 'door' and door_coords in dungeon.doors:
                 door = dungeon.doors[door_coords]
                 self.position = [new_x, new_y]
