@@ -15,7 +15,7 @@
             "immunities": [],
             "special_abilities": [],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg",
                 "dead": ""
             }
         },
@@ -34,7 +34,7 @@
             "immunities": [],
             "special_abilities": [],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_bat.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/beast/giant_bat.jpg",
                 "dead": ""
             }
         },
@@ -61,7 +61,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_spider.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/beast/giant_spider.jpg",
                 "dead": ""
             }
         },
@@ -88,7 +88,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_spider.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/beast/giant_spider.jpg",
                 "dead": ""
             }
         },
@@ -107,7 +107,7 @@
             "immunities": [],
             "special_abilities": [],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_bat.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/beast/giant_bat.jpg",
                 "dead": ""
             }
         },
@@ -134,7 +134,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_snake.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/beast/giant_snake.jpg",
                 "dead": ""
             }
         },
@@ -153,7 +153,7 @@
             "immunities": [],
             "special_abilities": [],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/goblin.png",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/humanoids/goblin.png",
                 "dead": ""
             }
         },
@@ -172,7 +172,7 @@
             "immunities": [],
             "special_abilities": [],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/orc.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/humanoids/orc.jpg",
                 "dead": ""
             }
         },
@@ -197,7 +197,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/troll.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/humanoids/troll.jpg",
                 "dead": ""
             }
         },
@@ -221,7 +221,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/minotaur.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/humanoids/minotaur.jpg",
                 "dead": ""
             }
         },
@@ -246,7 +246,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/hag.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/humanoids/hag.jpg",
                 "dead": ""
             }
         },
@@ -272,7 +272,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/green_slime.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/monstrosity/green_slime.jpg",
                 "dead": ""
             }
         },
@@ -299,7 +299,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/yellow_mold.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/monstrosity/yellow_mold.jpg",
                 "dead": ""
             }
         },
@@ -325,7 +325,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/gelatinous_cube.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/monstrosity/gelatinous_cube.jpg",
                 "dead": ""
             }
         },
@@ -350,7 +350,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/strange_beast.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/monstrosity/strange_beast.jpg",
                 "dead": ""
             }
         },
@@ -377,7 +377,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/intellect_devourer.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/extraplanar/intellect_devourer.jpg",
                 "dead": ""
             }
         },
@@ -405,7 +405,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/zombie.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/undead/zombie.jpg",
                 "dead": ""
             }
         },
@@ -433,7 +433,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/wraith.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/undead/wraith.jpg",
                 "dead": ""
             }
         },
@@ -458,7 +458,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/ghost.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/undead/ghost.jpg",
                 "dead": ""
             }
         },
@@ -485,7 +485,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/mummy.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/undead/mummy.jpg",
                 "dead": ""
             }
         },
@@ -510,7 +510,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/lich.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/undead/lich.jpg",
                 "dead": ""
             }
         },
@@ -536,7 +536,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg",
                 "dead": ""
             }
         },
@@ -562,7 +562,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/earth_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/earth_elemental.jpg",
                 "dead": ""
             }
         },
@@ -588,7 +588,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/water_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/water_elemental.jpg",
                 "dead": ""
             }
         },
@@ -614,7 +614,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/air_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/air_elemental.jpg",
                 "dead": ""
             }
         },
@@ -640,7 +640,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg",
                 "dead": ""
             }
         },
@@ -666,7 +666,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/earth_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/earth_elemental.jpg",
                 "dead": ""
             }
         },
@@ -692,7 +692,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/water_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/water_elemental.jpg",
                 "dead": ""
             }
         },
@@ -718,7 +718,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/air_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/air_elemental.jpg",
                 "dead": ""
             }
         },
@@ -744,7 +744,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/fire_elemental.jpg",
                 "dead": ""
             }
         },
@@ -770,7 +770,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/earth_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/earth_elemental.jpg",
                 "dead": ""
             }
         },
@@ -796,7 +796,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/water_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/water_elemental.jpg",
                 "dead": ""
             }
         },
@@ -822,7 +822,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/elemental/air_elemental.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/elemental/air_elemental.jpg",
                 "dead": ""
             }
         },
@@ -841,7 +841,7 @@
             "immunities": ["poison"],
             "special_abilities": [],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/imp.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/extraplanar/imp.jpg",
                 "dead": ""
             }
         },
@@ -867,7 +867,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/hell_hound.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/extraplanar/hell_hound.jpg",
                 "dead": ""
             }
         },
@@ -893,7 +893,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/demonic_bat.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/extraplanar/demonic_bat.jpg",
                 "dead": ""
             }
         },
@@ -912,7 +912,7 @@
             "immunities": ["poison"],
             "special_abilities": [],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/demon_gnoll.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/extraplanar/demon_gnoll.jpg",
                 "dead": ""
             }
         },
@@ -939,7 +939,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/bone_devil.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/extraplanar/bone_devil.jpg",
                 "dead": ""
             }
         },
@@ -965,7 +965,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/ice_devil.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/extraplanar/ice_devil.jpg",
                 "dead": ""
             }
         },
@@ -992,7 +992,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/vrock.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/extraplanar/vrock.jpg",
                 "dead": ""
             }
         },
@@ -1017,7 +1017,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/marilith.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/extraplanar/marilith.jpg",
                 "dead": ""
             }
         },
@@ -1042,7 +1042,7 @@
                 }
             ],
             "sprites": {
-                "live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/extraplanar/pit_fiend.jpg",
+                "live": "./Fantasy_Game_Art_Assets/Enemies/extraplanar/pit_fiend.jpg",
                 "dead": ""
             }
         }

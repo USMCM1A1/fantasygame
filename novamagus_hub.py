@@ -42,11 +42,11 @@ TILE_SIZE = HUB_TILE_SIZE
 def load_hub_assets():
     """Load all art assets specific to Novamagus."""
     assets = {
-        'cobble': load_sprite("/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/Novamagus/cobblestones.png"),
-        'vegetation': load_sprite("/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/Novamagus/vegetation.png"),
-        'inn': load_sprite("/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/Novamagus/inn.png"),
-        'shop': load_sprite("/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/Novamagus/shop.png"),
-        'dungeon_entrance': load_sprite("/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/Novamagus/dungeon_entrance.png")
+        'cobble': load_sprite("./Fantasy_Game_Art_Assets/Misc/Novamagus/cobblestones.png"),
+        'vegetation': load_sprite("./Fantasy_Game_Art_Assets/Misc/Novamagus/vegetation.png"),
+        'inn': load_sprite("./Fantasy_Game_Art_Assets/Misc/Novamagus/inn.png"),
+        'shop': load_sprite("./Fantasy_Game_Art_Assets/Misc/Novamagus/shop.png"),
+        'dungeon_entrance': load_sprite("./Fantasy_Game_Art_Assets/Misc/Novamagus/dungeon_entrance.png")
     }
     return assets
 

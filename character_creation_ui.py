@@ -31,7 +31,7 @@ def character_creation_screen(screen, clock):
 
     # Load background image (scaled to actual screen size)
     background_path_from_assets = assets_data.get("sprites", {}).get("background", {}).get("character_creation_bg")
-    fallback_background_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/B&S_UI_background.png"
+    fallback_background_path = "./Fantasy_Game_Art_Assets/Misc/B&S_UI_background.png"
     background_image = None
     if background_path_from_assets and os.path.exists(background_path_from_assets):
         try:

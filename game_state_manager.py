@@ -79,7 +79,7 @@ def save_game(player, dungeon, game_state="dungeon"):
     """
     # Create save directory if it doesn't exist
     # Using absolute path as it was in common_b_s.py
-    save_dir = "/Users/williammarcellino/Documents/Fantasy_Game/B&S_savegame"
+    save_dir = "./B&S_savegame"
     os.makedirs(save_dir, exist_ok=True)
 
     save_file = os.path.join(save_dir, "savefile.json")
@@ -225,7 +225,7 @@ def load_game():
     """
     Load a game from the save file.
     """
-    save_file = "/Users/williammarcellino/Documents/Fantasy_Game/B&S_savegame/savefile.json"
+    save_file = "./B&S_savegame/savefile.json"
 
     if not os.path.exists(save_file):
         print("No save file found.")
@@ -585,7 +585,7 @@ def show_title_screen():
         # Corrected path to be more generic if possible, or ensure it's an absolute path
         # For now, using the original path from blade_sigil_v5_5.py
         # Consider making this path configurable or relative to an assets directory
-        title_image_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/b&s_loading_screen.jpg"
+        title_image_path = "./Fantasy_Game_Art_Assets/Misc/b&s_loading_screen.jpg"
         if not os.path.exists(title_image_path):
             # Attempt a relative path as a fallback, assuming 'Fantasy_Game_Art_Assets' is in a known location
             # This is a guess and might need adjustment based on actual project structure
@@ -599,7 +599,7 @@ def show_title_screen():
             # For this exercise, I'll stick to the original absolute path if the first attempt fails.
             # A more robust solution would involve an asset management system or configuration.
             if not os.path.exists(title_image_path):
-                 title_image_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/b&s_loading_screen.jpg"
+                 title_image_path = "./Fantasy_Game_Art_Assets/Misc/b&s_loading_screen.jpg"
 
 
         title_image = pygame.image.load(title_image_path)
@@ -640,7 +640,7 @@ def show_title_screen():
 
     # Check if a save game exists
     # Corrected path for savegame
-    save_dir = "/Users/williammarcellino/Documents/Fantasy_Game/B&S_savegame"
+    save_dir = "./B&S_savegame"
     save_file_path = os.path.join(save_dir, "savefile.json")
     has_save = os.path.exists(save_file_path)
 

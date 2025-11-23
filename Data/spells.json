@@ -16,7 +16,7 @@
       "effects": ["Burning"],
       "duration": 0,
       "description": "A small ball of fire explodes at the target point, dealing fire damage to all creatures in the area",
-      "visual_effect": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/spell_assets/fireball_explosion.png",
+      "visual_effect": "./Fantasy_Game_Art_Assets/Misc/spell_assets/fireball_explosion.png",
       "visual_duration": 2
     },
     {
@@ -35,7 +35,7 @@
       "effects": ["Burning"],
       "duration": 1,
       "description": "A ball of fire explodes at the target point, dealing massive damage to all creatures in the area and possibly setting them on fire",
-      "visual_effect": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/spell_assets/fireball_explosion.png",
+      "visual_effect": "./Fantasy_Game_Art_Assets/Misc/spell_assets/fireball_explosion.png",
       "visual_duration": 2
     },
     {
@@ -333,7 +333,7 @@
       "slow_duration": 3,
       "duration": 3,
       "description": "Releases a burst of freezing energy in all directions, damaging nearby enemies and slowing their movement",
-      "visual_effect": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/spell_assets/frost_nova.png",
+      "visual_effect": "./Fantasy_Game_Art_Assets/Misc/spell_assets/frost_nova.png",
       "visual_duration": 2
     },
     {

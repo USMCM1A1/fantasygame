@@ -165,7 +165,7 @@ def create_fireball_image():
         pygame.draw.circle(img, color, (x, y), radius)
     
     # Save the image
-    output_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/spell_assets/fireball_explosion.png"
+    output_path = "./Fantasy_Game_Art_Assets/Misc/spell_assets/fireball_explosion.png"
     pygame.image.save(img, output_path)
     print(f"Created fireball image at {output_path}")
     return output_path

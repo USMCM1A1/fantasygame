@@ -90,7 +90,7 @@ def create_test_arena(player, dungeon):
         monster = Monster(
             name=f"{monster_type_data['name']} #{i+1}", hit_points=monster_type_data["hit_points"], to_hit=monster_type_data["to_hit"],
             ac=monster_type_data["ac"], move=monster_type_data["move"], dam=monster_type_data["dam"],
-            sprites={"live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg" if monster_type_data["name"] == "Giant Rat" else "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_spider.jpg", "dead": ""},
+            sprites={"live": "./Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg" if monster_type_data["name"] == "Giant Rat" else "./Fantasy_Game_Art_Assets/Enemies/beast/giant_spider.jpg", "dead": ""},
             monster_type=monster_type_data["monster_type"], level=monster_type_data["level"], cr=monster_type_data["cr"],
             vulnerabilities=monster_type_data.get("vulnerabilities", []), resistances=monster_type_data.get("resistances", []), immunities=monster_type_data.get("immunities", [])
         )
@@ -136,7 +136,7 @@ def create_emergency_arena(player, screen):
         player.position = list(min_arena.start_position)
         test_monster = Monster(
             name="Test Monster", hit_points=10, to_hit=0, ac=10, move=1, dam="1d4",
-            sprites={"live": "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg", "dead": ""},
+            sprites={"live": "./Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg", "dead": ""},
             monster_type="beast"
         )
         test_monster.position = [player.position[0] + 5*DUNGEON_TILE_SIZE, player.position[1]]

@@ -465,18 +465,18 @@ def draw_equipment_panel(screen, player, x, y):
 # =============================================================================
 
 #sounds
-spell_sound = pygame.mixer.Sound("/Users/williammarcellino/Documents/Fantasy_Game/B&S_sfx/lvl1_spell_woosh.mp3")
-melee_sound = pygame.mixer.Sound("/Users/williammarcellino/Documents/Fantasy_Game/B&S_sfx/basic_melee_strike.mp3")
-arrow_sound = pygame.mixer.Sound("/Users/williammarcellino/Documents/Fantasy_Game/B&S_sfx/arrow_shot.mp3")
-levelup_sound = pygame.mixer.Sound("/Users/williammarcellino/Documents/Fantasy_Game/B&S_sfx/level_up_ding.mp3")
-frost_sound = pygame.mixer.Sound("/Users/williammarcellino/Documents/Fantasy_Game/B&S_sfx/frost.flac")
-store_bell_sound = pygame.mixer.Sound("/Users/williammarcellino/Documents/Fantasy_Game/B&S_sfx/store_bell.mp3")
+spell_sound = pygame.mixer.Sound("./B&S_sfx/lvl1_spell_woosh.mp3")
+melee_sound = pygame.mixer.Sound("./B&S_sfx/basic_melee_strike.mp3")
+arrow_sound = pygame.mixer.Sound("./B&S_sfx/arrow_shot.mp3")
+levelup_sound = pygame.mixer.Sound("./B&S_sfx/level_up_ding.mp3")
+frost_sound = pygame.mixer.Sound("./B&S_sfx/frost.flac")
+store_bell_sound = pygame.mixer.Sound("./B&S_sfx/store_bell.mp3")
 
 def load_json(file_path):
     with open(file_path, 'r') as f:
         return json.load(f)
 
-DATA_DIR = "/Users/williammarcellino/Documents/Fantasy_Game/Data"
+DATA_DIR = "./Data"
 CHARACTERS_FILE = os.path.join(DATA_DIR, "characters.json")
 ASSETS_FILE = os.path.join(DATA_DIR, "assets.json")
 SPELLS_FILE = os.path.join(DATA_DIR, "spells.json")
@@ -1505,7 +1505,7 @@ def shop_interaction(screen, clock, player, items_data=items_data):
     store_bell_sound.play()
     
     # Load shopkeeper portrait
-    shopkeeper_portrait = pygame.image.load("/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/Novamagus/shopkeep.jpg")
+    shopkeeper_portrait = pygame.image.load("./Fantasy_Game_Art_Assets/Misc/Novamagus/shopkeep.jpg")
     portrait_width = 300  # Double the portrait width (was 150)
     portrait_height = 300  # Double the portrait height (was 150)
     shopkeeper_portrait = pygame.transform.scale(shopkeeper_portrait, (portrait_width, portrait_height))
@@ -2344,11 +2344,11 @@ class Monster:
                 self.sprite = pygame.transform.smoothscale(self.sprite, (TILE_SIZE, TILE_SIZE))
             else:
                 fallback_sprites = {
-                    'beast': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg',
-                    'humanoid': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/humanoids/goblin.png',
-                    'undead': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/undead/skel_01.png',
+                    'beast': './Fantasy_Game_Art_Assets/Enemies/beast/giant_rat.jpg',
+                    'humanoid': './Fantasy_Game_Art_Assets/Enemies/humanoids/goblin.png',
+                    'undead': './Fantasy_Game_Art_Assets/Enemies/undead/skel_01.png',
                     # Add other types as needed or a more generic fallback
-                    'default': '/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Enemies/monstrosity/green_slime.jpg'
+                    'default': './Fantasy_Game_Art_Assets/Enemies/monstrosity/green_slime.jpg'
                 }
                 fallback_path = fallback_sprites.get(self.monster_type, fallback_sprites['default'])
                 self.sprite = pygame.image.load(fallback_path).convert_alpha()
@@ -2542,20 +2542,6 @@ class Dungeon:
                         self._carve_v_corridor(prev_center_y, new_center_y, prev_center_x)
                         self._carve_h_corridor(prev_center_x, new_center_x, new_center_y)
 
-    def _carve_h_corridor(self, x1, x2, y):
-        """Carve a horizontal corridor"""
-        for x in range(min(x1, x2), max(x1, x2) + 1):
-            if self.tiles[x][y].type != 'floor':
-                self.tiles[x][y].type = 'corridor'
-                self.tiles[x][y].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
-
-    def _carve_v_corridor(self, y1, y2, x):
-        """Carve a vertical corridor"""
-        for y in range(min(y1, y2), max(y1, y2) + 1):
-            if self.tiles[x][y].type != 'floor':
-                self.tiles[x][y].type = 'corridor'
-                self.tiles[x][y].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
-
         # After carving corridors, post-process to place doors
         self.carve_doors()
 
@@ -2627,6 +2613,20 @@ class Dungeon:
             print("DEBUG: Failed to place transition door!")
 
         return start_position
+
+    def _carve_h_corridor(self, x1, x2, y):
+        """Carve a horizontal corridor"""
+        for x in range(min(x1, x2), max(x1, x2) + 1):
+            if self.tiles[x][y].type != 'floor':
+                self.tiles[x][y].type = 'corridor'
+                self.tiles[x][y].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+
+    def _carve_v_corridor(self, y1, y2, x):
+        """Carve a vertical corridor"""
+        for y in range(min(y1, y2), max(y1, y2) + 1):
+            if self.tiles[x][y].type != 'floor':
+                self.tiles[x][y].type = 'corridor'
+                self.tiles[x][y].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
 
 
     def remove_monster(self, monster):
@@ -4176,8 +4176,8 @@ class Chest:
     
     def load_sprites(self):
         """Load chest sprites based on current state (closed/open)."""
-        closed_sprite_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/loot_drop.jpg"
-        open_sprite_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/loot_drop_open.jpg"
+        closed_sprite_path = "./Fantasy_Game_Art_Assets/Misc/loot_drop.jpg"
+        open_sprite_path = "./Fantasy_Game_Art_Assets/Misc/loot_drop_open.jpg"
         
         try:
             if self.open:
@@ -4278,11 +4278,11 @@ class Door:
     def load_sprites(self):
         """Load door sprites based on current state (closed, open, locked) and type"""
         # Default door sprite path
-        door_sprite_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/door_1.png"
+        door_sprite_path = "./Fantasy_Game_Art_Assets/Misc/door_1.png"
         
         # Special door for level transitions
         if self.door_type == "level_transition":
-            door_sprite_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/dungeon_level_door.jpg"
+            door_sprite_path = "./Fantasy_Game_Art_Assets/Misc/dungeon_level_door.jpg"
         
         if self.open:
             # Open door uses the floor sprite
@@ -5184,7 +5184,7 @@ def create_frost_nova_image(size=256, save_path=None):
     # If no save path provided, use a default path
     if not save_path:
         # Get the base directory for the game
-        base_dir = "/Users/williammarcellino/Documents/Fantasy_Game"
+        base_dir = "."
         save_path = os.path.join(base_dir, "Fantasy_Game_Art_Assets", "Misc", "spell_assets", "frost_nova.png")
     
     # Ensure the directory exists
@@ -5248,7 +5248,7 @@ def create_fireball_image(size=32, save_path=None):
     # If no save path provided, use a default path
     if not save_path:
         # Get the base directory for the game
-        base_dir = "/Users/williammarcellino/Documents/Fantasy_Game"
+        base_dir = "."
         save_path = os.path.join(base_dir, "Fantasy_Game_Art_Assets", "Misc", "spell_assets", "generated_fireball.png")
         # Ensure directory exists (create it if it doesn't)
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -5260,7 +5260,7 @@ def create_fireball_image(size=32, save_path=None):
     except Exception as e:
         print(f"Error saving fireball image: {e}")
         # Use the existing fireball image instead
-        save_path = "/Users/williammarcellino/Documents/Fantasy_Game/Fantasy_Game_Art_Assets/Misc/spell_assets/fireball_explosion.png"
+        save_path = "./Fantasy_Game_Art_Assets/Misc/spell_assets/fireball_explosion.png"
     
     return save_path
 
