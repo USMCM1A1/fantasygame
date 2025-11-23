@@ -42,7 +42,8 @@
             }
         },
         "tiles": {
-            "floor": "./Fantasy_Game_Art_Assets/Misc/dungeon_tiles_01.jpg"
+            "floor": "./Fantasy_Game_Art_Assets/Misc/dungeon_tiles_01.jpg",
+            "stair_down": "./Fantasy_Game_Art_Assets/Misc/dungeon_level_door.jpg"
         },
         "background": {
             "character_creation_bg": "./Fantasy_Game_Art_Assets/Misc/B&S_UI_background.png"

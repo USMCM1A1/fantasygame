@@ -2630,11 +2630,15 @@ class Dungeon:
             return self._fallback_generation()
 
         # Sort rooms by distance from Top-Left (0,0) to ensure start/end separation
-        # We use Manhattan distance (x + y) as a simple metric
-        rooms.sort(key=lambda r: r[0] + r[1])
+        # We use Euclidean distance squared (x^2 + y^2) for accurate sorting
+        rooms.sort(key=lambda r: r[0]**2 + r[1]**2)
 
         start_room = rooms[0]
         end_room = rooms[-1] # Farthest room from start
+
+        # Ensure start and end rooms are distinct if possible
+        if start_room == end_room and len(rooms) > 1:
+            end_room = rooms[1]
 
         # After carving corridors, post-process to place doors
         self.carve_doors()
@@ -3027,141 +3031,72 @@ class Dungeon:
 
     def carve_doors(self):
         """
-        Create 1-3 locked doors in corridors connecting rooms,
-        ensuring they're truly in corridor spaces.
+        Create doors where corridors meet rooms.
+        Strictly enforces:
+        1. Doors only on corridor tiles.
+        2. Doors must connect a floor (room) to a corridor.
+        3. No adjacent doors.
         """
-        # First, identify corridor tiles that are exactly at the transition point
-        # between rooms and corridors
-        door_coordinates = []
+        # Candidate locations for doors
+        potential_doors = []
 
         # Check each corridor tile
-        for x_coord in range(1, self.width - 1): # Renamed x to x_coord
-            for y_coord in range(1, self.height - 1): # Renamed y to y_coord
-                if self.tiles[x_coord][y_coord].type == 'corridor':
-                    # Look at each cardinal direction
-                    north = (x_coord, y_coord-1)
-                    south = (x_coord, y_coord+1)
-                    east = (x_coord+1, y_coord)
-                    west = (x_coord-1, y_coord)
+        for x in range(1, self.width - 1):
+            for y in range(1, self.height - 1):
+                if self.tiles[x][y].type == 'corridor':
+                    # Check neighbors
+                    neighbors = [
+                        (x, y-1), (x, y+1), (x+1, y), (x-1, y)
+                    ]
 
-                    # Check if we're at a dead end connecting to a room
-                    # This ensures the door is in the corridor, not the room
-                    connects_to_room = False
-                    connects_to_corridor = False
+                    room_neighbors = 0
+                    corridor_neighbors = 0
 
-                    # Check north
-                    if 0 <= north[1] < self.height:
-                        if self.tiles[north[0]][north[1]].type == 'floor':
-                            connects_to_room = True
-                        elif self.tiles[north[0]][north[1]].type == 'corridor':
-                            connects_to_corridor = True
+                    for nx, ny in neighbors:
+                        if 0 <= nx < self.width and 0 <= ny < self.height:
+                            if self.tiles[nx][ny].type == 'floor':
+                                room_neighbors += 1
+                            elif self.tiles[nx][ny].type == 'corridor':
+                                corridor_neighbors += 1
 
-                    # Check south
-                    if 0 <= south[1] < self.height:
-                        if self.tiles[south[0]][south[1]].type == 'floor':
-                            connects_to_room = True
-                        elif self.tiles[south[0]][south[1]].type == 'corridor':
-                            connects_to_corridor = True
+                    # A valid door spot connects at least one room and one corridor
+                    # And isn't surrounded by floors (which would mean it's inside a room)
+                    if room_neighbors >= 1 and corridor_neighbors >= 1:
+                        potential_doors.append((x, y))
 
-                    # Check east
-                    if 0 <= east[0] < self.width:
-                        if self.tiles[east[0]][east[1]].type == 'floor':
-                            connects_to_room = True
-                        elif self.tiles[east[0]][east[1]].type == 'corridor':
-                            connects_to_corridor = True
+        # Sort candidates to ensure deterministic processing order (optional but good for debugging)
+        potential_doors.sort()
+        random.shuffle(potential_doors) # Shuffle for randomness
 
-                    # Check west
-                    if 0 <= west[0] < self.width:
-                        if self.tiles[west[0]][west[1]].type == 'floor':
-                            connects_to_room = True
-                        elif self.tiles[west[0]][west[1]].type == 'corridor':
-                            connects_to_corridor = True
+        # Place doors, ensuring no adjacency
+        placed_doors = set()
 
-                    # A good door location connects to both a room and a corridor
-                    if connects_to_room and connects_to_corridor:
-                        # Count nearby wall tiles to ensure this is truly a corridor
-                        wall_count = 0
-                        for nx, ny in [north, south, east, west]:
-                            if 0 <= nx < self.width and 0 <= ny < self.height:
-                                if self.tiles[nx][ny].type == 'wall':
-                                    wall_count += 1
-
-                        # A corridor typically has walls on two sides
-                        if wall_count >= 1:  # At least one wall nearby
-                            door_coordinates.append((x_coord, y_coord))
-                            print(f"Found door location at corridor ({x_coord}, {y_coord}) - connects room to corridor")
-
-        # No valid door locations? Create a fallback door
-        if not door_coordinates:
-            print("No valid door locations found between rooms.")
-
-            # Find any corridor tile that connects to a floor tile (room)
-            for x_coord in range(1, self.width - 1): # Renamed x to x_coord
-                for y_coord in range(1, self.height - 1): # Renamed y to y_coord
-                    if self.tiles[x_coord][y_coord].type == 'corridor':
-                        # Check all adjacent tiles for a floor
-                        adjacent_coords = [(x_coord, y_coord-1), (x_coord, y_coord+1), (x_coord+1, y_coord), (x_coord-1, y_coord)]
-                        for nx, ny in adjacent_coords:
-                            if 0 <= nx < self.width and 0 <= ny < self.height:
-                                if self.tiles[nx][ny].type == 'floor':
-                                    door_coordinates.append((x_coord, y_coord))
-                                    print(f"Found fallback door location at ({x_coord}, {y_coord})")
-                                    break
-                    if door_coordinates:
-                        break
-                if door_coordinates:
+        for x, y in potential_doors:
+            # Check if placing a door here would be adjacent to an existing door
+            is_adjacent = False
+            neighbors = [
+                (x, y-1), (x, y+1), (x+1, y), (x-1, y)
+            ]
+            for nx, ny in neighbors:
+                if (nx, ny) in placed_doors:
+                    is_adjacent = True
                     break
 
-            # Still no valid door locations? Find any corridor
-            if not door_coordinates:
-                for x_coord in range(1, self.width - 1): # Renamed x to x_coord
-                    for y_coord in range(1, self.height - 1): # Renamed y to y_coord
-                        if self.tiles[x_coord][y_coord].type == 'corridor':
-                            door_coordinates.append((x_coord, y_coord))
-                            print(f"Found emergency fallback door at ({x_coord}, {y_coord})")
-                            break
-                    if door_coordinates:
-                        break
+            if not is_adjacent:
+                # Place the door
+                # Determine if it should be locked (random chance)
+                is_locked = random.random() < LOCKED_DOOR_CHANCE
 
-        # Shuffle and limit to 1-3 doors total
-        random.shuffle(door_coordinates)
-        max_doors = min(3, len(door_coordinates))
+                new_door = Door(x, y, locked=is_locked)
+                self.doors[(x, y)] = new_door
 
-        # Fix for the case when no valid door locations were found
-        if max_doors < 1:
-            print("WARNING: No valid door locations found. Skipping door creation.")
-            return
+                # Update tile type
+                self.tiles[x][y].type = 'locked_door' if is_locked else 'door'
+                self.tiles[x][y].sprite = new_door.sprite
 
-        num_doors = random.randint(1, max_doors)
+                placed_doors.add((x, y))
 
-        print(f"Creating {num_doors} locked doors from {len(door_coordinates)} potential door locations")
-
-        # Create the specified number of doors
-        door_count = 0
-        for x_coord, y_coord in door_coordinates: # Renamed x,y to x_coord,y_coord
-            if door_count >= num_doors:
-                break
-
-            # Create the door object (always locked)
-            new_door = Door(x_coord, y_coord, locked=True)
-
-            # Add it to our doors dictionary
-            self.doors[(x_coord, y_coord)] = new_door
-
-            # Update the tile to be a locked door
-            self.tiles[x_coord][y_coord].type = 'locked_door'
-
-            # Use the door's sprite for rendering
-            self.tiles[x_coord][y_coord].sprite = new_door.sprite
-
-            door_count += 1
-            print(f"Created locked door at ({x_coord}, {y_coord})")
-
-        # Make all other potential door locations normal corridors
-        for x_coord, y_coord in door_coordinates: # Renamed x,y to x_coord,y_coord
-            if (x_coord, y_coord) not in self.doors:
-                self.tiles[x_coord][y_coord].type = 'corridor'
-                self.tiles[x_coord][y_coord].sprite = load_sprite(assets_data["sprites"]["tiles"]["floor"])
+        print(f"Carved {len(placed_doors)} doors.")
 
 
 # Help screen content
